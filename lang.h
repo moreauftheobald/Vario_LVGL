@@ -1,0 +1,84 @@
+#ifndef LANG_H
+#define LANG_H
+
+typedef enum {
+  LANG_FR = 0,
+  LANG_EN = 1
+} Language;
+
+static Language current_language = LANG_FR;
+
+struct TextStrings {
+  const char* file_transfer;
+  const char* settings;
+  const char* start;
+  const char* exit;
+  const char* back;
+  const char* pilot_settings;
+  const char* wifi_settings;
+  const char* screen_calibration;
+  const char* vario_settings;
+  const char* map_settings;
+  const char* system_settings;
+  const char* save;
+  const char* cancel;
+  const char* pilot_name;
+  const char* pilot_firstname;
+  const char* pilot_wing;
+  const char* pilot_phone;
+  const char* wifi_priority;
+  const char* wifi_ssid;
+  const char* wifi_password;
+};
+
+static const TextStrings text_fr = {
+  .file_transfer = "Transfert fichiers",
+  .settings = "Parametres",
+  .start = "Demarrage",
+  .exit = "Sortie",
+  .back = "Retour",
+  .pilot_settings = "Parametres Pilote",
+  .wifi_settings = "Parametres WiFi",
+  .screen_calibration = "Calibration Ecran",
+  .vario_settings = "Parametres Vario",
+  .map_settings = "Parametres Cartographie",
+  .system_settings = "Parametres Systeme",
+  .save = "Enregistrer",
+  .cancel = "Annuler",
+  .pilot_name = "Nom",
+  .pilot_firstname = "Prenom",
+  .pilot_wing = "Modele de voile",
+  .pilot_phone = "Telephone",
+  .wifi_priority = "Priorite",
+  .wifi_ssid = "SSID",
+  .wifi_password = "Mot de passe"
+};
+
+static const TextStrings text_en = {
+  .file_transfer = "File Transfer",
+  .settings = "Settings",
+  .start = "Start",
+  .exit = "Exit",
+  .back = "Back",
+  .pilot_settings = "Pilot Settings",
+  .wifi_settings = "WiFi Settings",
+  .screen_calibration = "Screen Calibration",
+  .vario_settings = "Vario Settings",
+  .map_settings = "Map Settings",
+  .system_settings = "System Settings",
+  .save = "Save",
+  .cancel = "Cancel",
+  .pilot_name = "Last Name",
+  .pilot_firstname = "First Name",
+  .pilot_wing = "Wing Model",
+  .pilot_phone = "Phone",
+  .wifi_priority = "Priority",
+  .wifi_ssid = "SSID",
+  .wifi_password = "Password"
+};
+
+static inline const TextStrings* get_text() {
+  return (current_language == LANG_FR) ? &text_fr : &text_en;
+}
+
+#endif
