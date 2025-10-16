@@ -28,6 +28,7 @@ void force_full_refresh(void) {
 void setup() {
 #ifdef DEBUG_MODE
   Serial.begin(115200);
+  Serial.setDebugOutput(true);
   Serial.println("Starting Vario...");
   Serial.printf("Project: %s\n", VARIO_NAME);
   Serial.printf("Version: %s\n", VARIO_VERSION);
