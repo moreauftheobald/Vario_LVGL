@@ -53,7 +53,7 @@ static void btn_vario_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("Vario settings clicked");
 #endif
-  // TODO: ui_settings_vario_show();
+  ui_settings_vario_show();
 }
 
 static void btn_map_cb(lv_event_t *e) {
@@ -90,27 +90,27 @@ void ui_settings_init(void) {
 
   // Boutons de parametres
   lv_obj_t *btn_pilot = ui_create_settings_button(buttons_container, txt->pilot_settings,
-                                                   LV_SYMBOL_HOME, lv_color_hex(0x5856d6));
+                                                  LV_SYMBOL_HOME, lv_color_hex(0x5856d6));
   lv_obj_add_event_cb(btn_pilot, btn_pilot_cb, LV_EVENT_CLICKED, NULL);
 
   lv_obj_t *btn_wifi = ui_create_settings_button(buttons_container, txt->wifi_settings,
-                                                  LV_SYMBOL_WIFI, lv_color_hex(0x007aff));
+                                                 LV_SYMBOL_WIFI, lv_color_hex(0x007aff));
   lv_obj_add_event_cb(btn_wifi, btn_wifi_cb, LV_EVENT_CLICKED, NULL);
 
   lv_obj_t *btn_screen = ui_create_settings_button(buttons_container, txt->screen_calibration,
-                                                    LV_SYMBOL_SETTINGS, lv_color_hex(0xff9500));
+                                                   LV_SYMBOL_SETTINGS, lv_color_hex(0xff9500));
   lv_obj_add_event_cb(btn_screen, btn_screen_cb, LV_EVENT_CLICKED, NULL);
 
   lv_obj_t *btn_vario = ui_create_settings_button(buttons_container, txt->vario_settings,
-                                                   LV_SYMBOL_UP, lv_color_hex(0x4cd964));
+                                                  LV_SYMBOL_UP, lv_color_hex(0x4cd964));
   lv_obj_add_event_cb(btn_vario, btn_vario_cb, LV_EVENT_CLICKED, NULL);
 
   lv_obj_t *btn_map = ui_create_settings_button(buttons_container, txt->map_settings,
-                                                 LV_SYMBOL_GPS, lv_color_hex(0x34c759));
+                                                LV_SYMBOL_GPS, lv_color_hex(0x34c759));
   lv_obj_add_event_cb(btn_map, btn_map_cb, LV_EVENT_CLICKED, NULL);
 
   lv_obj_t *btn_system = ui_create_settings_button(buttons_container, txt->system_settings,
-                                                    LV_SYMBOL_LIST, lv_color_hex(0x8e8e93));
+                                                   LV_SYMBOL_LIST, lv_color_hex(0x8e8e93));
   lv_obj_add_event_cb(btn_system, btn_system_cb, LV_EVENT_CLICKED, NULL);
 
   // Bouton retour
