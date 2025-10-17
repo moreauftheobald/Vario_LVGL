@@ -4,14 +4,15 @@
 #include "lvgl.h"
 #include "constants.h"
 #include "UI_helper.h"
-
-// Objets des 3 ecrans principaux
-static lv_obj_t *screen_left = NULL;
-static lv_obj_t *screen_center = NULL;
-static lv_obj_t *screen_right = NULL;
+#include "globals.h"
 
 // Indice ecran courant (0=gauche, 1=centre, 2=droite)
 static uint8_t current_screen_index = 1;
+
+// Forward declarations
+void ui_screen_left_init(void);
+void ui_screen_center_init(void);
+void ui_screen_right_init(void);
 
 // Variables pour gestion du swipe
 static lv_point_t touch_start_point;
@@ -21,22 +22,17 @@ static bool touch_started = false;
 static void switch_to_screen(uint8_t index) {
   current_screen_index = index;
   
-  lv_obj_t *target_screen = NULL;
-  
+  // Recréer l'écran selon l'index
   switch(index) {
     case 0:
-      target_screen = screen_left;
+      ui_screen_left_init();
       break;
     case 1:
-      target_screen = screen_center;
+      ui_screen_center_init();
       break;
     case 2:
-      target_screen = screen_right;
+      ui_screen_right_init();
       break;
-  }
-  
-  if (target_screen) {
-    lv_screen_load_anim(target_screen, LV_SCR_LOAD_ANIM_MOVE_LEFT, 300, 0, false);
   }
   
 #ifdef DEBUG_MODE
@@ -96,13 +92,30 @@ static void swipe_event_handler(lv_event_t *e) {
 
 // Initialisation ecran gauche
 void ui_screen_left_init(void) {
-  screen_left = lv_obj_create(NULL);
-  lv_obj_set_style_bg_color(screen_left, lv_color_hex(0x0a0e27), 0);
-  lv_obj_set_style_bg_grad_color(screen_left, lv_color_hex(0x1a1f3a), 0);
-  lv_obj_set_style_bg_grad_dir(screen_left, LV_GRAD_DIR_VER, 0);
-  lv_obj_clear_flag(screen_left, LV_OBJ_FLAG_SCROLLABLE);
+  // Nettoyer l'ecran s'il existe
+  if (main_screen != NULL) {
+    lv_obj_clean(main_screen);
+  } else {
+    main_screen = lv_obj_create(NULL);
+  }
   
-  lv_obj_t *frame = ui_create_main_frame(screen_left);
+  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
+  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
+  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
+  lv_obj_clear_flag(main_screen, LV_OBJ_FLAG_SCROLLABLE);
+  
+  // Barre de statut
+  ui_create_status_bar(main_screen);
+  
+  lv_obj_t *frame = lv_obj_create(main_screen);
+  lv_obj_set_size(frame, SCREEN_WIDTH - 10, SCREEN_HEIGHT - 65);
+  lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
+  lv_obj_set_style_bg_color(frame, lv_color_hex(0x151932), 0);
+  lv_obj_set_style_bg_opa(frame, LV_OPA_90, 0);
+  lv_obj_set_style_border_width(frame, 3, 0);
+  lv_obj_set_style_border_color(frame, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_radius(frame, 20, 0);
+  lv_obj_set_style_pad_all(frame, 20, 0);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_CLICKABLE);
   
@@ -114,8 +127,10 @@ void ui_screen_left_init(void) {
   lv_obj_center(label);
   
   // Ajouter handler swipe sur l'ecran complet
-  lv_obj_add_event_cb(screen_left, swipe_event_handler, LV_EVENT_PRESSED, NULL);
-  lv_obj_add_event_cb(screen_left, swipe_event_handler, LV_EVENT_RELEASED, NULL);
+  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);
+  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_RELEASED, NULL);
+  
+  lv_screen_load(main_screen);
   
 #ifdef DEBUG_MODE
   Serial.println("Left screen initialized");
@@ -124,26 +139,117 @@ void ui_screen_left_init(void) {
 
 // Initialisation ecran central
 void ui_screen_center_init(void) {
-  screen_center = lv_obj_create(NULL);
-  lv_obj_set_style_bg_color(screen_center, lv_color_hex(0x0a0e27), 0);
-  lv_obj_set_style_bg_grad_color(screen_center, lv_color_hex(0x1a1f3a), 0);
-  lv_obj_set_style_bg_grad_dir(screen_center, LV_GRAD_DIR_VER, 0);
-  lv_obj_clear_flag(screen_center, LV_OBJ_FLAG_SCROLLABLE);
+  // Nettoyer l'ecran s'il existe
+  if (main_screen != NULL) {
+    lv_obj_clean(main_screen);
+  } else {
+    main_screen = lv_obj_create(NULL);
+  }
   
-  lv_obj_t *frame = ui_create_main_frame(screen_center);
+  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
+  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
+  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
+  lv_obj_clear_flag(main_screen, LV_OBJ_FLAG_SCROLLABLE);
+  
+  // Barre de statut
+  ui_create_status_bar(main_screen);
+  
+  lv_obj_t *frame = lv_obj_create(main_screen);
+  lv_obj_set_size(frame, SCREEN_WIDTH - 10, SCREEN_HEIGHT - 65);
+  lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
+  lv_obj_set_style_bg_color(frame, lv_color_hex(0x151932), 0);
+  lv_obj_set_style_bg_opa(frame, LV_OPA_90, 0);
+  lv_obj_set_style_border_width(frame, 3, 0);
+  lv_obj_set_style_border_color(frame, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_radius(frame, 20, 0);
+  lv_obj_set_style_pad_all(frame, 0, 0);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_CLICKABLE);
   
-  // Texte identifiant
-  lv_obj_t *label = lv_label_create(frame);
-  lv_label_set_text(label, "Ecran Central");
-  lv_obj_set_style_text_font(label, &lv_font_montserrat_32, 0);
-  lv_obj_set_style_text_color(label, lv_color_hex(0x00d4ff), 0);
-  lv_obj_center(label);
+  // Calcul dimensions
+  // Frame total: (SCREEN_HEIGHT - 65) = (600 - 65) = 535px hauteur
+  // Frame total: (SCREEN_WIDTH - 10) = (1024 - 10) = 1014px largeur
+  // Avec padding 0px et border 3px:
+  // Zone interne: (535 - 6) x (1014 - 6) = 529 x 1008 px
+  
+  // Les colonnes ont des bordures de 2px (gauche+droite = 4px ajoutés à la largeur)
+  // Avec marges de 5px autour des colonnes:
+  // Hauteur disponible pour colonnes: 529 - 10 = 519px
+  // Largeur disponible: 1008 - 10 = 998px
+  
+  int16_t col_height = 519;  // Hauteur des colonnes
+  int16_t col_center_width = 519;  // Carree: 519px (dimension interne)
+  
+  // Calcul largeur colonnes laterales
+  // Espace total: 998px
+  // Espaces: 5 + 5 + 5 + 5 = 20px
+  // Centre (avec bordures): 519 + 4 = 523px
+  // Reste: 998 - 523 - 20 = 455px pour les 2 colonnes
+  // Chaque colonne (interne): (455 / 2) - 4 = 223.5 - 4 = 219px
+  int16_t col_side_width = 219;
+  
+  // Colonne gauche
+  lv_obj_t *col_left = lv_obj_create(frame);
+  lv_obj_set_size(col_left, col_side_width, col_height);
+  lv_obj_set_pos(col_left, 5, 5);
+  lv_obj_set_style_bg_color(col_left, lv_color_hex(0x1a2035), 0);
+  lv_obj_set_style_bg_opa(col_left, LV_OPA_80, 0);
+  lv_obj_set_style_border_width(col_left, 2, 0);
+  lv_obj_set_style_border_color(col_left, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_radius(col_left, 15, 0);
+  lv_obj_set_style_pad_all(col_left, 10, 0);
+  lv_obj_clear_flag(col_left, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_clear_flag(col_left, LV_OBJ_FLAG_CLICKABLE);
+  
+  lv_obj_t *label_left = lv_label_create(col_left);
+  lv_label_set_text(label_left, "Gauche");
+  lv_obj_set_style_text_font(label_left, &lv_font_montserrat_20, 0);
+  lv_obj_set_style_text_color(label_left, lv_color_hex(0x00d4ff), 0);
+  lv_obj_center(label_left);
+  
+  // Colonne centrale (carte)
+  lv_obj_t *col_center = lv_obj_create(frame);
+  lv_obj_set_size(col_center, col_center_width, col_height);
+  lv_obj_set_pos(col_center, 5 + col_side_width + 5, 5);
+  lv_obj_set_style_bg_color(col_center, lv_color_hex(0x1a2035), 0);
+  lv_obj_set_style_bg_opa(col_center, LV_OPA_80, 0);
+  lv_obj_set_style_border_width(col_center, 2, 0);
+  lv_obj_set_style_border_color(col_center, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_radius(col_center, 15, 0);
+  lv_obj_set_style_pad_all(col_center, 10, 0);
+  lv_obj_clear_flag(col_center, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_clear_flag(col_center, LV_OBJ_FLAG_CLICKABLE);
+  
+  lv_obj_t *label_center = lv_label_create(col_center);
+  lv_label_set_text(label_center, "Carte");
+  lv_obj_set_style_text_font(label_center, &lv_font_montserrat_20, 0);
+  lv_obj_set_style_text_color(label_center, lv_color_hex(0x00d4ff), 0);
+  lv_obj_center(label_center);
+  
+  // Colonne droite
+  lv_obj_t *col_right = lv_obj_create(frame);
+  lv_obj_set_size(col_right, col_side_width, col_height);
+  lv_obj_set_pos(col_right, 5 + col_side_width + 5 + col_center_width + 5, 5);
+  lv_obj_set_style_bg_color(col_right, lv_color_hex(0x1a2035), 0);
+  lv_obj_set_style_bg_opa(col_right, LV_OPA_80, 0);
+  lv_obj_set_style_border_width(col_right, 2, 0);
+  lv_obj_set_style_border_color(col_right, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_radius(col_right, 15, 0);
+  lv_obj_set_style_pad_all(col_right, 10, 0);
+  lv_obj_clear_flag(col_right, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_clear_flag(col_right, LV_OBJ_FLAG_CLICKABLE);
+  
+  lv_obj_t *label_right = lv_label_create(col_right);
+  lv_label_set_text(label_right, "Droite");
+  lv_obj_set_style_text_font(label_right, &lv_font_montserrat_20, 0);
+  lv_obj_set_style_text_color(label_right, lv_color_hex(0x00d4ff), 0);
+  lv_obj_center(label_right);
   
   // Ajouter handler swipe sur l'ecran complet
-  lv_obj_add_event_cb(screen_center, swipe_event_handler, LV_EVENT_PRESSED, NULL);
-  lv_obj_add_event_cb(screen_center, swipe_event_handler, LV_EVENT_RELEASED, NULL);
+  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);
+  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_RELEASED, NULL);
+  
+  lv_screen_load(main_screen);
   
 #ifdef DEBUG_MODE
   Serial.println("Center screen initialized");
@@ -152,13 +258,30 @@ void ui_screen_center_init(void) {
 
 // Initialisation ecran droite
 void ui_screen_right_init(void) {
-  screen_right = lv_obj_create(NULL);
-  lv_obj_set_style_bg_color(screen_right, lv_color_hex(0x0a0e27), 0);
-  lv_obj_set_style_bg_grad_color(screen_right, lv_color_hex(0x1a1f3a), 0);
-  lv_obj_set_style_bg_grad_dir(screen_right, LV_GRAD_DIR_VER, 0);
-  lv_obj_clear_flag(screen_right, LV_OBJ_FLAG_SCROLLABLE);
+  // Nettoyer l'ecran s'il existe
+  if (main_screen != NULL) {
+    lv_obj_clean(main_screen);
+  } else {
+    main_screen = lv_obj_create(NULL);
+  }
   
-  lv_obj_t *frame = ui_create_main_frame(screen_right);
+  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
+  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
+  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
+  lv_obj_clear_flag(main_screen, LV_OBJ_FLAG_SCROLLABLE);
+  
+  // Barre de statut
+  ui_create_status_bar(main_screen);
+  
+  lv_obj_t *frame = lv_obj_create(main_screen);
+  lv_obj_set_size(frame, SCREEN_WIDTH - 10, SCREEN_HEIGHT - 65);
+  lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
+  lv_obj_set_style_bg_color(frame, lv_color_hex(0x151932), 0);
+  lv_obj_set_style_bg_opa(frame, LV_OPA_90, 0);
+  lv_obj_set_style_border_width(frame, 3, 0);
+  lv_obj_set_style_border_color(frame, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_radius(frame, 20, 0);
+  lv_obj_set_style_pad_all(frame, 20, 0);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_CLICKABLE);
   
@@ -170,8 +293,10 @@ void ui_screen_right_init(void) {
   lv_obj_center(label);
   
   // Ajouter handler swipe sur l'ecran complet
-  lv_obj_add_event_cb(screen_right, swipe_event_handler, LV_EVENT_PRESSED, NULL);
-  lv_obj_add_event_cb(screen_right, swipe_event_handler, LV_EVENT_RELEASED, NULL);
+  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);
+  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_RELEASED, NULL);
+  
+  lv_screen_load(main_screen);
   
 #ifdef DEBUG_MODE
   Serial.println("Right screen initialized");
@@ -180,12 +305,19 @@ void ui_screen_right_init(void) {
 
 // Initialisation des 3 ecrans
 void ui_main_screens_init(void) {
-  ui_screen_left_init();
-  ui_screen_center_init();
-  ui_screen_right_init();
+  // Nettoyer les objets globaux
+  if (keyboard != NULL) {
+    lv_obj_del(keyboard);
+    keyboard = NULL;
+  }
+  
+  if (ta_active != NULL) {
+    ta_active = NULL;
+  }
   
   // Afficher ecran central au demarrage
-  lv_screen_load(screen_center);
+  ui_screen_center_init();
+  current_screen_index = 1;
   
 #ifdef DEBUG_MODE
   Serial.println("Main screens system initialized");
@@ -194,18 +326,17 @@ void ui_main_screens_init(void) {
 
 // Fonction pour afficher les ecrans principaux depuis le menu
 void ui_main_screens_show(void) {
-  if (screen_left == NULL || screen_center == NULL || screen_right == NULL) {
-    if (lvgl_port_lock(-1)) {
-      ui_main_screens_init();
-      lvgl_port_unlock();
-    }
-  } else {
-    if (lvgl_port_lock(-1)) {
-      lv_screen_load(screen_center);
-      current_screen_index = 1;
-      lvgl_port_unlock();
-    }
+  // Nettoyer les objets globaux
+  if (keyboard != NULL) {
+    lv_obj_del(keyboard);
+    keyboard = NULL;
   }
+  
+  if (ta_active != NULL) {
+    ta_active = NULL;
+  }
+  
+  ui_main_screens_init();
   
 #ifdef DEBUG_MODE
   Serial.println("Main screens displayed");

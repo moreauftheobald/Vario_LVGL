@@ -31,7 +31,7 @@ void ui_splash_init(void) {
   lv_obj_center(logo);
 
   // Timer pour fermer apres 10 secondes
-  lv_timer_create(splash_timer_cb, 10000, NULL);
+  lv_timer_create(splash_timer_cb, 3000, NULL);
 
 #ifdef DEBUG_MODE
   Serial.println("Splash screen initialized");

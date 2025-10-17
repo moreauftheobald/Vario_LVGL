@@ -9,14 +9,16 @@
 
 void ui_settings_show(void);
 
-static lv_obj_t *screen_settings_pilot = NULL;
-static lv_obj_t *ta_name = NULL;
-static lv_obj_t *ta_firstname = NULL;
-static lv_obj_t *ta_wing = NULL;
-static lv_obj_t *ta_phone = NULL;
+// Structure pour les widgets
+typedef struct {
+  lv_obj_t *ta_name;
+  lv_obj_t *ta_firstname;
+  lv_obj_t *ta_wing;
+  lv_obj_t *ta_phone;
+} pilot_widgets_t;
 
 // Fonctions de sauvegarde/chargement
-static void load_pilot_data(void) {
+static void load_pilot_data(pilot_widgets_t *widgets) {
   prefs.begin("pilot", true);
   
   String name = prefs.getString("name", "");
@@ -24,10 +26,10 @@ static void load_pilot_data(void) {
   String wing = prefs.getString("wing", "");
   String phone = prefs.getString("phone", "");
   
-  if (ta_name) lv_textarea_set_text(ta_name, name.c_str());
-  if (ta_firstname) lv_textarea_set_text(ta_firstname, firstname.c_str());
-  if (ta_wing) lv_textarea_set_text(ta_wing, wing.c_str());
-  if (ta_phone) lv_textarea_set_text(ta_phone, phone.c_str());
+  if (widgets->ta_name) lv_textarea_set_text(widgets->ta_name, name.c_str());
+  if (widgets->ta_firstname) lv_textarea_set_text(widgets->ta_firstname, firstname.c_str());
+  if (widgets->ta_wing) lv_textarea_set_text(widgets->ta_wing, wing.c_str());
+  if (widgets->ta_phone) lv_textarea_set_text(widgets->ta_phone, phone.c_str());
   
   prefs.end();
   
@@ -36,13 +38,13 @@ static void load_pilot_data(void) {
 #endif
 }
 
-static void save_pilot_data(void) {
+static void save_pilot_data(pilot_widgets_t *widgets) {
   prefs.begin("pilot", false);
   
-  prefs.putString("name", lv_textarea_get_text(ta_name));
-  prefs.putString("firstname", lv_textarea_get_text(ta_firstname));
-  prefs.putString("wing", lv_textarea_get_text(ta_wing));
-  prefs.putString("phone", lv_textarea_get_text(ta_phone));
+  prefs.putString("name", lv_textarea_get_text(widgets->ta_name));
+  prefs.putString("firstname", lv_textarea_get_text(widgets->ta_firstname));
+  prefs.putString("wing", lv_textarea_get_text(widgets->ta_wing));
+  prefs.putString("phone", lv_textarea_get_text(widgets->ta_phone));
   
   prefs.end();
   
@@ -75,10 +77,12 @@ static void keyboard_event_cb(lv_event_t *e) {
 
 // Callbacks boutons
 static void btn_save_cb(lv_event_t *e) {
+  pilot_widgets_t *widgets = (pilot_widgets_t*)lv_event_get_user_data(e);
+  
 #ifdef DEBUG_MODE
   Serial.println("Save pilot data clicked");
 #endif
-  save_pilot_data();
+  save_pilot_data(widgets);
   ui_settings_show();
 }
 
@@ -92,15 +96,27 @@ static void btn_cancel_cb(lv_event_t *e) {
 void ui_settings_pilot_init(void) {
   const TextStrings *txt = get_text();
 
-  // Ecran et frame
-  screen_settings_pilot = ui_create_screen();
-  lv_obj_t *main_frame = ui_create_main_frame(screen_settings_pilot);
+  // Nettoyer l'ecran s'il existe
+  if (main_screen != NULL) {
+    lv_obj_clean(main_screen);
+  } else {
+    main_screen = lv_obj_create(NULL);
+  }
+  
+  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
+  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
+  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
+
+  lv_obj_t *main_frame = ui_create_main_frame(main_screen);
   lv_obj_clear_flag(main_frame, LV_OBJ_FLAG_SCROLLABLE);
 
   // Titre
   lv_obj_t *label_title = ui_create_label(main_frame, txt->pilot_settings,
                                            &lv_font_montserrat_32, lv_color_hex(0x00d4ff));
   lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, 0);
+
+  // Structure pour les widgets
+  static pilot_widgets_t widgets;
 
   // Container pour champs (2 colonnes)
   lv_obj_t *fields_container = ui_create_flex_container(main_frame, LV_FLEX_FLOW_ROW);
@@ -112,19 +128,19 @@ void ui_settings_pilot_init(void) {
 
   // Colonne gauche
   lv_obj_t *col_left = ui_create_form_column(fields_container, 450);
-  ta_name = ui_create_input_field(col_left, txt->pilot_name, "", 30);
-  lv_obj_add_event_cb(ta_name, ta_event_cb, LV_EVENT_CLICKED, NULL);
+  widgets.ta_name = ui_create_input_field(col_left, txt->pilot_name, "", 30);
+  lv_obj_add_event_cb(widgets.ta_name, ta_event_cb, LV_EVENT_CLICKED, NULL);
   
-  ta_firstname = ui_create_input_field(col_left, txt->pilot_firstname, "", 30);
-  lv_obj_add_event_cb(ta_firstname, ta_event_cb, LV_EVENT_CLICKED, NULL);
+  widgets.ta_firstname = ui_create_input_field(col_left, txt->pilot_firstname, "", 30);
+  lv_obj_add_event_cb(widgets.ta_firstname, ta_event_cb, LV_EVENT_CLICKED, NULL);
 
   // Colonne droite
   lv_obj_t *col_right = ui_create_form_column(fields_container, 450);
-  ta_wing = ui_create_input_field(col_right, txt->pilot_wing, "", 30);
-  lv_obj_add_event_cb(ta_wing, ta_event_cb, LV_EVENT_CLICKED, NULL);
+  widgets.ta_wing = ui_create_input_field(col_right, txt->pilot_wing, "", 30);
+  lv_obj_add_event_cb(widgets.ta_wing, ta_event_cb, LV_EVENT_CLICKED, NULL);
   
-  ta_phone = ui_create_input_field(col_right, txt->pilot_phone, "", 30);
-  lv_obj_add_event_cb(ta_phone, ta_event_cb, LV_EVENT_CLICKED, NULL);
+  widgets.ta_phone = ui_create_input_field(col_right, txt->pilot_phone, "", 30);
+  lv_obj_add_event_cb(widgets.ta_phone, ta_event_cb, LV_EVENT_CLICKED, NULL);
 
   // Clavier
   keyboard = ui_create_keyboard(main_frame, LV_KEYBOARD_MODE_TEXT_UPPER);
@@ -137,10 +153,12 @@ void ui_settings_pilot_init(void) {
   lv_obj_set_flex_align(btn_container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
   ui_button_pair_t buttons = ui_create_save_cancel_buttons(btn_container, txt->save, txt->cancel);
-  lv_obj_add_event_cb(buttons.save, btn_save_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(buttons.save, btn_save_cb, LV_EVENT_CLICKED, &widgets);
   lv_obj_add_event_cb(buttons.cancel, btn_cancel_cb, LV_EVENT_CLICKED, NULL);
 
-  load_pilot_data();
+  load_pilot_data(&widgets);
+
+  lv_screen_load(main_screen);
 
 #ifdef DEBUG_MODE
   Serial.println("Pilot settings screen initialized");
@@ -148,10 +166,7 @@ void ui_settings_pilot_init(void) {
 }
 
 void ui_settings_pilot_show(void) {
-  if (screen_settings_pilot == NULL) {
-    ui_settings_pilot_init();
-  }
-  lv_screen_load(screen_settings_pilot);
+  ui_settings_pilot_init();
 
 #ifdef DEBUG_MODE
   Serial.println("Pilot settings screen shown");

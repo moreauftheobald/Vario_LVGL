@@ -6,8 +6,7 @@
 #include "esp_system.h"
 #include "UI_helper.h"
 #include "lang.h"
-
-static lv_obj_t *screen_file_transfer = NULL;
+#include "globals.h"
 
 // Callback pour le bouton sortie
 static void btn_exit_cb(lv_event_t *e) {
@@ -21,9 +20,18 @@ static void btn_exit_cb(lv_event_t *e) {
 void ui_file_transfer_init(void) {
   const TextStrings *txt = get_text();
 
-  // Ecran et frame avec helpers
-  screen_file_transfer = ui_create_screen();
-  lv_obj_t *main_frame = ui_create_main_frame(screen_file_transfer);
+  // Nettoyer l'ecran s'il existe
+  if (main_screen != NULL) {
+    lv_obj_clean(main_screen);
+  } else {
+    main_screen = lv_obj_create(NULL);
+  }
+  
+  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
+  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
+  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
+  
+  lv_obj_t *main_frame = ui_create_main_frame(main_screen);
   lv_obj_clear_flag(main_frame, LV_OBJ_FLAG_SCROLLABLE);
 
   // Titre
@@ -66,16 +74,15 @@ void ui_file_transfer_init(void) {
   lv_obj_t *btn_exit = ui_create_exit_button(main_frame, txt->exit);
   lv_obj_add_event_cb(btn_exit, btn_exit_cb, LV_EVENT_CLICKED, NULL);
 
+  lv_screen_load(main_screen);
+
 #ifdef DEBUG_MODE
   Serial.println("File transfer screen initialized");
 #endif
 }
 
 void ui_file_transfer_show(void) {
-  if (screen_file_transfer == NULL) {
-    ui_file_transfer_init();
-  }
-  lv_screen_load(screen_file_transfer);
+  ui_file_transfer_init();
 
 #ifdef DEBUG_MODE
   Serial.println("File transfer screen shown");

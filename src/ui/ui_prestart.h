@@ -4,17 +4,9 @@
 #include "lvgl.h"
 #include "constants.h"
 #include "UI_helper.h"
-#include "ui_main_screens.h"
 #include "lang.h"
-
-// Screen objects
-static lv_obj_t *screen_prestart = NULL;
-static lv_obj_t *btn_file_transfer = NULL;
-static lv_obj_t *btn_settings = NULL;
-static lv_obj_t *btn_start = NULL;
-static lv_obj_t *label_title = NULL;
-static lv_obj_t *label_version = NULL;
-static lv_obj_t *info_panel = NULL;
+#include "globals.h"
+#include "src/ui/ui_main_screens.h"
 
 // Forward declarations
 void ui_file_transfer_show(void);
@@ -48,12 +40,21 @@ static void btn_start_cb(lv_event_t *e) {
 void ui_prestart_init(void) {
   const TextStrings *txt = get_text();
 
-  // Ecran et frame
-  screen_prestart = ui_create_screen();
-  lv_obj_t *main_frame = ui_create_main_frame(screen_prestart);
+  // Nettoyer l'ecran s'il existe
+  if (main_screen != NULL) {
+    lv_obj_clean(main_screen);
+  } else {
+    main_screen = lv_obj_create(NULL);
+  }
+  
+  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
+  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
+  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
+
+  lv_obj_t *main_frame = ui_create_main_frame(main_screen);
 
   // Titre
-  label_title = lv_label_create(main_frame);
+  lv_obj_t *label_title = lv_label_create(main_frame);
   lv_label_set_text(label_title, VARIO_NAME);
   lv_obj_set_style_text_font(label_title, &lv_font_montserrat_48, 0);
   lv_obj_set_style_text_color(label_title, lv_color_hex(0x00d4ff), 0);
@@ -75,22 +76,22 @@ void ui_prestart_init(void) {
   lv_obj_set_style_pad_row(btn_container, 30, 0);
 
   // Bouton 1: File Transfer (Orange)
-  btn_file_transfer = ui_create_modern_button(btn_container, txt->file_transfer, 
+  lv_obj_t *btn_file_transfer = ui_create_modern_button(btn_container, txt->file_transfer, 
                                                LV_SYMBOL_USB, lv_color_hex(0xff9500));
   lv_obj_add_event_cb(btn_file_transfer, btn_file_transfer_cb, LV_EVENT_CLICKED, NULL);
 
   // Bouton 2: Settings (Bleu)
-  btn_settings = ui_create_modern_button(btn_container, txt->settings, 
+  lv_obj_t *btn_settings = ui_create_modern_button(btn_container, txt->settings, 
                                           LV_SYMBOL_SETTINGS, lv_color_hex(0x007aff));
   lv_obj_add_event_cb(btn_settings, btn_settings_cb, LV_EVENT_CLICKED, NULL);
 
   // Bouton 3: Start (Vert)
-  btn_start = ui_create_modern_button(btn_container, txt->start, 
+  lv_obj_t *btn_start = ui_create_modern_button(btn_container, txt->start, 
                                        LV_SYMBOL_PLAY, lv_color_hex(0x34c759));
   lv_obj_add_event_cb(btn_start, btn_start_cb, LV_EVENT_CLICKED, NULL);
 
   // Colonne droite: Panel d'informations
-  info_panel = ui_create_info_panel_bordered(content_container, 550, 450);
+  lv_obj_t *info_panel = ui_create_info_panel_bordered(content_container, 550, 450);
   lv_obj_set_style_pad_row(info_panel, 12, 0);
 
   // Titre du panel
@@ -102,7 +103,7 @@ void ui_prestart_init(void) {
   ui_create_separator(info_panel);
 
   // Version
-  label_version = ui_create_label(info_panel, 
+  lv_obj_t *label_version = ui_create_label(info_panel, 
                                    LV_SYMBOL_SETTINGS " Version: " VARIO_VERSION,
                                    &lv_font_montserrat_20, lv_color_hex(0xaabbcc));
   lv_obj_set_width(label_version, lv_pct(100));
@@ -122,6 +123,8 @@ void ui_prestart_init(void) {
     lv_obj_set_width(info_item, lv_pct(100));
   }
 
+  lv_screen_load(main_screen);
+
 #ifdef DEBUG_MODE
   Serial.println("Prestart screen initialized");
 #endif
@@ -131,10 +134,7 @@ void ui_prestart_init(void) {
  * @brief Show prestart screen
  */
 void ui_prestart_show(void) {
-  if (screen_prestart == NULL) {
-    ui_prestart_init();
-  }
-  lv_screen_load(screen_prestart);
+  ui_prestart_init();
 
 #ifdef DEBUG_MODE
   Serial.println("Prestart screen shown");

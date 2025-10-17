@@ -22,6 +22,7 @@
 Preferences prefs;
 lv_obj_t *ta_active = NULL;
 lv_obj_t *keyboard = NULL;
+lv_obj_t *main_screen = NULL;
 
 void force_full_refresh(void) {
     lv_obj_invalidate(lv_screen_active());
