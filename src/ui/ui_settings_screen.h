@@ -3,20 +3,12 @@
 
 #include "lvgl.h"
 #include "constants.h"
+#include "UI_helper.h"
+#include "lang.h"
 #include "globals.h"
 #include "src/gt911/gt911.h"
 
-// Declaration anticipee des fonctions
-static void screen_touch_cb(lv_event_t *e);
-static void btn_save_calib_cb(lv_event_t *e);
-static void btn_cancel_calib_cb(lv_event_t *e);
-static void btn_test_calib_cb(lv_event_t *e);
-static void update_target_position(void);
-static void calculate_calibration(void);
-static void apply_calibration(int16_t raw_x, int16_t raw_y, int16_t *calib_x, int16_t *calib_y);
-void ui_settings_screen_init(void);
-void ui_settings_screen_show(void);
-void get_touch_calibration(float *offset_x, float *offset_y, float *scale_x, float *scale_y);
+void ui_settings_show(void);
 
 static lv_obj_t *screen_calibration = NULL;
 static lv_obj_t *instruction_label = NULL;
@@ -24,7 +16,7 @@ static lv_obj_t *target_obj = NULL;
 static lv_obj_t *test_point = NULL;
 static bool test_mode = false;
 
-// Points de calibration (on utilise seulement 2 points: haut-gauche et bas-droit)
+// Points de calibration (2 points: haut-gauche et bas-droit)
 typedef struct {
   int16_t screen_x;
   int16_t screen_y;
@@ -36,12 +28,22 @@ static calib_point_t calib_points[2];
 static uint8_t current_point = 0;
 static bool calibration_done = false;
 
-// Parametres de calibration lineaire simple
+// Parametres de calibration lineaire
 static float calib_offset_x = 0.0f;
 static float calib_offset_y = 0.0f;
 static float calib_scale_x = 1.0f;
 static float calib_scale_y = 1.0f;
 
+// Declarations anticipees
+static void screen_touch_cb(lv_event_t *e);
+static void btn_save_calib_cb(lv_event_t *e);
+static void btn_cancel_calib_cb(lv_event_t *e);
+static void btn_test_calib_cb(lv_event_t *e);
+static void update_target_position(void);
+static void calculate_calibration(void);
+static void apply_calibration(int16_t raw_x, int16_t raw_y, int16_t *calib_x, int16_t *calib_y);
+
+// Load/Save calibration
 static void load_calibration(void) {
   prefs.begin("touch_calib", true);
   calib_offset_x = prefs.getFloat("offset_x", 0.0f);
@@ -81,46 +83,30 @@ static void calculate_calibration(void) {
                 calib_points[1].raw_x, calib_points[1].raw_y);
 #endif
 
-  // Calcul des deltas
   int16_t delta_raw_x = calib_points[1].raw_x - calib_points[0].raw_x;
   int16_t delta_raw_y = calib_points[1].raw_y - calib_points[0].raw_y;
   int16_t delta_screen_x = calib_points[1].screen_x - calib_points[0].screen_x;
   int16_t delta_screen_y = calib_points[1].screen_y - calib_points[0].screen_y;
 
-  // Protection division par zero
   if (delta_raw_x == 0) delta_raw_x = 1;
   if (delta_raw_y == 0) delta_raw_y = 1;
 
-  // Calcul scale
   calib_scale_x = (float)delta_screen_x / (float)delta_raw_x;
   calib_scale_y = (float)delta_screen_y / (float)delta_raw_y;
 
-  // Calcul offset
   calib_offset_x = calib_points[0].screen_x - (calib_points[0].raw_x * calib_scale_x);
   calib_offset_y = calib_points[0].screen_y - (calib_points[0].raw_y * calib_scale_y);
 
 #ifdef DEBUG_MODE
   Serial.printf("Calibration calculee: offset_x=%.3f offset_y=%.3f scale_x=%.3f scale_y=%.3f\n",
                 calib_offset_x, calib_offset_y, calib_scale_x, calib_scale_y);
-  
-  // Verification
-  for (int i = 0; i < 2; i++) {
-    int16_t calc_x = (int16_t)(calib_points[i].raw_x * calib_scale_x + calib_offset_x);
-    int16_t calc_y = (int16_t)(calib_points[i].raw_y * calib_scale_y + calib_offset_y);
-    Serial.printf("Point %d: attendu(%d,%d) calcule(%d,%d) erreur(%d,%d)\n", 
-                  i, calib_points[i].screen_x, calib_points[i].screen_y,
-                  calc_x, calc_y,
-                  calc_x - calib_points[i].screen_x, calc_y - calib_points[i].screen_y);
-  }
 #endif
 }
 
-// Fonction pour appliquer la calibration aux coordonnees brutes
 static void apply_calibration(int16_t raw_x, int16_t raw_y, int16_t *calib_x, int16_t *calib_y) {
   *calib_x = (int16_t)(raw_x * calib_scale_x + calib_offset_x);
   *calib_y = (int16_t)(raw_y * calib_scale_y + calib_offset_y);
   
-  // Limites ecran
   if (*calib_x < 0) *calib_x = 0;
   if (*calib_x >= SCREEN_WIDTH) *calib_x = SCREEN_WIDTH - 1;
   if (*calib_y < 0) *calib_y = 0;
@@ -200,11 +186,6 @@ static void screen_touch_cb(lv_event_t *e) {
     int16_t target_y = calib_points[current_point].screen_y;
     int16_t distance = abs(point.x - target_x) + abs(point.y - target_y);
     
-#ifdef DEBUG_MODE
-    Serial.printf("Touch at (%d,%d), target at (%d,%d), distance=%d\n", 
-                  point.x, point.y, target_x, target_y, distance);
-#endif
-    
     if (distance < 150) {
       calib_points[current_point].raw_x = point.x;
       calib_points[current_point].raw_y = point.y;
@@ -264,6 +245,8 @@ static void btn_cancel_calib_cb(lv_event_t *e) {
 }
 
 void ui_settings_screen_init(void) {
+  const TextStrings *txt = get_text();
+  
   current_point = 0;
   calibration_done = false;
   test_mode = false;
@@ -271,11 +254,13 @@ void ui_settings_screen_init(void) {
   
   load_calibration();
   
+  // Ecran de calibration (fond sombre uni)
   screen_calibration = lv_obj_create(NULL);
   lv_obj_set_style_bg_color(screen_calibration, lv_color_hex(0x0a0e27), 0);
   lv_obj_add_event_cb(screen_calibration, screen_touch_cb, LV_EVENT_PRESSED, NULL);
   lv_obj_add_event_cb(screen_calibration, screen_touch_cb, LV_EVENT_PRESSING, NULL);
   
+  // Frame transparent (pour structure)
   lv_obj_t *main_frame = lv_obj_create(screen_calibration);
   lv_obj_set_size(main_frame, SCREEN_WIDTH, SCREEN_HEIGHT);
   lv_obj_center(main_frame);
@@ -283,13 +268,13 @@ void ui_settings_screen_init(void) {
   lv_obj_set_style_border_width(main_frame, 0, 0);
   lv_obj_clear_flag(main_frame, LV_OBJ_FLAG_CLICKABLE);
   
-  instruction_label = lv_label_create(main_frame);
-  lv_label_set_text(instruction_label, "Touchez la cible en haut a gauche");
+  // Label d'instructions
+  instruction_label = ui_create_label(main_frame, "Touchez la cible en haut a gauche",
+                                       &lv_font_montserrat_24, lv_color_white());
   lv_obj_set_style_text_align(instruction_label, LV_TEXT_ALIGN_CENTER, 0);
-  lv_obj_set_style_text_color(instruction_label, lv_color_hex(0xFFFFFF), 0);
-  lv_obj_set_style_text_font(instruction_label, &lv_font_montserrat_24, 0);
   lv_obj_align(instruction_label, LV_ALIGN_CENTER, 0, -150);
   
+  // Cible de calibration
   target_obj = lv_obj_create(screen_calibration);
   lv_obj_set_size(target_obj, 80, 80);
   lv_obj_set_style_bg_color(target_obj, lv_color_hex(0x202040), 0);
@@ -297,6 +282,7 @@ void ui_settings_screen_init(void) {
   lv_obj_set_style_border_width(target_obj, 0, 0);
   lv_obj_clear_flag(target_obj, LV_OBJ_FLAG_CLICKABLE);
   
+  // Croix horizontale
   lv_obj_t *cross_h = lv_obj_create(target_obj);
   lv_obj_set_size(cross_h, 80, 3);
   lv_obj_set_style_bg_color(cross_h, lv_color_hex(0xFF0000), 0);
@@ -304,6 +290,7 @@ void ui_settings_screen_init(void) {
   lv_obj_center(cross_h);
   lv_obj_clear_flag(cross_h, LV_OBJ_FLAG_CLICKABLE);
   
+  // Croix verticale
   lv_obj_t *cross_v = lv_obj_create(target_obj);
   lv_obj_set_size(cross_v, 3, 80);
   lv_obj_set_style_bg_color(cross_v, lv_color_hex(0xFF0000), 0);
@@ -311,6 +298,7 @@ void ui_settings_screen_init(void) {
   lv_obj_center(cross_v);
   lv_obj_clear_flag(cross_v, LV_OBJ_FLAG_CLICKABLE);
   
+  // Cercle
   lv_obj_t *circle = lv_obj_create(target_obj);
   lv_obj_set_size(circle, 50, 50);
   lv_obj_set_style_radius(circle, LV_RADIUS_CIRCLE, 0);
@@ -320,6 +308,7 @@ void ui_settings_screen_init(void) {
   lv_obj_center(circle);
   lv_obj_clear_flag(circle, LV_OBJ_FLAG_CLICKABLE);
   
+  // Point central
   lv_obj_t *center_point = lv_obj_create(target_obj);
   lv_obj_set_size(center_point, 10, 10);
   lv_obj_set_style_radius(center_point, LV_RADIUS_CIRCLE, 0);
@@ -330,20 +319,16 @@ void ui_settings_screen_init(void) {
   
   update_target_position();
   
-  lv_obj_t *btn_save = lv_btn_create(main_frame);
-  lv_obj_set_size(btn_save, 140, 50);
+  // Bouton Enregistrer
+  lv_obj_t *btn_save = ui_create_simple_button(main_frame, "Enregistrer", 
+                                                 lv_color_hex(0x34c759), 140, 50);
   lv_obj_align(btn_save, LV_ALIGN_BOTTOM_LEFT, 100, -30);
-  lv_obj_t *label_save = lv_label_create(btn_save);
-  lv_label_set_text(label_save, "Enregistrer");
-  lv_obj_center(label_save);
   lv_obj_add_event_cb(btn_save, btn_save_calib_cb, LV_EVENT_CLICKED, NULL);
   
-  lv_obj_t *btn_cancel = lv_btn_create(main_frame);
-  lv_obj_set_size(btn_cancel, 140, 50);
+  // Bouton Annuler
+  lv_obj_t *btn_cancel = ui_create_simple_button(main_frame, "Annuler", 
+                                                   lv_color_hex(0xff3b30), 140, 50);
   lv_obj_align(btn_cancel, LV_ALIGN_BOTTOM_RIGHT, -100, -30);
-  lv_obj_t *label_cancel = lv_label_create(btn_cancel);
-  lv_label_set_text(label_cancel, "Annuler");
-  lv_obj_center(label_cancel);
   lv_obj_add_event_cb(btn_cancel, btn_cancel_calib_cb, LV_EVENT_CLICKED, NULL);
   
   lv_scr_load(screen_calibration);
