@@ -11,6 +11,7 @@
 void ui_settings_show(void);
 
 // Variables statiques necessaires pour l'etat de calibration
+static lv_obj_t *screen_settings_screen = NULL;
 static lv_obj_t *instruction_label = NULL;
 static lv_obj_t *target_obj = NULL;
 static lv_obj_t *test_point = NULL;
@@ -115,10 +116,16 @@ static void btn_test_calib_cb(lv_event_t *e);
 static void screen_touch_cb(lv_event_t *e) {
   lv_event_code_t code = lv_event_get_code(e);
   
-  if (code == LV_EVENT_PRESSED || code == LV_EVENT_PRESSING) {
+  if (code == LV_EVENT_PRESSED) {
     lv_point_t point;
     lv_indev_t *indev = lv_indev_get_act();
+    if (!indev) return;
+    
     lv_indev_get_point(indev, &point);
+
+#ifdef DEBUG_MODE
+    Serial.printf("Touch detected at: (%d, %d)\n", point.x, point.y);
+#endif
     
     // Mode test
     if (test_mode && test_point != NULL) {
@@ -140,6 +147,10 @@ static void screen_touch_cb(lv_event_t *e) {
     int16_t target_y = calib_points[current_point].screen_y;
     int16_t distance = abs(point.x - target_x) + abs(point.y - target_y);
     
+#ifdef DEBUG_MODE
+    Serial.printf("Distance from target: %d (threshold: 150)\n", distance);
+#endif
+    
     if (distance < 150) {
       calib_points[current_point].raw_x = point.x;
       calib_points[current_point].raw_y = point.y;
@@ -157,13 +168,16 @@ static void screen_touch_cb(lv_event_t *e) {
       
       if (current_point < 2) {
         update_target_position();
+        char text[64];
+        snprintf(text, sizeof(text), "Point %d/2 - Touchez la cible", current_point + 1);
+        lv_label_set_text(instruction_label, text);
       } else {
         calculate_calibration();
         calibration_done = true;
         lv_obj_add_flag(target_obj, LV_OBJ_FLAG_HIDDEN);
         lv_label_set_text(instruction_label, "Calibration terminee!");
         
-        lv_obj_t *btn_test = lv_btn_create(main_screen);
+        lv_obj_t *btn_test = lv_btn_create(screen_settings_screen);
         lv_obj_set_size(btn_test, 120, 40);
         lv_obj_align(btn_test, LV_ALIGN_CENTER, 0, 20);
         lv_obj_t *label_test = lv_label_create(btn_test);
@@ -171,6 +185,10 @@ static void screen_touch_cb(lv_event_t *e) {
         lv_obj_center(label_test);
         lv_obj_add_event_cb(btn_test, btn_test_calib_cb, LV_EVENT_CLICKED, NULL);
       }
+    } else {
+#ifdef DEBUG_MODE
+      Serial.println("Touch too far from target, ignored");
+#endif
     }
   }
 }
@@ -179,12 +197,15 @@ static void btn_test_calib_cb(lv_event_t *e) {
   test_mode = true;
   
   if (test_point == NULL) {
-    test_point = lv_obj_create(main_screen);
+    test_point = lv_obj_create(screen_settings_screen);
     lv_obj_set_size(test_point, 20, 20);
     lv_obj_set_style_radius(test_point, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_bg_color(test_point, lv_color_hex(0x00FF00), 0);
     lv_obj_set_style_border_width(test_point, 0, 0);
-    lv_obj_center(test_point);
+    lv_obj_set_style_pad_all(test_point, 0, 0);
+    lv_obj_set_pos(test_point, 0, 0);  // Position initiale en haut à gauche
+    lv_obj_clear_flag(test_point, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(test_point, LV_OBJ_FLAG_SCROLLABLE);
   }
   
   lv_label_set_text(instruction_label, "Mode test: touchez l'ecran");
@@ -223,39 +244,25 @@ void ui_settings_screen_init(void) {
   
   load_calibration();
   
-  // Nettoyer l'ecran s'il existe
-  if (main_screen != NULL) {
-    lv_obj_clean(main_screen);
-  } else {
-    main_screen = lv_obj_create(NULL);
-  }
+  screen_settings_screen = ui_create_screen();
+  lv_obj_clear_flag(screen_settings_screen, LV_OBJ_FLAG_SCROLLABLE);  // IMPORTANT: désactiver scroll
+  lv_obj_add_event_cb(screen_settings_screen, screen_touch_cb, LV_EVENT_PRESSED, NULL);
   
-  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
-  lv_obj_add_event_cb(main_screen, screen_touch_cb, LV_EVENT_PRESSED, NULL);
-  lv_obj_add_event_cb(main_screen, screen_touch_cb, LV_EVENT_PRESSING, NULL);
-  
-  // Frame transparent
-  lv_obj_t *main_frame = lv_obj_create(main_screen);
-  lv_obj_set_size(main_frame, SCREEN_WIDTH, SCREEN_HEIGHT);
-  lv_obj_center(main_frame);
-  lv_obj_set_style_bg_opa(main_frame, LV_OPA_TRANSP, 0);
-  lv_obj_set_style_border_width(main_frame, 0, 0);
-  lv_obj_clear_flag(main_frame, LV_OBJ_FLAG_CLICKABLE);
-  lv_obj_clear_flag(main_frame, LV_OBJ_FLAG_SCROLLABLE);
-  
-  // Instructions
-  instruction_label = lv_label_create(main_frame);
-  lv_label_set_text(instruction_label, "Touchez les cibles qui apparaissent");
+  // Instructions (directement sur l'écran principal)
+  instruction_label = lv_label_create(screen_settings_screen);
+  lv_label_set_text(instruction_label, "Point 1/2 - Touchez la cible");
   lv_obj_set_style_text_font(instruction_label, &lv_font_montserrat_24, 0);
   lv_obj_set_style_text_color(instruction_label, lv_color_hex(0xFFFFFF), 0);
   lv_obj_set_style_text_align(instruction_label, LV_TEXT_ALIGN_CENTER, 0);
   lv_obj_align(instruction_label, LV_ALIGN_TOP_MID, 0, 20);
+  lv_obj_clear_flag(instruction_label, LV_OBJ_FLAG_CLICKABLE);
   
   // Cible (cercle + point central)
-  target_obj = lv_obj_create(main_frame);
+  target_obj = lv_obj_create(screen_settings_screen);
   lv_obj_set_size(target_obj, 100, 100);
   lv_obj_set_style_bg_opa(target_obj, LV_OPA_TRANSP, 0);
   lv_obj_set_style_border_width(target_obj, 0, 0);
+  lv_obj_set_style_pad_all(target_obj, 0, 0);
   lv_obj_clear_flag(target_obj, LV_OBJ_FLAG_CLICKABLE);
   lv_obj_clear_flag(target_obj, LV_OBJ_FLAG_SCROLLABLE);
   
@@ -265,35 +272,39 @@ void ui_settings_screen_init(void) {
   lv_obj_set_style_bg_opa(circle, LV_OPA_TRANSP, 0);
   lv_obj_set_style_border_color(circle, lv_color_hex(0xFF0000), 0);
   lv_obj_set_style_border_width(circle, 3, 0);
+  lv_obj_set_style_pad_all(circle, 0, 0);
   lv_obj_center(circle);
   lv_obj_clear_flag(circle, LV_OBJ_FLAG_CLICKABLE);
+  lv_obj_clear_flag(circle, LV_OBJ_FLAG_SCROLLABLE);
   
   lv_obj_t *center_point = lv_obj_create(target_obj);
   lv_obj_set_size(center_point, 10, 10);
   lv_obj_set_style_radius(center_point, LV_RADIUS_CIRCLE, 0);
   lv_obj_set_style_bg_color(center_point, lv_color_hex(0xFFFF00), 0);
   lv_obj_set_style_border_width(center_point, 0, 0);
+  lv_obj_set_style_pad_all(center_point, 0, 0);
   lv_obj_center(center_point);
   lv_obj_clear_flag(center_point, LV_OBJ_FLAG_CLICKABLE);
+  lv_obj_clear_flag(center_point, LV_OBJ_FLAG_SCROLLABLE);
   
   update_target_position();
   
   // Bouton Enregistrer
-  lv_obj_t *btn_save = ui_create_simple_button(main_frame, "Enregistrer", 
+  lv_obj_t *btn_save = ui_create_simple_button(screen_settings_screen, "Enregistrer", 
                                                  lv_color_hex(0x34c759), 140, 50);
   lv_obj_align(btn_save, LV_ALIGN_BOTTOM_LEFT, 100, -30);
   lv_obj_add_event_cb(btn_save, btn_save_calib_cb, LV_EVENT_CLICKED, NULL);
   
   // Bouton Annuler
-  lv_obj_t *btn_cancel = ui_create_simple_button(main_frame, "Annuler", 
+  lv_obj_t *btn_cancel = ui_create_simple_button(screen_settings_screen, "Annuler", 
                                                    lv_color_hex(0xff3b30), 140, 50);
   lv_obj_align(btn_cancel, LV_ALIGN_BOTTOM_RIGHT, -100, -30);
   lv_obj_add_event_cb(btn_cancel, btn_cancel_calib_cb, LV_EVENT_CLICKED, NULL);
-  
-  lv_screen_load(main_screen);
 
 #ifdef DEBUG_MODE
   Serial.println("Screen calibration initialized");
+  Serial.printf("Target position: (%d, %d)\n", 
+                calib_points[0].screen_x, calib_points[0].screen_y);
 #endif
 }
 
@@ -305,7 +316,10 @@ void get_touch_calibration(float *offset_x, float *offset_y, float *scale_x, flo
 }
 
 void ui_settings_screen_show(void) {
-  ui_settings_screen_init();
+  if (screen_settings_screen == NULL) {
+    ui_settings_screen_init();
+  }
+  lv_screen_load(screen_settings_screen);
 
 #ifdef DEBUG_MODE
   Serial.println("Screen calibration shown");

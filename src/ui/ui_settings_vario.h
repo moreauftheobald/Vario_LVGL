@@ -8,11 +8,11 @@
 #include <Preferences.h>
 
 extern Preferences prefs;
+extern lv_obj_t *main_screen;
 extern void force_full_refresh(void);
 
 void ui_settings_show(void);
 
-static lv_obj_t *screen_settings_vario = NULL;
 static lv_obj_t *slider_integration = NULL;
 static lv_obj_t *label_integration_value = NULL;
 static lv_obj_t *chart_audio = NULL;
@@ -178,8 +178,18 @@ static void load_vario_settings(void) {
 void ui_settings_vario_init(void) {
   const TextStrings *txt = get_text();
   
-  screen_settings_vario = ui_create_screen();
-  lv_obj_t *main_frame = ui_create_main_frame(screen_settings_vario);
+  // Nettoyer l'ecran s'il existe
+  if (main_screen != NULL) {
+    lv_obj_clean(main_screen);
+  } else {
+    main_screen = lv_obj_create(NULL);
+  }
+  
+  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
+  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
+  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
+  
+  lv_obj_t *main_frame = ui_create_main_frame(main_screen);
   
   ui_create_title(main_frame, txt->vario_settings);
   
@@ -307,21 +317,16 @@ void ui_settings_vario_init(void) {
   lv_obj_add_event_cb(btn_cancel, btn_cancel_vario_cb, LV_EVENT_CLICKED, NULL);
   
   load_vario_settings();
+  
+  lv_screen_load(main_screen);
+
+#ifdef DEBUG_MODE
+  Serial.println("Vario settings screen initialized");
+#endif
 }
 
 void ui_settings_vario_show(void) {
-  if (screen_settings_vario == NULL) {
-    if (lvgl_port_lock(-1)) {
-      ui_settings_vario_init();
-      lvgl_port_unlock();
-    }
-  }
-  
-  if (lvgl_port_lock(-1)) {
-    lv_screen_load(screen_settings_vario);
-    force_full_refresh();
-    lvgl_port_unlock();
-  }
+  ui_settings_vario_init();
   
 #ifdef DEBUG_MODE
   Serial.println("Vario settings screen displayed");
