@@ -9,7 +9,6 @@
 
 void ui_settings_show(void);
 
-static lv_obj_t *screen_settings_wifi = NULL;
 static lv_obj_t *dropdown_priority = NULL;
 static lv_obj_t *ta_ssid = NULL;
 static lv_obj_t *ta_password = NULL;
@@ -127,9 +126,18 @@ void ui_settings_wifi_init(void) {
   load_all_wifi_data();
   current_priority = 0;
   
-  // Ecran et frame
-  screen_settings_wifi = ui_create_screen();
-  lv_obj_t *main_frame = ui_create_main_frame(screen_settings_wifi);
+  // Nettoyer l'ecran s'il existe
+  if (main_screen != NULL) {
+    lv_obj_clean(main_screen);
+  } else {
+    main_screen = lv_obj_create(NULL);
+  }
+  
+  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
+  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
+  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
+  
+  lv_obj_t *main_frame = ui_create_main_frame(main_screen);
   lv_obj_clear_flag(main_frame, LV_OBJ_FLAG_SCROLLABLE);
   
   // Titre
@@ -215,16 +223,15 @@ void ui_settings_wifi_init(void) {
   lv_obj_add_event_cb(buttons.save, btn_save_wifi_cb, LV_EVENT_CLICKED, NULL);
   lv_obj_add_event_cb(buttons.cancel, btn_cancel_wifi_cb, LV_EVENT_CLICKED, NULL);
 
+  lv_screen_load(main_screen);
+
 #ifdef DEBUG_MODE
   Serial.println("WiFi settings screen initialized");
 #endif
 }
 
 void ui_settings_wifi_show(void) {
-  if (screen_settings_wifi == NULL) {
-    ui_settings_wifi_init();
-  }
-  lv_screen_load(screen_settings_wifi);
+  ui_settings_wifi_init();
   
 #ifdef DEBUG_MODE
   Serial.println("WiFi settings screen shown");
