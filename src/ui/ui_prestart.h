@@ -4,6 +4,7 @@
 #include "lvgl.h"
 #include "constants.h"
 #include "UI_helper.h"
+#include "ui_main_screens.h"
 #include "lang.h"
 
 // Screen objects
@@ -38,7 +39,7 @@ static void btn_start_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("Start button clicked");
 #endif
-  // TODO: Implement main vario screen
+  ui_main_screens_show();
 }
 
 /**

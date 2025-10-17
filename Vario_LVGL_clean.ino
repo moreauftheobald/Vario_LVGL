@@ -16,6 +16,7 @@
 #include "src/ui/ui_settings_wifi.h"
 #include "src/ui/ui_settings_map.h"
 #include "src/ui/ui_settings_vario.h"
+#include "src/ui/ui_main_screens.h"
 
 // Definition des variables globales
 Preferences prefs;
