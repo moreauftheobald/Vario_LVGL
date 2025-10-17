@@ -13,6 +13,8 @@
 #include "src/ui/ui_file_transfer.h"
 #include "src/ui/ui_settings_pilot.h"
 #include "src/ui/ui_settings_screen.h"
+#include "src/ui/ui_settings_wifi.h"
+#include "src/ui/ui_settings_map.h"
 
 // Definition des variables globales
 Preferences prefs;

@@ -7,6 +7,7 @@
 #include "lang.h"
 #include "ui_settings_pilot.h"
 #include "ui_settings_wifi.h"
+#include "ui_settings_map.h"
 
 // Forward declarations
 void ui_prestart_show(void);
@@ -59,7 +60,7 @@ static void btn_map_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("Map settings clicked");
 #endif
-  // TODO: ui_settings_map_show();
+  ui_settings_map_show();
 }
 
 static void btn_system_cb(lv_event_t *e) {
@@ -97,19 +98,19 @@ void ui_settings_init(void) {
   lv_obj_add_event_cb(btn_wifi, btn_wifi_cb, LV_EVENT_CLICKED, NULL);
 
   lv_obj_t *btn_screen = ui_create_settings_button(buttons_container, txt->screen_calibration,
-                                                    LV_SYMBOL_IMAGE, lv_color_hex(0xff9500));
+                                                    LV_SYMBOL_SETTINGS, lv_color_hex(0xff9500));
   lv_obj_add_event_cb(btn_screen, btn_screen_cb, LV_EVENT_CLICKED, NULL);
 
   lv_obj_t *btn_vario = ui_create_settings_button(buttons_container, txt->vario_settings,
-                                                   LV_SYMBOL_CHARGE, lv_color_hex(0x34c759));
+                                                   LV_SYMBOL_UP, lv_color_hex(0x4cd964));
   lv_obj_add_event_cb(btn_vario, btn_vario_cb, LV_EVENT_CLICKED, NULL);
 
   lv_obj_t *btn_map = ui_create_settings_button(buttons_container, txt->map_settings,
-                                                 LV_SYMBOL_GPS, lv_color_hex(0x00c7be));
+                                                 LV_SYMBOL_GPS, lv_color_hex(0x34c759));
   lv_obj_add_event_cb(btn_map, btn_map_cb, LV_EVENT_CLICKED, NULL);
 
   lv_obj_t *btn_system = ui_create_settings_button(buttons_container, txt->system_settings,
-                                                    LV_SYMBOL_SETTINGS, lv_color_hex(0x8e8e93));
+                                                    LV_SYMBOL_LIST, lv_color_hex(0x8e8e93));
   lv_obj_add_event_cb(btn_system, btn_system_cb, LV_EVENT_CLICKED, NULL);
 
   // Bouton retour
@@ -123,12 +124,20 @@ void ui_settings_init(void) {
 
 void ui_settings_show(void) {
   if (screen_settings == NULL) {
-    ui_settings_init();
+    if (lvgl_port_lock(-1)) {
+      ui_settings_init();
+      lvgl_port_unlock();
+    }
   }
-  lv_screen_load(screen_settings);
+
+  if (lvgl_port_lock(-1)) {
+    lv_screen_load(screen_settings);
+    force_full_refresh();
+    lvgl_port_unlock();
+  }
 
 #ifdef DEBUG_MODE
-  Serial.println("Settings screen shown");
+  Serial.println("Settings screen displayed");
 #endif
 }
 
