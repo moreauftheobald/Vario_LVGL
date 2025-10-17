@@ -74,8 +74,7 @@ void ui_settings_init(void) {
   const TextStrings *txt = get_text();
 
   // Ecran et frame
-  screen_settings = ui_create_screen();
-  lv_obj_t *main_frame = ui_create_main_frame(screen_settings);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &screen_settings);
 
   // Titre
   ui_create_title(main_frame, txt->settings);

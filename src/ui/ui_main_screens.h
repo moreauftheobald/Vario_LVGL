@@ -99,21 +99,21 @@ void ui_screen_left_init(void) {
     main_screen = lv_obj_create(NULL);
   }
   
-  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
-  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
-  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
+  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x000000), 0);
+  //lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
+  //lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
   lv_obj_clear_flag(main_screen, LV_OBJ_FLAG_SCROLLABLE);
   
   // Barre de statut
   ui_create_status_bar(main_screen);
   
   lv_obj_t *frame = lv_obj_create(main_screen);
-  lv_obj_set_size(frame, SCREEN_WIDTH - 10, SCREEN_HEIGHT - 65);
+  lv_obj_set_size(frame, SCREEN_WIDTH, SCREEN_HEIGHT - 60);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
-  lv_obj_set_style_bg_color(frame, lv_color_hex(0x151932), 0);
-  lv_obj_set_style_bg_opa(frame, LV_OPA_90, 0);
+  lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(frame, 3, 0);
-  lv_obj_set_style_border_color(frame, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_border_color(frame, lv_color_hex(0xFFFFFF), 0);
   lv_obj_set_style_radius(frame, 20, 0);
   lv_obj_set_style_pad_all(frame, 20, 0);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_SCROLLABLE);
@@ -146,56 +146,38 @@ void ui_screen_center_init(void) {
     main_screen = lv_obj_create(NULL);
   }
   
-  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
-  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
-  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
+  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x000000), 0);
+  //lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
+  //lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
   lv_obj_clear_flag(main_screen, LV_OBJ_FLAG_SCROLLABLE);
   
   // Barre de statut
   ui_create_status_bar(main_screen);
   
   lv_obj_t *frame = lv_obj_create(main_screen);
-  lv_obj_set_size(frame, SCREEN_WIDTH - 10, SCREEN_HEIGHT - 65);
-  lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
-  lv_obj_set_style_bg_color(frame, lv_color_hex(0x151932), 0);
-  lv_obj_set_style_bg_opa(frame, LV_OPA_90, 0);
-  lv_obj_set_style_border_width(frame, 3, 0);
-  lv_obj_set_style_border_color(frame, lv_color_hex(0x6080a0), 0);
-  lv_obj_set_style_radius(frame, 20, 0);
+  lv_obj_set_size(frame, SCREEN_WIDTH, SCREEN_HEIGHT - 55);
+  lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 55);
+  lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);
+  lv_obj_set_style_border_width(frame, 0, 0);
+  lv_obj_set_style_border_color(frame, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_radius(frame, 0, 0);
   lv_obj_set_style_pad_all(frame, 0, 0);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_CLICKABLE);
   
-  // Calcul dimensions
-  // Frame total: (SCREEN_HEIGHT - 65) = (600 - 65) = 535px hauteur
-  // Frame total: (SCREEN_WIDTH - 10) = (1024 - 10) = 1014px largeur
-  // Avec padding 0px et border 3px:
-  // Zone interne: (535 - 6) x (1014 - 6) = 529 x 1008 px
-  
-  // Les colonnes ont des bordures de 2px (gauche+droite = 4px ajoutés à la largeur)
-  // Avec marges de 5px autour des colonnes:
-  // Hauteur disponible pour colonnes: 529 - 10 = 519px
-  // Largeur disponible: 1008 - 10 = 998px
-  
-  int16_t col_height = 519;  // Hauteur des colonnes
-  int16_t col_center_width = 519;  // Carree: 519px (dimension interne)
-  
-  // Calcul largeur colonnes laterales
-  // Espace total: 998px
-  // Espaces: 5 + 5 + 5 + 5 = 20px
-  // Centre (avec bordures): 519 + 4 = 523px
-  // Reste: 998 - 523 - 20 = 455px pour les 2 colonnes
-  // Chaque colonne (interne): (455 / 2) - 4 = 223.5 - 4 = 219px
-  int16_t col_side_width = 234;
+  int16_t col_height = 540; 
+  int16_t col_center_width = 540;
+  int16_t col_side_width = 237;
   
   // Colonne gauche
   lv_obj_t *col_left = lv_obj_create(frame);
   lv_obj_set_size(col_left, col_side_width, col_height);
-  lv_obj_set_pos(col_left, 5, 5);
-  lv_obj_set_style_bg_color(col_left, lv_color_hex(0x1a2035), 0);
-  lv_obj_set_style_bg_opa(col_left, LV_OPA_80, 0);
+  lv_obj_set_pos(col_left, 0, 5);
+  lv_obj_set_style_bg_color(col_left, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_opa(col_left, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(col_left, 2, 0);
-  lv_obj_set_style_border_color(col_left, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_border_color(col_left, lv_color_hex(0xFFFFFF), 0);
   lv_obj_set_style_radius(col_left, 15, 0);
   lv_obj_set_style_pad_all(col_left, 10, 0);
   lv_obj_clear_flag(col_left, LV_OBJ_FLAG_SCROLLABLE);
@@ -210,11 +192,11 @@ void ui_screen_center_init(void) {
   // Colonne centrale (carte)
   lv_obj_t *col_center = lv_obj_create(frame);
   lv_obj_set_size(col_center, col_center_width, col_height);
-  lv_obj_set_pos(col_center, 5 + col_side_width + 5, 5);
-  lv_obj_set_style_bg_color(col_center, lv_color_hex(0x1a2035), 0);
+  lv_obj_set_pos(col_center, col_side_width + 5, 5);
+  lv_obj_set_style_bg_color(col_center, lv_color_hex(0x000000), 0);
   lv_obj_set_style_bg_opa(col_center, LV_OPA_80, 0);
   lv_obj_set_style_border_width(col_center, 2, 0);
-  lv_obj_set_style_border_color(col_center, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_border_color(col_center, lv_color_hex(0xFFFFFF), 0);
   lv_obj_set_style_radius(col_center, 15, 0);
   lv_obj_set_style_pad_all(col_center, 10, 0);
   lv_obj_clear_flag(col_center, LV_OBJ_FLAG_SCROLLABLE);
@@ -229,11 +211,11 @@ void ui_screen_center_init(void) {
   // Colonne droite
   lv_obj_t *col_right = lv_obj_create(frame);
   lv_obj_set_size(col_right, col_side_width, col_height);
-  lv_obj_set_pos(col_right, 5 + col_side_width + 5 + col_center_width + 5, 5);
-  lv_obj_set_style_bg_color(col_right, lv_color_hex(0x1a2035), 0);
+  lv_obj_set_pos(col_right, col_side_width + 5 + col_center_width + 5, 5);
+  lv_obj_set_style_bg_color(col_right, lv_color_hex(0x000000), 0);
   lv_obj_set_style_bg_opa(col_right, LV_OPA_80, 0);
   lv_obj_set_style_border_width(col_right, 2, 0);
-  lv_obj_set_style_border_color(col_right, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_border_color(col_right, lv_color_hex(0xFFFFFF), 0);
   lv_obj_set_style_radius(col_right, 15, 0);
   lv_obj_set_style_pad_all(col_right, 10, 0);
   lv_obj_clear_flag(col_right, LV_OBJ_FLAG_SCROLLABLE);
@@ -265,21 +247,21 @@ void ui_screen_right_init(void) {
     main_screen = lv_obj_create(NULL);
   }
   
-  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
-  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
-  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
+  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x000000), 0);
+  //lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
+  //lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
   lv_obj_clear_flag(main_screen, LV_OBJ_FLAG_SCROLLABLE);
   
   // Barre de statut
   ui_create_status_bar(main_screen);
   
   lv_obj_t *frame = lv_obj_create(main_screen);
-  lv_obj_set_size(frame, SCREEN_WIDTH - 10, SCREEN_HEIGHT - 65);
+  lv_obj_set_size(frame, SCREEN_WIDTH , SCREEN_HEIGHT - 60);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
-  lv_obj_set_style_bg_color(frame, lv_color_hex(0x151932), 0);
-  lv_obj_set_style_bg_opa(frame, LV_OPA_90, 0);
+  lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(frame, 3, 0);
-  lv_obj_set_style_border_color(frame, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_border_color(frame, lv_color_hex(0xFFFFFF), 0);
   lv_obj_set_style_radius(frame, 20, 0);
   lv_obj_set_style_pad_all(frame, 20, 0);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_SCROLLABLE);

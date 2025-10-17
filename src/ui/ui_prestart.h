@@ -40,18 +40,7 @@ static void btn_start_cb(lv_event_t *e) {
 void ui_prestart_init(void) {
   const TextStrings *txt = get_text();
 
-  // Nettoyer l'ecran s'il existe
-  if (main_screen != NULL) {
-    lv_obj_clean(main_screen);
-  } else {
-    main_screen = lv_obj_create(NULL);
-  }
-  
-  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
-  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
-  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
-
-  lv_obj_t *main_frame = ui_create_main_frame(main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
 
   // Titre
   lv_obj_t *label_title = lv_label_create(main_frame);
@@ -76,18 +65,18 @@ void ui_prestart_init(void) {
   lv_obj_set_style_pad_row(btn_container, 30, 0);
 
   // Bouton 1: File Transfer (Orange)
-  lv_obj_t *btn_file_transfer = ui_create_modern_button(btn_container, txt->file_transfer, 
-                                               LV_SYMBOL_USB, lv_color_hex(0xff9500));
+  lv_obj_t *btn_file_transfer = ui_create_modern_button(btn_container, txt->file_transfer,
+                                                        LV_SYMBOL_USB, lv_color_hex(0xff9500));
   lv_obj_add_event_cb(btn_file_transfer, btn_file_transfer_cb, LV_EVENT_CLICKED, NULL);
 
   // Bouton 2: Settings (Bleu)
-  lv_obj_t *btn_settings = ui_create_modern_button(btn_container, txt->settings, 
-                                          LV_SYMBOL_SETTINGS, lv_color_hex(0x007aff));
+  lv_obj_t *btn_settings = ui_create_modern_button(btn_container, txt->settings,
+                                                   LV_SYMBOL_SETTINGS, lv_color_hex(0x007aff));
   lv_obj_add_event_cb(btn_settings, btn_settings_cb, LV_EVENT_CLICKED, NULL);
 
   // Bouton 3: Start (Vert)
-  lv_obj_t *btn_start = ui_create_modern_button(btn_container, txt->start, 
-                                       LV_SYMBOL_PLAY, lv_color_hex(0x34c759));
+  lv_obj_t *btn_start = ui_create_modern_button(btn_container, txt->start,
+                                                LV_SYMBOL_PLAY, lv_color_hex(0x34c759));
   lv_obj_add_event_cb(btn_start, btn_start_cb, LV_EVENT_CLICKED, NULL);
 
   // Colonne droite: Panel d'informations
@@ -95,17 +84,17 @@ void ui_prestart_init(void) {
   lv_obj_set_style_pad_row(info_panel, 12, 0);
 
   // Titre du panel
-  lv_obj_t *info_title = ui_create_label(info_panel, "Informations", 
-                                          &lv_font_montserrat_24, lv_color_hex(0x00d4ff));
+  lv_obj_t *info_title = ui_create_label(info_panel, "Informations",
+                                         &lv_font_montserrat_24, lv_color_hex(0x00d4ff));
   lv_obj_set_width(info_title, lv_pct(100));
 
   // Separateur
   ui_create_separator(info_panel);
 
   // Version
-  lv_obj_t *label_version = ui_create_label(info_panel, 
-                                   LV_SYMBOL_SETTINGS " Version: " VARIO_VERSION,
-                                   &lv_font_montserrat_20, lv_color_hex(0xaabbcc));
+  lv_obj_t *label_version = ui_create_label(info_panel,
+                                            LV_SYMBOL_SETTINGS " Version: " VARIO_VERSION,
+                                            &lv_font_montserrat_20, lv_color_hex(0xaabbcc));
   lv_obj_set_width(label_version, lv_pct(100));
 
   // Informations placeholder
@@ -119,7 +108,7 @@ void ui_prestart_init(void) {
 
   for (int i = 0; i < 5; i++) {
     lv_obj_t *info_item = ui_create_label(info_panel, info_items[i],
-                                           &lv_font_montserrat_20, lv_color_hex(0xaabbcc));
+                                          &lv_font_montserrat_20, lv_color_hex(0xaabbcc));
     lv_obj_set_width(info_item, lv_pct(100));
   }
 

@@ -19,6 +19,45 @@ static lv_obj_t *g_label_battery = NULL;
 // ============================================================================
 
 /**
+ * @brief Cree un ecran noir avec un frame principal ayant une bordure blanche
+ * @param border_width Epaisseur de la bordure en pixels
+ * @param radius Rayon des coins arrondis
+ * @param screen_ptr Pointeur vers la variable screen à utiliser/créer
+ * @return Le frame principal (pas l'ecran)
+ */
+static inline lv_obj_t* ui_create_black_screen_with_frame(uint16_t border_width, uint16_t radius, lv_obj_t **screen_ptr) {
+  // Ecran noir sans bordure
+  if (*screen_ptr != NULL) {
+    lv_obj_clean(*screen_ptr);
+  } else {
+    *screen_ptr = lv_obj_create(NULL);
+  }
+  
+  lv_obj_set_style_bg_color(*screen_ptr, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_opa(*screen_ptr, LV_OPA_COVER, 0);
+  lv_obj_set_style_border_width(*screen_ptr, 0, 0);
+  lv_obj_clear_flag(*screen_ptr, LV_OBJ_FLAG_SCROLLABLE);
+  
+  // Frame avec bordure blanche - fond NOIR uni
+  lv_obj_t *frame = lv_obj_create(*screen_ptr);
+  lv_obj_set_size(frame, SCREEN_WIDTH, SCREEN_HEIGHT);
+  lv_obj_center(frame);
+  lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);  // NOIR
+  lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);              // Opaque à 100%
+  lv_obj_set_style_border_width(frame, border_width, 0);
+  lv_obj_set_style_border_color(frame, lv_color_hex(0xFFFFFF), 0);
+  lv_obj_set_style_radius(frame, radius, 0);
+  lv_obj_set_style_pad_all(frame, 20, 0);
+  lv_obj_set_style_shadow_width(frame, 30, 0);
+  lv_obj_set_style_shadow_color(frame, lv_color_black(), 0);
+  lv_obj_set_style_shadow_opa(frame, LV_OPA_40, 0);
+  
+  lv_obj_clear_flag(frame, LV_OBJ_FLAG_SCROLLABLE);
+
+  return frame;
+}
+
+/**
  * @brief Cree un ecran avec gradient background standard
  */
 static inline lv_obj_t* ui_create_screen(void) {
@@ -389,10 +428,10 @@ static inline lv_obj_t* ui_create_status_bar(lv_obj_t *parent) {
   lv_obj_t *bar = lv_obj_create(parent);
   lv_obj_set_size(bar, SCREEN_WIDTH, 55);
   lv_obj_align(bar, LV_ALIGN_TOP_MID, 0, 0);
-  lv_obj_set_style_bg_color(bar, lv_color_hex(0x0a0e27), 0);
-  lv_obj_set_style_bg_opa(bar, LV_OPA_90, 0);
+  lv_obj_set_style_bg_color(bar, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_opa(bar, LV_OPA_COVER, 0);
   lv_obj_set_style_border_side(bar, LV_BORDER_SIDE_BOTTOM, 0);
-  lv_obj_set_style_border_color(bar, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_border_color(bar, lv_color_hex(0xFFFFFF), 0);
   lv_obj_set_style_border_width(bar, 2, 0);
   lv_obj_set_style_radius(bar, 0, 0);
   lv_obj_set_style_pad_all(bar, 8, 0);

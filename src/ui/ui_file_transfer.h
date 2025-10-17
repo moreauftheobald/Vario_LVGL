@@ -20,19 +20,7 @@ static void btn_exit_cb(lv_event_t *e) {
 void ui_file_transfer_init(void) {
   const TextStrings *txt = get_text();
 
-  // Nettoyer l'ecran s'il existe
-  if (main_screen != NULL) {
-    lv_obj_clean(main_screen);
-  } else {
-    main_screen = lv_obj_create(NULL);
-  }
-  
-  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
-  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
-  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
-  
-  lv_obj_t *main_frame = ui_create_main_frame(main_screen);
-  lv_obj_clear_flag(main_frame, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
 
   // Titre
   ui_create_title(main_frame, txt->file_transfer);

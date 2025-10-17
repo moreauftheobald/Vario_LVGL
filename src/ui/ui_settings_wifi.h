@@ -126,19 +126,7 @@ void ui_settings_wifi_init(void) {
   load_all_wifi_data();
   current_priority = 0;
   
-  // Nettoyer l'ecran s'il existe
-  if (main_screen != NULL) {
-    lv_obj_clean(main_screen);
-  } else {
-    main_screen = lv_obj_create(NULL);
-  }
-  
-  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x0a0e27), 0);
-  lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
-  lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
-  
-  lv_obj_t *main_frame = ui_create_main_frame(main_screen);
-  lv_obj_clear_flag(main_frame, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
   
   // Titre
   lv_obj_t *label_title = ui_create_label(main_frame, txt->wifi_settings,
