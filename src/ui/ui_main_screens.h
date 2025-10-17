@@ -186,7 +186,7 @@ void ui_screen_center_init(void) {
   // Centre (avec bordures): 519 + 4 = 523px
   // Reste: 998 - 523 - 20 = 455px pour les 2 colonnes
   // Chaque colonne (interne): (455 / 2) - 4 = 223.5 - 4 = 219px
-  int16_t col_side_width = 219;
+  int16_t col_side_width = 234;
   
   // Colonne gauche
   lv_obj_t *col_left = lv_obj_create(frame);

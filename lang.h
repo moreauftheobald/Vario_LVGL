@@ -29,6 +29,15 @@ struct TextStrings {
   const char* wifi_priority;
   const char* wifi_ssid;
   const char* wifi_password;
+  const char* vario_integration;
+  const char* vario_damping;
+  const char* climb_threshold;
+  const char* sink_threshold;
+  const char* map_zoom;
+  const char* map_tile_server;
+  const char* map_track_points;
+  const char* map_vario_colors;
+  const char* map_position_indicator;
 };
 
 static const TextStrings text_fr = {
@@ -51,7 +60,16 @@ static const TextStrings text_fr = {
   .pilot_phone = "Telephone",
   .wifi_priority = "Priorite",
   .wifi_ssid = "SSID",
-  .wifi_password = "Mot de passe"
+  .wifi_password = "Mot de passe",
+  .vario_integration = "Periode d'integration",
+  .vario_damping = "Amortissement",
+  .climb_threshold = "Seuil de montee",
+  .sink_threshold = "Seuil de descente",
+  .map_zoom = "Niveau de zoom",
+  .map_tile_server = "Serveur de tuiles",
+  .map_track_points = "Points de trace",
+  .map_vario_colors = "Couleurs vario",
+  .map_position_indicator = "Indicateur de position"
 };
 
 static const TextStrings text_en = {
@@ -74,7 +92,16 @@ static const TextStrings text_en = {
   .pilot_phone = "Phone",
   .wifi_priority = "Priority",
   .wifi_ssid = "SSID",
-  .wifi_password = "Password"
+  .wifi_password = "Password",
+  .vario_integration = "Integration period",
+  .vario_damping = "Damping",
+  .climb_threshold = "Climb threshold",
+  .sink_threshold = "Sink threshold",
+  .map_zoom = "Zoom level",
+  .map_tile_server = "Tile server",
+  .map_track_points = "Track points",
+  .map_vario_colors = "Vario colors",
+  .map_position_indicator = "Position indicator"
 };
 
 static inline const TextStrings* get_text() {
