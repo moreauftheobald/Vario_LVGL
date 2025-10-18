@@ -53,6 +53,8 @@ void wavesahre_rgb_lcd_bl_on();
 
 void wavesahre_rgb_lcd_bl_off();
 
+void wavesahre_rgb_lcd_set_brightness(uint8_t brightness); 
+
 void wavesahre_rgb_lcd_display_window(int16_t Xstart, int16_t Ystart, int16_t Xend, int16_t Yend, uint8_t *Image);
 
 void wavesahre_rgb_lcd_display(uint8_t *Image);

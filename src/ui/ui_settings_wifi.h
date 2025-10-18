@@ -6,6 +6,7 @@
 #include "UI_helper.h"
 #include "lang.h"
 #include "globals.h"
+#include "src/params/params.h"
 
 void ui_settings_show(void);
 
@@ -18,40 +19,27 @@ static int current_priority = 0;
 static String wifi_data_ssid[4] = {"", "", "", ""};
 static String wifi_data_pass[4] = {"", "", "", ""};
 
-// Fonctions de sauvegarde/chargement
 static void load_all_wifi_data(void) {
-  prefs.begin("wifi", true);
-  
   for (int i = 0; i < 4; i++) {
-    String ssid_key = "ssid" + String(i);
-    String pass_key = "pass" + String(i);
-    
-    wifi_data_ssid[i] = prefs.getString(ssid_key.c_str(), "");
-    wifi_data_pass[i] = prefs.getString(pass_key.c_str(), "");
+    wifi_data_ssid[i] = params.wifi_ssid[i];
+    wifi_data_pass[i] = params.wifi_password[i];
   }
   
-  prefs.end();
-  
 #ifdef DEBUG_MODE
-  Serial.println("All WiFi data loaded");
+  Serial.println("All WiFi data loaded from params");
 #endif
 }
 
 static void save_all_wifi_data(void) {
-  prefs.begin("wifi", false);
-  
   for (int i = 0; i < 4; i++) {
-    String ssid_key = "ssid" + String(i);
-    String pass_key = "pass" + String(i);
-    
-    prefs.putString(ssid_key.c_str(), wifi_data_ssid[i].c_str());
-    prefs.putString(pass_key.c_str(), wifi_data_pass[i].c_str());
+    params.wifi_ssid[i] = wifi_data_ssid[i];
+    params.wifi_password[i] = wifi_data_pass[i];
   }
   
-  prefs.end();
+  params_save_wifi();
   
 #ifdef DEBUG_MODE
-  Serial.println("All WiFi data saved");
+  Serial.println("All WiFi data saved to params");
 #endif
 }
 
@@ -207,7 +195,7 @@ void ui_settings_wifi_init(void) {
   lv_obj_align(btn_container, LV_ALIGN_BOTTOM_MID, 0, -5);
   lv_obj_set_flex_align(btn_container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
   
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(btn_container, txt->save, txt->cancel, nullptr, true, true, false, btn_save_wifi_cb, btn_cancel_wifi_cb, nullptr);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(btn_container, txt->save, txt->cancel, nullptr, true, true, false, btn_save_wifi_cb, btn_cancel_wifi_cb, nullptr, NULL, NULL, NULL);
 
   lv_screen_load(main_screen);
 

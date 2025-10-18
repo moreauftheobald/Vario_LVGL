@@ -6,6 +6,7 @@
 #include "UI_helper.h"
 #include "lang.h"
 #include "globals.h"
+#include "src/params/params.h"
 
 void ui_settings_show(void);
 
@@ -19,37 +20,27 @@ typedef struct {
 
 // Fonctions de sauvegarde/chargement
 static void load_pilot_data(pilot_widgets_t *widgets) {
-  prefs.begin("pilot", true);
-  
-  String name = prefs.getString("name", "");
-  String firstname = prefs.getString("firstname", "");
-  String wing = prefs.getString("wing", "");
-  String phone = prefs.getString("phone", "");
-  
-  if (widgets->ta_name) lv_textarea_set_text(widgets->ta_name, name.c_str());
-  if (widgets->ta_firstname) lv_textarea_set_text(widgets->ta_firstname, firstname.c_str());
-  if (widgets->ta_wing) lv_textarea_set_text(widgets->ta_wing, wing.c_str());
-  if (widgets->ta_phone) lv_textarea_set_text(widgets->ta_phone, phone.c_str());
-  
-  prefs.end();
+  if (widgets->ta_name) lv_textarea_set_text(widgets->ta_name, params.pilot_name.c_str());
+  if (widgets->ta_firstname) lv_textarea_set_text(widgets->ta_firstname, params.pilot_firstname.c_str());
+  if (widgets->ta_wing) lv_textarea_set_text(widgets->ta_wing, params.pilot_wing.c_str());
+  if (widgets->ta_phone) lv_textarea_set_text(widgets->ta_phone, params.pilot_phone.c_str());
   
 #ifdef DEBUG_MODE
-  Serial.println("Pilot data loaded");
+  Serial.println("Pilot data loaded from params");
 #endif
 }
 
+// Remplace la fonction save_pilot_data
 static void save_pilot_data(pilot_widgets_t *widgets) {
-  prefs.begin("pilot", false);
+  params.pilot_name = String(lv_textarea_get_text(widgets->ta_name));
+  params.pilot_firstname = String(lv_textarea_get_text(widgets->ta_firstname));
+  params.pilot_wing = String(lv_textarea_get_text(widgets->ta_wing));
+  params.pilot_phone = String(lv_textarea_get_text(widgets->ta_phone));
   
-  prefs.putString("name", lv_textarea_get_text(widgets->ta_name));
-  prefs.putString("firstname", lv_textarea_get_text(widgets->ta_firstname));
-  prefs.putString("wing", lv_textarea_get_text(widgets->ta_wing));
-  prefs.putString("phone", lv_textarea_get_text(widgets->ta_phone));
-  
-  prefs.end();
+  params_save_pilot();
   
 #ifdef DEBUG_MODE
-  Serial.println("Pilot data saved");
+  Serial.println("Pilot data saved to params");
 #endif
 }
 
@@ -75,13 +66,30 @@ static void keyboard_event_cb(lv_event_t *e) {
   }
 }
 
-// Callbacks boutons
 static void btn_save_cb(lv_event_t *e) {
   pilot_widgets_t *widgets = (pilot_widgets_t*)lv_event_get_user_data(e);
   
 #ifdef DEBUG_MODE
   Serial.println("Save pilot data clicked");
 #endif
+
+  // CORRECTION: Verifier que widgets n'est pas NULL
+  if (widgets == NULL) {
+#ifdef DEBUG_MODE
+    Serial.println("ERROR: widgets is NULL!");
+#endif
+    return;
+  }
+  
+  // Verifier aussi que les pointeurs des widgets sont valides
+  if (widgets->ta_name == NULL || widgets->ta_firstname == NULL || 
+      widgets->ta_wing == NULL || widgets->ta_phone == NULL) {
+#ifdef DEBUG_MODE
+    Serial.println("ERROR: widget pointers are NULL!");
+#endif
+    return;
+  }
+  
   save_pilot_data(widgets);
   ui_settings_show();
 }
@@ -134,7 +142,12 @@ void ui_settings_pilot_init(void) {
   keyboard = ui_create_keyboard(main_frame, LV_KEYBOARD_MODE_TEXT_UPPER);
   lv_obj_add_event_cb(keyboard, keyboard_event_cb, LV_EVENT_ALL, NULL);
 
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel, nullptr, true, true, false, btn_save_cb, btn_cancel_cb, nullptr);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel, 
+                                                          nullptr, true, true, false,
+                                                          btn_save_cb, btn_cancel_cb, nullptr,
+                                                          &widgets, NULL, NULL);
+
+  lv_obj_set_user_data(buttons.save, &widgets);
 
   load_pilot_data(&widgets);
 

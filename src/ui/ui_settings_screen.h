@@ -7,6 +7,7 @@
 #include "lang.h"
 #include "globals.h"
 #include "src/gt911/gt911.h"
+#include "src/params/params.h"
 
 void ui_settings_show(void);
 
@@ -35,31 +36,28 @@ static float calib_offset_y = 0.0f;
 static float calib_scale_x = 1.0f;
 static float calib_scale_y = 1.0f;
 
-// Load/Save calibration
 static void load_calibration(void) {
-  prefs.begin("touch_calib", true);
-  calib_offset_x = prefs.getFloat("offset_x", 0.0f);
-  calib_offset_y = prefs.getFloat("offset_y", 0.0f);
-  calib_scale_x = prefs.getFloat("scale_x", 1.0f);
-  calib_scale_y = prefs.getFloat("scale_y", 1.0f);
-  prefs.end();
+  calib_offset_x = params.touch_offset_x;
+  calib_offset_y = params.touch_offset_y;
+  calib_scale_x = params.touch_scale_x;
+  calib_scale_y = params.touch_scale_y;
 
 #ifdef DEBUG_MODE
-  Serial.printf("Calibration loaded: offset_x=%.3f offset_y=%.3f scale_x=%.3f scale_y=%.3f\n",
+  Serial.printf("Calibration loaded from params: offset_x=%.3f offset_y=%.3f scale_x=%.3f scale_y=%.3f\n",
                 calib_offset_x, calib_offset_y, calib_scale_x, calib_scale_y);
 #endif
 }
 
 static void save_calibration(void) {
-  prefs.begin("touch_calib", false);
-  prefs.putFloat("offset_x", calib_offset_x);
-  prefs.putFloat("offset_y", calib_offset_y);
-  prefs.putFloat("scale_x", calib_scale_x);
-  prefs.putFloat("scale_y", calib_scale_y);
-  prefs.end();
+  params.touch_offset_x = calib_offset_x;
+  params.touch_offset_y = calib_offset_y;
+  params.touch_scale_x = calib_scale_x;
+  params.touch_scale_y = calib_scale_y;
+  
+  params_save_touch_calibration();
 
 #ifdef DEBUG_MODE
-  Serial.printf("Calibration saved: offset_x=%.3f offset_y=%.3f scale_x=%.3f scale_y=%.3f\n",
+  Serial.printf("Calibration saved to params: offset_x=%.3f offset_y=%.3f scale_x=%.3f scale_y=%.3f\n",
                 calib_offset_x, calib_offset_y, calib_scale_x, calib_scale_y);
 #endif
 }
@@ -289,7 +287,7 @@ void ui_settings_screen_init(void) {
   
   update_target_position();
   
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(screen_settings_screen, txt->save, txt->cancel, nullptr, true, true, false, btn_save_calib_cb, btn_cancel_calib_cb, nullptr);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(screen_settings_screen, txt->save, txt->cancel, nullptr, true, true, false, btn_save_calib_cb, btn_cancel_calib_cb, nullptr, NULL, NULL, NULL);
 
 #ifdef DEBUG_MODE
   Serial.println("Screen calibration initialized");

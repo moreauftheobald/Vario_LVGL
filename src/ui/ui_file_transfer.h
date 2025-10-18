@@ -58,7 +58,7 @@ void ui_file_transfer_init(void) {
   lv_label_set_long_mode(instructions, LV_LABEL_LONG_WRAP);
   lv_obj_set_width(instructions, lv_pct(90));
 
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, nullptr, txt->exit, nullptr, false, true, false, nullptr, btn_exit_cb, nullptr);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, nullptr, txt->exit, nullptr, false, true, false, nullptr, btn_exit_cb, nullptr, NULL, NULL, NULL);
 
   lv_screen_load(main_screen);
 

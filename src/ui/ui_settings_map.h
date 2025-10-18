@@ -6,6 +6,7 @@
 #include "UI_helper.h"
 #include "lang.h"
 #include "globals.h"
+#include "src/params/params.h"
 
 void ui_settings_show(void);
 
@@ -27,78 +28,54 @@ static const TileServer tile_servers[] = {
 
 static const int tile_servers_count = sizeof(tile_servers) / sizeof(TileServer);
 
-// Fonctions de sauvegarde/chargement
 static void load_map_settings(lv_obj_t *slider_zoom, lv_obj_t *label_zoom_value,
                                lv_obj_t *dropdown_tile_server, lv_obj_t *slider_track_points, 
                                lv_obj_t *label_track_value, lv_obj_t *switch_vario_colors,
                                lv_obj_t *switch_indicator) {
-  prefs.begin("map", true);
-  
-  int zoom = prefs.getInt("zoom", 15);
-  int server = prefs.getInt("server", 0);
-  int track_pts = prefs.getInt("track_pts", 50);
-  bool vario_col = prefs.getBool("vario_col", true);
-  
-  prefs.end();
-  
   if (slider_zoom) {
-    lv_slider_set_value(slider_zoom, zoom, LV_ANIM_OFF);
-    lv_label_set_text_fmt(label_zoom_value, "%d", zoom);
+    lv_slider_set_value(slider_zoom, params.map_zoom, LV_ANIM_OFF);
+    lv_label_set_text_fmt(label_zoom_value, "%d", params.map_zoom);
   }
   
   if (dropdown_tile_server) {
-    lv_dropdown_set_selected(dropdown_tile_server, server);
+    lv_dropdown_set_selected(dropdown_tile_server, params.map_tile_server);
   }
   
   if (slider_track_points) {
-    lv_slider_set_value(slider_track_points, track_pts, LV_ANIM_OFF);
-    lv_label_set_text_fmt(label_track_value, "%d", track_pts);
+    lv_slider_set_value(slider_track_points, params.map_track_points, LV_ANIM_OFF);
+    lv_label_set_text_fmt(label_track_value, "%d", params.map_track_points);
   }
   
   if (switch_vario_colors) {
-    if (vario_col) {
+    if (params.map_vario_colors) {
       lv_obj_add_state(switch_vario_colors, LV_STATE_CHECKED);
-      lv_obj_align(switch_indicator, LV_ALIGN_RIGHT_MID, -2, 0);
+      if (switch_indicator) {
+        lv_obj_align(switch_indicator, LV_ALIGN_RIGHT_MID, -2, 0);
+      }
     } else {
       lv_obj_clear_state(switch_vario_colors, LV_STATE_CHECKED);
-      lv_obj_align(switch_indicator, LV_ALIGN_LEFT_MID, 2, 0);
+      if (switch_indicator) {
+        lv_obj_align(switch_indicator, LV_ALIGN_LEFT_MID, 2, 0);
+      }
     }
   }
   
 #ifdef DEBUG_MODE
-  Serial.printf("Map settings loaded: zoom=%d, server=%d, track=%d, vario_col=%d\n", 
-                zoom, server, track_pts, vario_col);
+  Serial.println("Map settings loaded from params");
 #endif
 }
 
 static void save_map_settings(lv_obj_t *slider_zoom, lv_obj_t *dropdown_tile_server,
                                lv_obj_t *slider_track_points, lv_obj_t *switch_vario_colors) {
-  prefs.begin("map", false);
+  params.map_zoom = (int)lv_slider_get_value(slider_zoom);
+  params.map_tile_server = lv_dropdown_get_selected(dropdown_tile_server);
+  params.map_track_points = (int)lv_slider_get_value(slider_track_points);
+  params.map_vario_colors = lv_obj_has_state(switch_vario_colors, LV_STATE_CHECKED);
   
-  if (slider_zoom) {
-    int zoom = (int)lv_slider_get_value(slider_zoom);
-    prefs.putInt("zoom", zoom);
-  }
-  
-  if (dropdown_tile_server) {
-    int server = lv_dropdown_get_selected(dropdown_tile_server);
-    prefs.putInt("server", server);
-  }
-  
-  if (slider_track_points) {
-    int track_pts = (int)lv_slider_get_value(slider_track_points);
-    prefs.putInt("track_pts", track_pts);
-  }
-  
-  if (switch_vario_colors) {
-    bool vario_col = lv_obj_has_state(switch_vario_colors, LV_STATE_CHECKED);
-    prefs.putBool("vario_col", vario_col);
-  }
-  
-  prefs.end();
+  params_save_map();
   
 #ifdef DEBUG_MODE
-  Serial.println("Map settings saved");
+  Serial.println("Map settings saved to params");
 #endif
 }
 
@@ -321,7 +298,7 @@ void ui_settings_map_init(void) {
   lv_obj_set_style_text_align(label_preview, LV_TEXT_ALIGN_CENTER, 0);
 
   // Boutons Enregistrer et Annuler
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel, nullptr, true, true, false, btn_save_map_cb, btn_cancel_map_cb, nullptr);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel, nullptr, true, true, false, btn_save_map_cb, btn_cancel_map_cb, nullptr, &widgets, NULL, NULL);
 
   // Charger les valeurs sauvegardees
   load_map_settings(widgets.slider_zoom, label_zoom_value, widgets.dropdown_tile_server,

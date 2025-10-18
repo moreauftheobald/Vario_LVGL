@@ -130,10 +130,24 @@ void waveshare_get_frame_buffer(void **buf1, void **buf2) {
   ESP_ERROR_CHECK(esp_lcd_rgb_panel_get_frame_buffer(panel_handle, 2, buf1, buf2));
 }
 
+void wavesahre_rgb_lcd_set_brightness(uint8_t brightness) {
+  // Limiter la valeur entre 0 et 100
+  if (brightness > 100) {
+    brightness = 100;
+  }
+  
+  // Appliquer le PWM via l'IO extension
+  IO_EXTENSION_Pwm_Output(100 - brightness);
+  
+#ifdef DEBUG_MODE
+  Serial.printf("Backlight set to %d%%\n", brightness);
+#endif
+}
+
 void wavesahre_rgb_lcd_bl_on() {
-  IO_EXTENSION_Output(IO_EXTENSION_IO_2, 1);
+  wavesahre_rgb_lcd_set_brightness(100);
 }
 
 void wavesahre_rgb_lcd_bl_off() {
-  IO_EXTENSION_Output(IO_EXTENSION_IO_2, 0);
+  wavesahre_rgb_lcd_set_brightness(0);
 }

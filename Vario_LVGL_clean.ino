@@ -17,6 +17,8 @@
 #include "src/ui/ui_settings_map.h"
 #include "src/ui/ui_settings_vario.h"
 #include "src/ui/ui_main_screens.h"
+#include "src/ui/ui_settings_system.h"
+#include "src/params/params.h"
 
 // Definition des variables globales
 Preferences prefs;
@@ -34,6 +36,12 @@ void setup() {
 #ifdef DEBUG_MODE
   Serial.begin(115200);
   Serial.setDebugOutput(true);
+#endif
+
+  // Initialiser les parametres
+  params_init();
+
+#ifdef DEBUG_MODE
   Serial.println("Starting Vario...");
   Serial.printf("Project: %s\n", VARIO_NAME);
   Serial.printf("Version: %s\n", VARIO_VERSION);
@@ -47,7 +55,8 @@ void setup() {
 
   tp_handle = touch_gt911_init();
   panel_handle = waveshare_esp32_s3_rgb_lcd_init();
-  wavesahre_rgb_lcd_bl_on();
+  // Appliquer la luminosite sauvegardee
+  wavesahre_rgb_lcd_set_brightness(params.system_brightness);
 
 #ifdef DEBUG_MODE
   Serial.printf("Free heap after LCD init: %d bytes\n", ESP.getFreeHeap());

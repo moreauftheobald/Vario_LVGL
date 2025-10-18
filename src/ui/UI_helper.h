@@ -293,61 +293,44 @@ typedef struct {
   lv_obj_t *reset;
 } ui_button_pair_t;
 
-static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent, const char *save_text, const char *cancel_text, const char *reset_text, bool save, bool cancel, bool reset, lv_event_cb_t save_callback,lv_event_cb_t cancel_callback,lv_event_cb_t reset_callback) {
-  ui_button_pair_t buttons;
-
+static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent, 
+                                                              const char *save_text,
+                                                              const char *cancel_text,
+                                                              const char *reset_text,
+                                                              bool save, bool cancel, bool reset,
+                                                              lv_event_cb_t save_cb,
+                                                              lv_event_cb_t cancel_cb,
+                                                              lv_event_cb_t reset_cb,
+                                                              void *save_user_data,
+                                                              void *cancel_user_data,
+                                                              void *reset_user_data) {
+  ui_button_pair_t buttons = {NULL, NULL, NULL};
+  
   lv_obj_t *container = ui_create_flex_container(parent, LV_FLEX_FLOW_ROW);
+  lv_obj_set_size(container, lv_pct(100), LV_SIZE_CONTENT);
   lv_obj_align(container, LV_ALIGN_BOTTOM_MID, 0, -5);
   lv_obj_set_flex_align(container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
   if (save) {
-    buttons.save = ui_create_button(container,
-                                    save_text,
-                                    NULL,
-                                    lv_color_hex(0x34c759),
-                                    220,
-                                    50,
-                                    &lv_font_montserrat_20,
-                                    &lv_font_montserrat_24,
-                                    save_callback,
-                                    NULL,
-                                    (lv_align_t)0,
-                                    NULL,
-                                    NULL);
+    buttons.save = ui_create_button(container, save_text, NULL, lv_color_hex(0x34c759),
+                                    220, 50, &lv_font_montserrat_20, &lv_font_montserrat_24,
+                                    save_cb, save_user_data, (lv_align_t)0, 0, 0);
   }
+  
   if (cancel) {
-    buttons.cancel = ui_create_button(container,
-                                      cancel_text,
-                                      NULL,
-                                      lv_color_hex(0xff3b30),
-                                      220,
-                                      50,
-                                      &lv_font_montserrat_20,
-                                      &lv_font_montserrat_24,
-                                      cancel_callback,
-                                      NULL,
-                                      (lv_align_t)0,
-                                      NULL,
-                                      NULL);
+    buttons.cancel = ui_create_button(container, cancel_text, NULL, lv_color_hex(0xff3b30),
+                                      220, 50, &lv_font_montserrat_20, &lv_font_montserrat_24,
+                                      cancel_cb, cancel_user_data, (lv_align_t)0, 0, 0);
+  }
+  
+  if (reset) {
+    buttons.reset = ui_create_button(container, reset_text, NULL, lv_color_hex(0xff9500),
+                                     220, 50, &lv_font_montserrat_20, &lv_font_montserrat_24,
+                                     reset_cb, reset_user_data, (lv_align_t)0, 0, 0);
   }
 
-  if (reset) {
-    buttons.reset = ui_create_button(container,
-                                     reset_text,
-                                     NULL,
-                                     lv_color_hex(0xff9500),
-                                     220,
-                                     50,
-                                     &lv_font_montserrat_20,
-                                     &lv_font_montserrat_24,
-                                     reset_callback,
-                                     NULL,
-                                     (lv_align_t)0,
-                                     NULL,
-                                     NULL);
-  }
   return buttons;
 }
-
 // ============================================================================
 // BARRE DE STATUT
 // ============================================================================

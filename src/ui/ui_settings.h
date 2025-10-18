@@ -8,6 +8,7 @@
 #include "ui_settings_pilot.h"
 #include "ui_settings_wifi.h"
 #include "ui_settings_map.h"
+#include "ui_settings_system.h"
 
 // Forward declarations
 void ui_prestart_show(void);
@@ -67,7 +68,7 @@ static void btn_system_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("System settings clicked");
 #endif
-  // TODO: ui_settings_system_show();
+  ui_settings_system_show();  // Enlève le commentaire TODO
 }
 
 void ui_settings_init(void) {

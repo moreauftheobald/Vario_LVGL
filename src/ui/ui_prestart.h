@@ -6,6 +6,7 @@
 #include "UI_helper.h"
 #include "lang.h"
 #include "globals.h"
+#include "src/params/params.h"
 #include "src/ui/ui_main_screens.h"
 
 // Forward declarations
@@ -130,7 +131,7 @@ void ui_prestart_init(void) {
     LV_SYMBOL_DIRECTORY " Espace libre: --",
     LV_SYMBOL_IMAGE " Cartes: --",
     LV_SYMBOL_LIST " Vols: --",
-    LV_SYMBOL_HOME " Pilote: --"
+    LV_SYMBOL_HOME " Pilote: "
   };
 
   for (int i = 0; i < 5; i++) {

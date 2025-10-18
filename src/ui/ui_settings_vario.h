@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "UI_helper.h"
 #include "lang.h"
+#include "src/params/params.h"
 #include <Preferences.h>
 
 extern Preferences prefs;
@@ -135,42 +136,37 @@ static void btn_reset_audio_cb(lv_event_t *e) {
 }
 
 static void load_vario_settings(void) {
-  prefs.begin("vario", true);
-  int integration = prefs.getInt("integration", 5);
-
-  // Valeurs par defaut
-  uint16_t default_freqs[16] = {
-    640, 664, 691, 727, 759, 789, 842, 920,
-    998, 1060, 1097, 1121, 1144, 1161, 1170, 1175
-  };
-
-  // Chargement des frequences
+  if (slider_integration && label_integration_value) {
+    lv_slider_set_value(slider_integration, params.vario_integration_period, LV_ANIM_OFF);
+    lv_label_set_text_fmt(label_integration_value, "%d s", params.vario_integration_period);
+  }
+  
+  // Charger les frequences audio
   for (int i = 0; i < 16; i++) {
-    char key[16];
-    snprintf(key, sizeof(key), "freq_%d", i);
-    audio_frequencies[i] = prefs.getUShort(key, default_freqs[i]);
-
+    audio_frequencies[i] = params.vario_audio_frequencies[i];
     if (series_audio) {
       lv_chart_set_value_by_id(chart_audio, series_audio, i, audio_frequencies[i]);
     }
   }
-
-  if (slider_integration) {
-    lv_slider_set_value(slider_integration, integration, LV_ANIM_OFF);
-    if (label_integration_value) {
-      lv_label_set_text_fmt(label_integration_value, "%d s", integration);
-    }
-  }
-
-  if (chart_audio) {
-    lv_chart_refresh(chart_audio);
-  }
-
-  prefs.end();
-
+  
+  lv_chart_refresh(chart_audio);
+  
 #ifdef DEBUG_MODE
-  Serial.println("Vario settings loaded");
-  Serial.printf("Integration: %d s\n", integration);
+  Serial.println("Vario settings loaded from params");
+#endif
+}
+
+static void save_vario_settings(void) {
+  params.vario_integration_period = (int)lv_slider_get_value(slider_integration);
+  
+  for (int i = 0; i < 16; i++) {
+    params.vario_audio_frequencies[i] = audio_frequencies[i];
+  }
+  
+  params_save_vario();
+  
+#ifdef DEBUG_MODE
+  Serial.println("Vario settings saved to params");
 #endif
 }
 
@@ -285,7 +281,7 @@ void ui_settings_vario_init(void) {
   lv_obj_add_event_cb(chart_audio, chart_audio_event_cb, LV_EVENT_PRESSED, NULL);
   lv_obj_add_event_cb(chart_audio, chart_audio_event_cb, LV_EVENT_PRESSING, NULL);
 
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_container, txt->save, txt->cancel, txt->reset, true, true, true, btn_reset_audio_cb, btn_save_vario_cb, btn_cancel_vario_cb);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_container, txt->save, txt->cancel, txt->reset, true, true, true, btn_save_vario_cb, btn_cancel_vario_cb, btn_reset_audio_cb, NULL, NULL, NULL);
 
   load_vario_settings();
 
