@@ -321,9 +321,7 @@ void ui_settings_map_init(void) {
   lv_obj_set_style_text_align(label_preview, LV_TEXT_ALIGN_CENTER, 0);
 
   // Boutons Enregistrer et Annuler
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel,nullptr,true,true,false);
-  lv_obj_add_event_cb(buttons.save, btn_save_map_cb, LV_EVENT_CLICKED, &widgets);
-  lv_obj_add_event_cb(buttons.cancel, btn_cancel_map_cb, LV_EVENT_CLICKED, NULL);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel, nullptr, true, true, false, btn_save_map_cb, btn_cancel_map_cb, nullptr);
 
   // Charger les valeurs sauvegardees
   load_map_settings(widgets.slider_zoom, label_zoom_value, widgets.dropdown_tile_server,

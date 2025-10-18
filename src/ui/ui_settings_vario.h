@@ -285,10 +285,8 @@ void ui_settings_vario_init(void) {
   lv_obj_add_event_cb(chart_audio, chart_audio_event_cb, LV_EVENT_PRESSED, NULL);
   lv_obj_add_event_cb(chart_audio, chart_audio_event_cb, LV_EVENT_PRESSING, NULL);
 
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_container, txt->save, txt->cancel,txt->reset,true,true,true);
-  lv_obj_add_event_cb(buttons.reset, btn_reset_audio_cb, LV_EVENT_CLICKED, NULL);
-  lv_obj_add_event_cb(buttons.save, btn_save_vario_cb, LV_EVENT_CLICKED, NULL);
-  lv_obj_add_event_cb(buttons.cancel, btn_cancel_vario_cb, LV_EVENT_CLICKED, NULL);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_container, txt->save, txt->cancel, txt->reset, true, true, true, btn_reset_audio_cb, btn_save_vario_cb, btn_cancel_vario_cb);
+
   load_vario_settings();
 
   lv_screen_load(main_screen);

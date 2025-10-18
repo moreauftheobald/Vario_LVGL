@@ -293,7 +293,7 @@ typedef struct {
   lv_obj_t *reset;
 } ui_button_pair_t;
 
-static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent, const char *save_text, const char *cancel_text, const char *reset_text, bool save, bool cancel, bool reset) {
+static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent, const char *save_text, const char *cancel_text, const char *reset_text, bool save, bool cancel, bool reset, lv_event_cb_t save_callback,lv_event_cb_t cancel_callback,lv_event_cb_t reset_callback) {
   ui_button_pair_t buttons;
 
   lv_obj_t *container = ui_create_flex_container(parent, LV_FLEX_FLOW_ROW);
@@ -308,7 +308,7 @@ static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent, c
                                     50,
                                     &lv_font_montserrat_20,
                                     &lv_font_montserrat_24,
-                                    NULL,
+                                    save_callback,
                                     NULL,
                                     (lv_align_t)0,
                                     NULL,
@@ -323,7 +323,7 @@ static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent, c
                                       50,
                                       &lv_font_montserrat_20,
                                       &lv_font_montserrat_24,
-                                      NULL,
+                                      cancel_callback,
                                       NULL,
                                       (lv_align_t)0,
                                       NULL,
@@ -339,7 +339,7 @@ static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent, c
                                      50,
                                      &lv_font_montserrat_20,
                                      &lv_font_montserrat_24,
-                                     NULL,
+                                     reset_callback,
                                      NULL,
                                      (lv_align_t)0,
                                      NULL,

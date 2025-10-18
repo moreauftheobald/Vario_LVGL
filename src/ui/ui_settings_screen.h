@@ -289,9 +289,7 @@ void ui_settings_screen_init(void) {
   
   update_target_position();
   
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(screen_settings_screen, txt->save, txt->cancel,nullptr,true,true,false);
-  lv_obj_add_event_cb(buttons.save, btn_save_calib_cb, LV_EVENT_CLICKED, NULL);
-  lv_obj_add_event_cb(buttons.cancel, btn_cancel_calib_cb, LV_EVENT_CLICKED, NULL);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(screen_settings_screen, txt->save, txt->cancel, nullptr, true, true, false, btn_save_calib_cb, btn_cancel_calib_cb, nullptr);
 
 #ifdef DEBUG_MODE
   Serial.println("Screen calibration initialized");
