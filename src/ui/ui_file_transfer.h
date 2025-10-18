@@ -32,35 +32,34 @@ void ui_file_transfer_init(void) {
   lv_obj_set_flex_align(info_panel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
   // WiFi status icon
-  lv_obj_t *wifi_icon = ui_create_label(info_panel, LV_SYMBOL_WIFI, 
-                                         &lv_font_montserrat_48, lv_color_hex(0x00d4ff));
-  
+  lv_obj_t *wifi_icon = ui_create_label(info_panel, LV_SYMBOL_WIFI,
+                                        &lv_font_montserrat_48, lv_color_hex(0x00d4ff));
+
   // SSID text
-  lv_obj_t *ssid_label = ui_create_label(info_panel, "SSID: Vario_AP", 
-                                          &lv_font_montserrat_24, lv_color_hex(0xaabbcc));
+  lv_obj_t *ssid_label = ui_create_label(info_panel, "SSID: Vario_AP",
+                                         &lv_font_montserrat_24, lv_color_hex(0xaabbcc));
   lv_obj_set_style_text_align(ssid_label, LV_TEXT_ALIGN_CENTER, 0);
 
   // Password text
-  lv_obj_t *pwd_label = ui_create_label(info_panel, "Password: vario1234", 
-                                         &lv_font_montserrat_24, lv_color_hex(0xaabbcc));
+  lv_obj_t *pwd_label = ui_create_label(info_panel, "Password: vario1234",
+                                        &lv_font_montserrat_24, lv_color_hex(0xaabbcc));
   lv_obj_set_style_text_align(pwd_label, LV_TEXT_ALIGN_CENTER, 0);
 
   // Separator
   ui_create_separator(info_panel);
 
   // Instructions
-  lv_obj_t *instructions = ui_create_label(info_panel, 
-                                            "1. Connectez-vous au WiFi\n"
-                                            "2. Ouvrez votre navigateur\n"
-                                            "3. Allez sur: http://192.168.4.1",
-                                            &lv_font_montserrat_20, lv_color_hex(0xaabbcc));
+  lv_obj_t *instructions = ui_create_label(info_panel,
+                                           "1. Connectez-vous au WiFi\n"
+                                           "2. Ouvrez votre navigateur\n"
+                                           "3. Allez sur: http://192.168.4.1",
+                                           &lv_font_montserrat_20, lv_color_hex(0xaabbcc));
   lv_obj_set_style_text_align(instructions, LV_TEXT_ALIGN_CENTER, 0);
   lv_label_set_long_mode(instructions, LV_LABEL_LONG_WRAP);
   lv_obj_set_width(instructions, lv_pct(90));
 
-  // Exit button
-  lv_obj_t *btn_exit = ui_create_exit_button(main_frame, txt->exit);
-  lv_obj_add_event_cb(btn_exit, btn_exit_cb, LV_EVENT_CLICKED, NULL);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, nullptr, txt->exit, nullptr, false, true, false);
+  lv_obj_add_event_cb(buttons.cancel, btn_exit_cb, LV_EVENT_CLICKED, NULL);
 
   lv_screen_load(main_screen);
 

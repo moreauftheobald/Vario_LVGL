@@ -22,6 +22,7 @@ struct TextStrings {
   const char* system_settings;
   const char* save;
   const char* cancel;
+  const char* reset;
   const char* pilot_name;
   const char* pilot_firstname;
   const char* pilot_wing;
@@ -54,6 +55,7 @@ static const TextStrings text_fr = {
   .system_settings = "Parametres Systeme",
   .save = "Enregistrer",
   .cancel = "Annuler",
+  .reset = "reset",
   .pilot_name = "Nom",
   .pilot_firstname = "Prenom",
   .pilot_wing = "Modele de voile",
@@ -86,6 +88,7 @@ static const TextStrings text_en = {
   .system_settings = "System Settings",
   .save = "Save",
   .cancel = "Cancel",
+  .reset = "reset",
   .pilot_name = "Last Name",
   .pilot_firstname = "First Name",
   .pilot_wing = "Wing Model",

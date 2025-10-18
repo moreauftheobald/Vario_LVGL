@@ -207,7 +207,7 @@ void ui_settings_wifi_init(void) {
   lv_obj_align(btn_container, LV_ALIGN_BOTTOM_MID, 0, -5);
   lv_obj_set_flex_align(btn_container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
   
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(btn_container, txt->save, txt->cancel);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(btn_container, txt->save, txt->cancel,nullptr,true,true,false);
   lv_obj_add_event_cb(buttons.save, btn_save_wifi_cb, LV_EVENT_CLICKED, NULL);
   lv_obj_add_event_cb(buttons.cancel, btn_cancel_wifi_cb, LV_EVENT_CLICKED, NULL);
 

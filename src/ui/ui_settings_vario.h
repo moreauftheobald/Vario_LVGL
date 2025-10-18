@@ -183,8 +183,8 @@ void ui_settings_vario_init(void) {
 
   // Container principal
   lv_obj_t *main_container = ui_create_flex_container(main_frame, LV_FLEX_FLOW_COLUMN);
-  lv_obj_set_size(main_container, 940, 460);
-  lv_obj_align(main_container, LV_ALIGN_CENTER, 0, 15);
+  lv_obj_set_size(main_container, 940, 560);
+  lv_obj_align(main_container, LV_ALIGN_CENTER, 0, 80);
   lv_obj_set_flex_align(main_container, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
   lv_obj_set_style_pad_row(main_container, 20, 0);
 
@@ -285,25 +285,10 @@ void ui_settings_vario_init(void) {
   lv_obj_add_event_cb(chart_audio, chart_audio_event_cb, LV_EVENT_PRESSED, NULL);
   lv_obj_add_event_cb(chart_audio, chart_audio_event_cb, LV_EVENT_PRESSING, NULL);
 
-  // Boutons Enregistrer, Reinitialiser et Annuler (decales de 20px vers le bas)
-  lv_obj_t *buttons_container = ui_create_flex_container(main_frame, LV_FLEX_FLOW_ROW);
-  lv_obj_set_width(buttons_container, 700);
-  lv_obj_align(buttons_container, LV_ALIGN_BOTTOM_MID, 0, -10);
-  lv_obj_set_flex_align(buttons_container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_column(buttons_container, 15, 0);
-
-  lv_obj_t *btn_reset = ui_create_simple_button(buttons_container, "Reset",
-                                                lv_color_hex(0xff9500), 220, 50);
-  lv_obj_add_event_cb(btn_reset, btn_reset_audio_cb, LV_EVENT_CLICKED, NULL);
-
-  lv_obj_t *btn_save = ui_create_simple_button(buttons_container, txt->save,
-                                               lv_color_hex(0x34c759), 220, 50);
-  lv_obj_add_event_cb(btn_save, btn_save_vario_cb, LV_EVENT_CLICKED, NULL);
-
-  lv_obj_t *btn_cancel = ui_create_simple_button(buttons_container, txt->cancel,
-                                                 lv_color_hex(0xff3b30), 220, 50);
-  lv_obj_add_event_cb(btn_cancel, btn_cancel_vario_cb, LV_EVENT_CLICKED, NULL);
-
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_container, txt->save, txt->cancel,txt->reset,true,true,true);
+  lv_obj_add_event_cb(buttons.reset, btn_reset_audio_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(buttons.save, btn_save_vario_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(buttons.cancel, btn_cancel_vario_cb, LV_EVENT_CLICKED, NULL);
   load_vario_settings();
 
   lv_screen_load(main_screen);

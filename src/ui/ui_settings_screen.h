@@ -289,17 +289,9 @@ void ui_settings_screen_init(void) {
   
   update_target_position();
   
-  // Bouton Enregistrer
-  lv_obj_t *btn_save = ui_create_simple_button(screen_settings_screen, "Enregistrer", 
-                                                 lv_color_hex(0x34c759), 140, 50);
-  lv_obj_align(btn_save, LV_ALIGN_BOTTOM_LEFT, 100, -30);
-  lv_obj_add_event_cb(btn_save, btn_save_calib_cb, LV_EVENT_CLICKED, NULL);
-  
-  // Bouton Annuler
-  lv_obj_t *btn_cancel = ui_create_simple_button(screen_settings_screen, "Annuler", 
-                                                   lv_color_hex(0xff3b30), 140, 50);
-  lv_obj_align(btn_cancel, LV_ALIGN_BOTTOM_RIGHT, -100, -30);
-  lv_obj_add_event_cb(btn_cancel, btn_cancel_calib_cb, LV_EVENT_CLICKED, NULL);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(screen_settings_screen, txt->save, txt->cancel,nullptr,true,true,false);
+  lv_obj_add_event_cb(buttons.save, btn_save_calib_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(buttons.cancel, btn_cancel_calib_cb, LV_EVENT_CLICKED, NULL);
 
 #ifdef DEBUG_MODE
   Serial.println("Screen calibration initialized");

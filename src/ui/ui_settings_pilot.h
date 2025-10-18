@@ -135,12 +135,12 @@ void ui_settings_pilot_init(void) {
   lv_obj_add_event_cb(keyboard, keyboard_event_cb, LV_EVENT_ALL, NULL);
 
   // Boutons Save/Cancel
-  lv_obj_t *btn_container = ui_create_flex_container(main_frame, LV_FLEX_FLOW_ROW);
+  /* lv_obj_t *btn_container = ui_create_flex_container(main_frame, LV_FLEX_FLOW_ROW);
   lv_obj_set_size(btn_container, lv_pct(100), LV_SIZE_CONTENT);
   lv_obj_align(btn_container, LV_ALIGN_BOTTOM_MID, 0, -5);
-  lv_obj_set_flex_align(btn_container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+  lv_obj_set_flex_align(btn_container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER); */
 
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(btn_container, txt->save, txt->cancel);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel,nullptr,true,true,false);
   lv_obj_add_event_cb(buttons.save, btn_save_cb, LV_EVENT_CLICKED, &widgets);
   lv_obj_add_event_cb(buttons.cancel, btn_cancel_cb, LV_EVENT_CLICKED, NULL);
 
