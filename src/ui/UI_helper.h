@@ -101,8 +101,9 @@ static inline lv_obj_t *ui_create_info_panel(lv_obj_t *parent, int width, int he
  * @brief Cree un bouton moderne avec icone et texte
  */
 static inline lv_obj_t *ui_create_button(lv_obj_t *parent, const char *text, const char *icon,
-                                         lv_color_t color, int width, int height, 
+                                         lv_color_t color, int width, int height,
                                          const lv_font_t *text_font, const lv_font_t *icon_font,
+                                         lv_event_cb_t callback, void *user_data,
                                          lv_align_t align, int32_t x_off, int32_t y_off) {
   lv_obj_t *btn = lv_button_create(parent);
   lv_obj_set_size(btn, width, height);
@@ -132,6 +133,10 @@ static inline lv_obj_t *ui_create_button(lv_obj_t *parent, const char *text, con
   if (align) {
     Serial.println("OK");
     lv_obj_align(btn, align, x_off, y_off);
+  }
+
+  if (callback) {
+    lv_obj_add_event_cb(btn, callback, LV_EVENT_CLICKED, user_data);
   }
 
   return btn;
@@ -295,43 +300,49 @@ static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent, c
   lv_obj_align(container, LV_ALIGN_BOTTOM_MID, 0, -5);
   lv_obj_set_flex_align(container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
   if (save) {
-    buttons.save = ui_create_button(container, 
-                                    save_text, 
-                                    NULL, 
-                                    lv_color_hex(0x34c759), 
-                                    220, 
-                                    50, 
-                                    &lv_font_montserrat_20, 
-                                    &lv_font_montserrat_24, 
-                                    (lv_align_t)0, 
-                                    NULL, 
+    buttons.save = ui_create_button(container,
+                                    save_text,
+                                    NULL,
+                                    lv_color_hex(0x34c759),
+                                    220,
+                                    50,
+                                    &lv_font_montserrat_20,
+                                    &lv_font_montserrat_24,
+                                    NULL,
+                                    NULL,
+                                    (lv_align_t)0,
+                                    NULL,
                                     NULL);
   }
   if (cancel) {
-    buttons.cancel = ui_create_button(container, 
-                                      cancel_text, 
-                                      NULL, 
-                                      lv_color_hex(0xff3b30), 
-                                      220, 
-                                      50, 
-                                      &lv_font_montserrat_20, 
-                                      &lv_font_montserrat_24, 
-                                      (lv_align_t)0, 
-                                      NULL, 
+    buttons.cancel = ui_create_button(container,
+                                      cancel_text,
+                                      NULL,
+                                      lv_color_hex(0xff3b30),
+                                      220,
+                                      50,
+                                      &lv_font_montserrat_20,
+                                      &lv_font_montserrat_24,
+                                      NULL,
+                                      NULL,
+                                      (lv_align_t)0,
+                                      NULL,
                                       NULL);
   }
 
   if (reset) {
-    buttons.reset = ui_create_button(container, 
-                                     reset_text, 
-                                     NULL, 
-                                     lv_color_hex(0xff9500), 
-                                     220, 
-                                     50, 
-                                     &lv_font_montserrat_20, 
-                                     &lv_font_montserrat_24, 
-                                     (lv_align_t)0, 
-                                     NULL, 
+    buttons.reset = ui_create_button(container,
+                                     reset_text,
+                                     NULL,
+                                     lv_color_hex(0xff9500),
+                                     220,
+                                     50,
+                                     &lv_font_montserrat_20,
+                                     &lv_font_montserrat_24,
+                                     NULL,
+                                     NULL,
+                                     (lv_align_t)0,
+                                     NULL,
                                      NULL);
   }
   return buttons;

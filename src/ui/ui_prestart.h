@@ -64,45 +64,47 @@ void ui_prestart_init(void) {
   lv_obj_set_flex_align(btn_container, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
   lv_obj_set_style_pad_row(btn_container, 30, 0);
 
-  lv_obj_t *btn_file_transfer = ui_create_button(btn_container, 
-                                        txt->file_transfer, 
-                                        LV_SYMBOL_USB,
-                                        lv_color_hex(0xff9500), 
-                                        400, 
-                                        120, 
-                                        &lv_font_montserrat_24, 
-                                        &lv_font_montserrat_32, 
-                                        (lv_align_t)0, 
-                                        NULL, 
-                                        NULL);
+  lv_obj_t *btn_file_transfer = ui_create_button(btn_container,
+                                                 txt->file_transfer,
+                                                 LV_SYMBOL_USB,
+                                                 lv_color_hex(0xff9500),
+                                                 400,
+                                                 120,
+                                                 &lv_font_montserrat_24,
+                                                 &lv_font_montserrat_32,
+                                                 btn_file_transfer_cb,
+                                                 NULL,
+                                                 (lv_align_t)0,
+                                                 NULL,
+                                                 NULL);
 
-  lv_obj_t *btn_settings    = ui_create_button(btn_container, 
-                                        txt->settings, 
-                                        LV_SYMBOL_SETTINGS,
-                                        lv_color_hex(0x007aff), 
-                                        400, 
-                                        120, 
-                                        &lv_font_montserrat_24, 
-                                        &lv_font_montserrat_32, 
-                                        (lv_align_t)0, 
-                                        NULL, 
-                                        NULL);
+  lv_obj_t *btn_settings = ui_create_button(btn_container,
+                                            txt->settings,
+                                            LV_SYMBOL_SETTINGS,
+                                            lv_color_hex(0x007aff),
+                                            400,
+                                            120,
+                                            &lv_font_montserrat_24,
+                                            &lv_font_montserrat_32,
+                                            btn_settings_cb,
+                                            NULL,
+                                            (lv_align_t)0,
+                                            NULL,
+                                            NULL);
 
-  lv_obj_t *btn_start       = ui_create_button(btn_container, 
-                                        txt->start, 
-                                        LV_SYMBOL_PLAY,
-                                        lv_color_hex(0x34c759), 
-                                        400, 
-                                        120, 
-                                        &lv_font_montserrat_24, 
-                                        &lv_font_montserrat_32, 
-                                        (lv_align_t)0, 
-                                        NULL, 
-                                        NULL); 
-
-  lv_obj_add_event_cb(btn_file_transfer, btn_file_transfer_cb, LV_EVENT_CLICKED, NULL);
-  lv_obj_add_event_cb(btn_settings, btn_settings_cb, LV_EVENT_CLICKED, NULL);
-  lv_obj_add_event_cb(btn_start, btn_start_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_t *btn_start = ui_create_button(btn_container,
+                                         txt->start,
+                                         LV_SYMBOL_PLAY,
+                                         lv_color_hex(0x34c759),
+                                         400,
+                                         120,
+                                         &lv_font_montserrat_24,
+                                         &lv_font_montserrat_32,
+                                         btn_start_cb,
+                                         NULL,
+                                         (lv_align_t)0,
+                                         NULL,
+                                         NULL);
 
   // Colonne droite: Panel d'informations
   lv_obj_t *info_panel = ui_create_info_panel_bordered(content_container, 550, 450);

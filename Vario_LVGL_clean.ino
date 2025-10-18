@@ -25,9 +25,9 @@ lv_obj_t *keyboard = NULL;
 lv_obj_t *main_screen = NULL;
 
 void force_full_refresh(void) {
-    lv_obj_invalidate(lv_screen_active());
-    lv_refr_now(NULL);
-    vTaskDelay(pdMS_TO_TICKS(10));
+  lv_obj_invalidate(lv_screen_active());
+  lv_refr_now(NULL);
+  vTaskDelay(pdMS_TO_TICKS(10));
 }
 
 void setup() {
