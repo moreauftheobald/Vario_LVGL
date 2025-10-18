@@ -101,7 +101,9 @@ static inline lv_obj_t *ui_create_info_panel(lv_obj_t *parent, int width, int he
  * @brief Cree un bouton moderne avec icone et texte
  */
 static inline lv_obj_t *ui_create_button(lv_obj_t *parent, const char *text, const char *icon,
-                                         lv_color_t color, int width, int height, lv_align_t align, int32_t x_off, int32_t y_off) {
+                                         lv_color_t color, int width, int height, 
+                                         const lv_font_t *text_font, const lv_font_t *icon_font,
+                                         lv_align_t align, int32_t x_off, int32_t y_off) {
   lv_obj_t *btn = lv_button_create(parent);
   lv_obj_set_size(btn, width, height);
   lv_obj_set_style_bg_color(btn, color, 0);
@@ -114,7 +116,7 @@ static inline lv_obj_t *ui_create_button(lv_obj_t *parent, const char *text, con
   if (icon) {
     lv_obj_t *icon_label = lv_label_create(btn);
     lv_label_set_text(icon_label, icon);
-    lv_obj_set_style_text_font(icon_label, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_font(icon_label, icon_font, 0);
     lv_obj_set_style_text_color(icon_label, lv_color_white(), 0);
     lv_obj_align(icon_label, LV_ALIGN_LEFT_MID, 20, 0);
   }
@@ -122,7 +124,7 @@ static inline lv_obj_t *ui_create_button(lv_obj_t *parent, const char *text, con
   if (text) {
     lv_obj_t *text_label = lv_label_create(btn);
     lv_label_set_text(text_label, text);
-    lv_obj_set_style_text_font(text_label, &lv_font_montserrat_20, 0);
+    lv_obj_set_style_text_font(text_label, text_font, 0);
     lv_obj_set_style_text_color(text_label, lv_color_white(), 0);
     lv_obj_align(text_label, icon ? LV_ALIGN_LEFT_MID : LV_ALIGN_CENTER, icon ? 70 : 0, 0);
   }
@@ -199,35 +201,6 @@ static inline lv_obj_t *ui_create_keyboard(lv_obj_t *parent, lv_keyboard_mode_t 
   lv_obj_align(kb, LV_ALIGN_BOTTOM_MID, 0, 0);
   lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
   return kb;
-}
-
-/**
- * @brief Cree un bouton moderne avec icone centree et texte en dessous
- */
-static inline lv_obj_t *ui_create_modern_button(lv_obj_t *parent, const char *text,
-                                                const char *icon, lv_color_t color) {
-  lv_obj_t *btn = lv_button_create(parent);
-  lv_obj_set_size(btn, 400, 120);
-  lv_obj_set_style_bg_color(btn, color, 0);
-  lv_obj_set_style_radius(btn, 20, 0);
-  lv_obj_set_style_shadow_width(btn, 15, 0);
-  lv_obj_set_style_shadow_color(btn, lv_color_black(), 0);
-  lv_obj_set_style_shadow_opa(btn, LV_OPA_30, 0);
-  lv_obj_set_style_bg_color(btn, lv_color_darken(color, 20), LV_STATE_PRESSED);
-
-  lv_obj_t *icon_label = lv_label_create(btn);
-  lv_label_set_text(icon_label, icon);
-  lv_obj_set_style_text_font(icon_label, &lv_font_montserrat_32, 0);
-  lv_obj_set_style_text_color(icon_label, lv_color_white(), 0);
-  lv_obj_align(icon_label, LV_ALIGN_LEFT_MID, 30, 0);
-
-  lv_obj_t *label = lv_label_create(btn);
-  lv_label_set_text(label, text);
-  lv_obj_set_style_text_font(label, &lv_font_montserrat_24, 0);
-  lv_obj_set_style_text_color(label, lv_color_white(), 0);
-  lv_obj_align(label, LV_ALIGN_CENTER, 15, 0);
-
-  return btn;
 }
 
 /**
@@ -322,14 +295,44 @@ static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent, c
   lv_obj_align(container, LV_ALIGN_BOTTOM_MID, 0, -5);
   lv_obj_set_flex_align(container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
   if (save) {
-    buttons.save = ui_create_button(container, save_text, NULL, lv_color_hex(0x34c759), 220, 50, (lv_align_t)0, NULL, NULL);
+    buttons.save = ui_create_button(container, 
+                                    save_text, 
+                                    NULL, 
+                                    lv_color_hex(0x34c759), 
+                                    220, 
+                                    50, 
+                                    &lv_font_montserrat_20, 
+                                    &lv_font_montserrat_24, 
+                                    (lv_align_t)0, 
+                                    NULL, 
+                                    NULL);
   }
   if (cancel) {
-    buttons.cancel = ui_create_button(container, cancel_text, NULL, lv_color_hex(0xff3b30), 220, 50, (lv_align_t)0, NULL, NULL);
+    buttons.cancel = ui_create_button(container, 
+                                      cancel_text, 
+                                      NULL, 
+                                      lv_color_hex(0xff3b30), 
+                                      220, 
+                                      50, 
+                                      &lv_font_montserrat_20, 
+                                      &lv_font_montserrat_24, 
+                                      (lv_align_t)0, 
+                                      NULL, 
+                                      NULL);
   }
 
   if (reset) {
-    buttons.reset = ui_create_button(container, reset_text, NULL, lv_color_hex(0xff9500), 220, 50, (lv_align_t)0, NULL, NULL);
+    buttons.reset = ui_create_button(container, 
+                                     reset_text, 
+                                     NULL, 
+                                     lv_color_hex(0xff9500), 
+                                     220, 
+                                     50, 
+                                     &lv_font_montserrat_20, 
+                                     &lv_font_montserrat_24, 
+                                     (lv_align_t)0, 
+                                     NULL, 
+                                     NULL);
   }
   return buttons;
 }

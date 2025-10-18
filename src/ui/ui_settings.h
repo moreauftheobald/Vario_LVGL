@@ -88,32 +88,97 @@ void ui_settings_init(void) {
   lv_obj_set_style_pad_row(buttons_container, 15, 0);
 
   // Boutons de parametres
-  lv_obj_t *btn_pilot = ui_create_button(buttons_container, txt->pilot_settings,
-                                                  LV_SYMBOL_HOME, lv_color_hex(0x5856d6), 460,80, (lv_align_t)0, NULL, NULL);
-  lv_obj_add_event_cb(btn_pilot, btn_pilot_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_t *btn_pilot = ui_create_button(buttons_container, 
+                                         txt->pilot_settings,
+                                         LV_SYMBOL_HOME, 
+                                         lv_color_hex(0x5856d6), 
+                                         460,
+                                         80, 
+                                         &lv_font_montserrat_20, 
+                                         &lv_font_montserrat_24, 
+                                         (lv_align_t)0, 
+                                         NULL, 
+                                         NULL);
 
-  lv_obj_t *btn_wifi = ui_create_button(buttons_container, txt->wifi_settings,
-                                                 LV_SYMBOL_WIFI, lv_color_hex(0x007aff),460,80, (lv_align_t)0, NULL, NULL);
-  lv_obj_add_event_cb(btn_wifi, btn_wifi_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_t *btn_wifi = ui_create_button(buttons_container, 
+                                        txt->wifi_settings,
+                                        LV_SYMBOL_WIFI, 
+                                        lv_color_hex(0x007aff),
+                                        460,
+                                        80, 
+                                        &lv_font_montserrat_20, 
+                                        &lv_font_montserrat_24,  
+                                        (lv_align_t)0, 
+                                        NULL, 
+                                        NULL);
 
-  lv_obj_t *btn_screen = ui_create_button(buttons_container, txt->screen_calibration,
-                                                   LV_SYMBOL_SETTINGS, lv_color_hex(0xff9500),460,80, (lv_align_t)0, NULL, NULL);
-  lv_obj_add_event_cb(btn_screen, btn_screen_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_t *btn_screen = ui_create_button(buttons_container, 
+                                            txt->screen_calibration,
+                                            LV_SYMBOL_SETTINGS, 
+                                            lv_color_hex(0xff9500),
+                                            460,
+                                            80, 
+                                            &lv_font_montserrat_20, 
+                                            &lv_font_montserrat_24,  
+                                            (lv_align_t)0, 
+                                            NULL, 
+                                            NULL);
 
-  lv_obj_t *btn_vario = ui_create_button(buttons_container, txt->vario_settings,
-                                                  LV_SYMBOL_UP, lv_color_hex(0x4cd964),460,80, (lv_align_t)0, NULL, NULL);
-  lv_obj_add_event_cb(btn_vario, btn_vario_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_t *btn_vario = ui_create_button(buttons_container, 
+                                         txt->vario_settings,
+                                         LV_SYMBOL_UP, 
+                                         lv_color_hex(0x4cd964),
+                                         460,
+                                         80, 
+                                         &lv_font_montserrat_20, 
+                                         &lv_font_montserrat_24,   
+                                         (lv_align_t)0, 
+                                         NULL, 
+                                         NULL);
 
-  lv_obj_t *btn_map = ui_create_button(buttons_container, txt->map_settings,
-                                                LV_SYMBOL_GPS, lv_color_hex(0x34c759),460,80, (lv_align_t)0, NULL, NULL);
-  lv_obj_add_event_cb(btn_map, btn_map_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_t *btn_map = ui_create_button(buttons_container, 
+                                       txt->map_settings,
+                                       LV_SYMBOL_GPS, 
+                                       lv_color_hex(0x34c759),
+                                       460,
+                                       80, 
+                                       &lv_font_montserrat_20, 
+                                       &lv_font_montserrat_24,  
+                                       (lv_align_t)0, 
+                                       NULL, 
+                                       NULL);
 
-  lv_obj_t *btn_system = ui_create_button(buttons_container, txt->system_settings,
-                                                   LV_SYMBOL_LIST, lv_color_hex(0x8e8e93),460,80, (lv_align_t)0, NULL, NULL);
-  lv_obj_add_event_cb(btn_system, btn_system_cb, LV_EVENT_CLICKED, NULL);
-
+lv_obj_t *btn_system = ui_create_button(buttons_container, 
+                                        txt->system_settings,
+                                        LV_SYMBOL_LIST, 
+                                        lv_color_hex(0x8e8e93),
+                                        460,
+                                        80, 
+                                        &lv_font_montserrat_20, 
+                                        &lv_font_montserrat_24,   
+                                        (lv_align_t)0, 
+                                        NULL, 
+                                        NULL);
+  
   // Bouton retour
-  lv_obj_t *btn_back = ui_create_button(main_frame, txt->back, NULL,lv_color_hex(0xff3b30), 300, 70, LV_ALIGN_BOTTOM_MID, 0, -15);
+  lv_obj_t *btn_back = ui_create_button(main_frame, 
+                                        txt->back, 
+                                        NULL,
+                                        lv_color_hex(0xff3b30), 
+                                        300, 
+                                        70, 
+                                        &lv_font_montserrat_20, 
+                                        &lv_font_montserrat_24, 
+                                        LV_ALIGN_BOTTOM_MID, 
+                                        0, 
+                                        -15);
+
+  lv_obj_add_event_cb(btn_pilot, btn_pilot_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(btn_wifi, btn_wifi_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(btn_screen, btn_screen_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(btn_vario, btn_vario_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(btn_map, btn_map_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(btn_system, btn_system_cb, LV_EVENT_CLICKED, NULL);
   lv_obj_add_event_cb(btn_back, btn_back_cb, LV_EVENT_CLICKED, NULL);
 
 #ifdef DEBUG_MODE
