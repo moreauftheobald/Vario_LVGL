@@ -39,6 +39,14 @@ struct TextStrings {
   const char* map_track_points;
   const char* map_vario_colors;
   const char* map_position_indicator;
+  const char* information;
+  const char* version;
+  const char* sd_card;
+  const char* free_space;
+  const char* maps;
+  const char* flights;
+  const char* pilot;
+  const char* phone;
 };
 
 static const TextStrings text_fr = {
@@ -71,7 +79,15 @@ static const TextStrings text_fr = {
   .map_tile_server = "Serveur de tuiles",
   .map_track_points = "Points de trace",
   .map_vario_colors = "Couleurs vario",
-  .map_position_indicator = "Indicateur de position"
+  .map_position_indicator = "Indicateur de position",
+  .information = "Informations",
+  .version = "Version",
+  .sd_card = "Carte SD",
+  .free_space = "Espace libre",
+  .maps = "Cartes",
+  .flights = "Vols",
+  .pilot = "Pilote",
+  .phone = "Telephone"
 };
 
 static const TextStrings text_en = {
@@ -104,7 +120,15 @@ static const TextStrings text_en = {
   .map_tile_server = "Tile server",
   .map_track_points = "Track points",
   .map_vario_colors = "Vario colors",
-  .map_position_indicator = "Position indicator"
+  .map_position_indicator = "Position indicator",
+  .information = "Information",
+  .version = "Version",
+  .sd_card = "SD Card",
+  .free_space = "Free space",
+  .maps = "Maps",
+  .flights = "Flights",
+  .pilot = "Pilot",
+  .phone = "Phone"
 };
 
 static inline const TextStrings* get_text() {
