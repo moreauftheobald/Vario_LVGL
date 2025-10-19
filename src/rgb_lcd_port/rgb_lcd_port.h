@@ -10,7 +10,7 @@
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_rgb.h"
 
-/*#define LCD_IO_RGB_DISP (-1)
+#define LCD_IO_RGB_DISP (-1)
 #define LCD_IO_RGB_VSYNC (GPIO_NUM_3)
 #define LCD_IO_RGB_HSYNC (GPIO_NUM_46)
 #define LCD_IO_RGB_DE (GPIO_NUM_5)
@@ -32,7 +32,7 @@
 #define LCD_IO_RGB_DATA13 (GPIO_NUM_42)
 #define LCD_IO_RGB_DATA14 (GPIO_NUM_41)
 #define LCD_IO_RGB_DATA15 (GPIO_NUM_40)
-#define LCD_IO_RST (-1)*/
+#define LCD_IO_RST (-1)
 
 #define EXAMPLE_LCD_H_RES (1024)
 #define EXAMPLE_LCD_V_RES (600)
