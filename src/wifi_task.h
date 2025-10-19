@@ -45,10 +45,10 @@ static bool wifi_connect_with_priority(void) {
     Serial.printf("Trying WiFi priority %d: %s\n", priority + 1,
                   params.wifi_ssid[priority].c_str());
 #endif
-
+    heap_caps_disable(MALLOC_CAP_SPIRAM);
     WiFi.begin(params.wifi_ssid[priority].c_str(),
                params.wifi_password[priority].c_str());
-
+    heap_caps_enable(MALLOC_CAP_SPIRAM);
     // Attendre connexion (max 10 secondes)
     int retry = 0;
     while (WiFi.status() != WL_CONNECTED && retry < 20) {
