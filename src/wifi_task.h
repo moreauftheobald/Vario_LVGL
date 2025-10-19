@@ -2,6 +2,7 @@
 #define WIFI_TASK_H
 
 #include <WiFi.h>
+#include "esp_heap_caps.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
@@ -35,20 +36,27 @@ String wifi_get_current_ip(void) {
 
 // Fonction de connexion WiFi avec priorite
 static bool wifi_connect_with_priority(void) {
+#ifdef DEBUG_MODE
+  Serial.printf("Free PSRAM before WiFi init: %u bytes\n", ESP.getFreePsram());
+#endif
+
   // Essayer chaque reseau par priorite
   for (int priority = 0; priority < 4; priority++) {
     if (params.wifi_ssid[priority].length() == 0) {
-      continue;  // Pas de SSID configure
+      continue;
     }
 
 #ifdef DEBUG_MODE
     Serial.printf("Trying WiFi priority %d: %s\n", priority + 1,
                   params.wifi_ssid[priority].c_str());
+    Serial.printf("Connecting to SSID: '%s'\n", params.wifi_ssid[priority].c_str());
+    Serial.printf("Password length: %d\n", params.wifi_password[priority].length());
+    Serial.printf("Password (masked): %s\n",
+                  String("*").c_str());  // Ne jamais logger le vrai mot de passe
 #endif
-    heap_caps_disable(MALLOC_CAP_SPIRAM);
     WiFi.begin(params.wifi_ssid[priority].c_str(),
                params.wifi_password[priority].c_str());
-    heap_caps_enable(MALLOC_CAP_SPIRAM);
+
     // Attendre connexion (max 10 secondes)
     int retry = 0;
     while (WiFi.status() != WL_CONNECTED && retry < 20) {
@@ -64,9 +72,11 @@ static bool wifi_connect_with_priority(void) {
 #ifdef DEBUG_MODE
       Serial.printf("WiFi connected to: %s\n", wifi_current_ssid.c_str());
       Serial.printf("IP address: %s\n", wifi_current_ip.c_str());
+      Serial.printf("Free PSRAM after WiFi connect: %u bytes\n", ESP.getFreePsram());
 #endif
 
       xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
+
       return true;
     }
 
@@ -78,6 +88,8 @@ static bool wifi_connect_with_priority(void) {
 #ifdef DEBUG_MODE
   Serial.println("No WiFi network available");
 #endif
+
+  // Remettre PSRAM comme prioritaire meme en cas d'echec
 
   return false;
 }
@@ -95,8 +107,8 @@ static void wifi_task(void *pvParameters) {
     EventBits_t bits = xEventGroupWaitBits(
       wifi_event_group,
       WIFI_START_BIT | WIFI_STOP_BIT,
-      pdTRUE,   // Clear bits on exit
-      pdFALSE,  // Wait for any bit
+      pdTRUE,
+      pdFALSE,
       portMAX_DELAY);
 
     if (bits & WIFI_START_BIT) {
@@ -152,19 +164,18 @@ void wifi_task_stop(void) {
 
 void wifi_task_init(void) {
   if (wifi_task_handle != NULL) {
-    return;  // Deja initialise
+    return;
   }
 
   wifi_event_group = xEventGroupCreate();
 
-  xTaskCreatePinnedToCore(
+  xTaskCreate(
     wifi_task,
     "wifi_task",
-    8192,
+    2560,
     NULL,
     5,
-    &wifi_task_handle,
-    0);
+    &wifi_task_handle);
 
 #ifdef DEBUG_MODE
   Serial.println("WiFi task initialized");

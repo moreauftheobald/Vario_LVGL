@@ -136,7 +136,7 @@ void file_server_start(void) {
   xTaskCreatePinnedToCore(
     file_server_task,
     "file_server",
-    4096,
+    1536,
     NULL,
     3,
     &file_server_task_handle,

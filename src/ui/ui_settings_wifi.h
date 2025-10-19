@@ -45,8 +45,21 @@ static void save_all_wifi_data(void) {
 
 static void save_current_fields_to_memory(void) {
   if (ta_ssid && ta_password) {
-    wifi_data_ssid[current_priority] = String(lv_textarea_get_text(ta_ssid));
-    wifi_data_pass[current_priority] = String(lv_textarea_get_text(ta_password));
+    // Récupérer les textes
+    String ssid = String(lv_textarea_get_text(ta_ssid));
+    String pass = String(lv_textarea_get_text(ta_password));
+    
+    // TRIM : Supprimer les espaces et caractères invisibles
+    ssid.trim();
+    pass.trim();
+    
+    wifi_data_ssid[current_priority] = ssid;
+    wifi_data_pass[current_priority] = pass;
+    
+#ifdef DEBUG_MODE
+    Serial.printf("Saved SSID: '%s' (len=%d)\n", ssid.c_str(), ssid.length());
+    Serial.printf("Saved Pass: '***' (len=%d)\n", pass.length());
+#endif
   }
 }
 
@@ -96,7 +109,20 @@ static void btn_save_wifi_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("Save WiFi data clicked");
 #endif
+  
   save_current_fields_to_memory();
+  
+  // Vérifier avant sauvegarde
+#ifdef DEBUG_MODE
+  for (int i = 0; i < 4; i++) {
+    Serial.printf("Priority %d: SSID='%s' (len=%d), Pass len=%d\n", 
+                  i+1, 
+                  wifi_data_ssid[i].c_str(), 
+                  wifi_data_ssid[i].length(),
+                  wifi_data_pass[i].length());
+  }
+#endif
+  
   save_all_wifi_data();
   ui_settings_show();
 }

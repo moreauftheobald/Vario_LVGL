@@ -12,7 +12,26 @@
 
 const char *TAG = "example";
 
+// Semaphores pour synchronisation VSYNC
+SemaphoreHandle_t sem_vsync_end = NULL;
+SemaphoreHandle_t sem_gui_ready = NULL;
+
 static esp_lcd_panel_handle_t panel_handle = NULL;
+
+// Callback VSYNC - appelé par le hardware lors du vertical blank
+static bool IRAM_ATTR on_vsync_event(esp_lcd_panel_handle_t panel,
+                                     const esp_lcd_rgb_panel_event_data_t *event_data,
+                                     void *user_ctx) {
+  BaseType_t high_task_awoken = pdFALSE;
+  
+  // Vérifier si LVGL a un frame prêt
+  if (xSemaphoreTakeFromISR(sem_gui_ready, &high_task_awoken) == pdTRUE) {
+    // Signal que le swap peut se faire
+    xSemaphoreGiveFromISR(sem_vsync_end, &high_task_awoken);
+  }
+  
+  return high_task_awoken == pdTRUE;
+}
 
 IRAM_ATTR static bool rgb_lcd_on_vsync_event(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *edata, void *user_ctx) {
   return lvgl_port_notify_rgb_vsync();

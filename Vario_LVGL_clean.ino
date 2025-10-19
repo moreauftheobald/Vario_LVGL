@@ -87,9 +87,42 @@ void setup() {
 void loop() {
 #ifdef DEBUG_MODE
   static unsigned long last_print = 0;
+  
   if (millis() - last_print > 5000) {
+    Serial.println("=== Memory Status ===");
+    
+    // SRAM
+    size_t free_heap = ESP.getFreeHeap();
+    size_t total_heap = ESP.getHeapSize();
+    size_t min_free = ESP.getMinFreeHeap();
+    size_t largest = ESP.getMaxAllocHeap();
+    
+    Serial.printf("SRAM:  Used: %6u / %6u (%.1f%%) | Free: %6u | Min: %6u | Largest: %6u\n",
+                  total_heap - free_heap, total_heap,
+                  ((total_heap - free_heap) * 100.0) / total_heap,
+                  free_heap, min_free, largest);
+    
+    // PSRAM
+    size_t free_psram = ESP.getFreePsram();
+    size_t total_psram = ESP.getPsramSize();
+    
+    Serial.printf("PSRAM: Used: %6u / %6u (%.1f%%) | Free: %6u\n",
+                  total_psram - free_psram, total_psram,
+                  ((total_psram - free_psram) * 100.0) / total_psram,
+                  free_psram);
+    
+    // ALERTE si critique
+    if (free_heap < 10000) {
+      Serial.println("⚠️  WARNING: SRAM critically low!");
+    }
+    if (largest < 5000) {
+      Serial.println("⚠️  WARNING: Severe heap fragmentation!");
+    }
+    
+    Serial.println("====================");
     last_print = millis();
   }
 #endif
+  
   vTaskDelay(pdMS_TO_TICKS(200));
 }

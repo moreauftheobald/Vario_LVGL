@@ -36,17 +36,20 @@
 
 #define EXAMPLE_LCD_H_RES (1024)
 #define EXAMPLE_LCD_V_RES (600)
-#define EXAMPLE_LCD_PIXEL_CLOCK_HZ (30 * 1000 * 1000)
+#define EXAMPLE_LCD_PIXEL_CLOCK_HZ (16 * 1000 * 1000)
 
 #define EXAMPLE_LCD_BIT_PER_PIXEL (16)
 #define EXAMPLE_RGB_BIT_PER_PIXEL (16)
 #define EXAMPLE_RGB_DATA_WIDTH (16)
 #define EXAMPLE_LCD_RGB_BUFFER_NUMS (2)
-#define EXAMPLE_RGB_BOUNCE_BUFFER_SIZE (EXAMPLE_LCD_H_RES * 30)
+#define EXAMPLE_RGB_BOUNCE_BUFFER_SIZE (EXAMPLE_LCD_H_RES * 15)
 
 #define EXAMPLE_PIN_NUM_BK_LIGHT (-1)
 #define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL (1)
 #define EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL (!EXAMPLE_LCD_BK_LIGHT_ON_LEVEL)
+
+extern SemaphoreHandle_t sem_vsync_end;
+extern SemaphoreHandle_t sem_gui_ready;
 
 esp_lcd_panel_handle_t waveshare_esp32_s3_rgb_lcd_init();
 
