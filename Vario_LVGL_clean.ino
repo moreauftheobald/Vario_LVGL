@@ -42,7 +42,8 @@ void setup() {
   // 1. I2C et IO_EXTENSION en PREMIER
   DEV_I2C_Init();
   IO_EXTENSION_Init();
-  delay(100);
+  delay(10);
+  IO_EXTENSION_Output(IO_EXTENSION_IO_4, 1); 
 
   params_init();
 

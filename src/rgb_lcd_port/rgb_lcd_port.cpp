@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include "rgb_lcd_port.h"
 #include "src/lvgl_port/lvgl_port.h"
+#include "Constants.h"
 
 const char *TAG = "example";
 
@@ -45,28 +46,28 @@ esp_lcd_panel_handle_t waveshare_esp32_s3_rgb_lcd_init() {
     .bounce_buffer_size_px = EXAMPLE_RGB_BOUNCE_BUFFER_SIZE,
     .sram_trans_align = 4,
     .psram_trans_align = 64,
-    .hsync_gpio_num = EXAMPLE_LCD_IO_RGB_HSYNC,
-    .vsync_gpio_num = EXAMPLE_LCD_IO_RGB_VSYNC,
-    .de_gpio_num = EXAMPLE_LCD_IO_RGB_DE,
-    .pclk_gpio_num = EXAMPLE_LCD_IO_RGB_PCLK,
-    .disp_gpio_num = EXAMPLE_LCD_IO_RGB_DISP,
+    .hsync_gpio_num = LCD_IO_RGB_HSYNC,
+    .vsync_gpio_num = LCD_IO_RGB_VSYNC,
+    .de_gpio_num = LCD_IO_RGB_DE,
+    .pclk_gpio_num = LCD_IO_RGB_PCLK,
+    .disp_gpio_num = LCD_IO_RGB_DISP,
     .data_gpio_nums = {
-      EXAMPLE_LCD_IO_RGB_DATA0,
-      EXAMPLE_LCD_IO_RGB_DATA1,
-      EXAMPLE_LCD_IO_RGB_DATA2,
-      EXAMPLE_LCD_IO_RGB_DATA3,
-      EXAMPLE_LCD_IO_RGB_DATA4,
-      EXAMPLE_LCD_IO_RGB_DATA5,
-      EXAMPLE_LCD_IO_RGB_DATA6,
-      EXAMPLE_LCD_IO_RGB_DATA7,
-      EXAMPLE_LCD_IO_RGB_DATA8,
-      EXAMPLE_LCD_IO_RGB_DATA9,
-      EXAMPLE_LCD_IO_RGB_DATA10,
-      EXAMPLE_LCD_IO_RGB_DATA11,
-      EXAMPLE_LCD_IO_RGB_DATA12,
-      EXAMPLE_LCD_IO_RGB_DATA13,
-      EXAMPLE_LCD_IO_RGB_DATA14,
-      EXAMPLE_LCD_IO_RGB_DATA15,
+      LCD_IO_RGB_DATA0,
+      LCD_IO_RGB_DATA1,
+      LCD_IO_RGB_DATA2,
+      LCD_IO_RGB_DATA3,
+      LCD_IO_RGB_DATA4,
+      LCD_IO_RGB_DATA5,
+      LCD_IO_RGB_DATA6,
+      LCD_IO_RGB_DATA7,
+      LCD_IO_RGB_DATA8,
+      LCD_IO_RGB_DATA9,
+      LCD_IO_RGB_DATA10,
+      LCD_IO_RGB_DATA11,
+      LCD_IO_RGB_DATA12,
+      LCD_IO_RGB_DATA13,
+      LCD_IO_RGB_DATA14,
+      LCD_IO_RGB_DATA15,
     },
     .flags = {
       .fb_in_psram = 1,
