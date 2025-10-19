@@ -9,7 +9,6 @@
 #include <stdbool.h>
 #include "rgb_lcd_port.h"
 #include "src/lvgl_port/lvgl_port.h"
-#include "Constants.h"
 
 const char *TAG = "example";
 

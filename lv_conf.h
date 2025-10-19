@@ -20,6 +20,9 @@
 #define LV_MEM_SIZE (128 * 1024U)
 #define LV_MEM_ADR 0
 #define LV_MEM_BUF_MAX_NUM 16
+// OU utiliser malloc normal (qui ira en DRAM)
+//#define LV_MEM_CUSTOM_ALLOC   malloc
+//#define LV_MEM_CUSTOM_FREE    free
 
 /* ====================
    HAL SETTINGS
@@ -119,7 +122,7 @@
 #define LV_FONT_MONTSERRAT_12 1
 #define LV_FONT_MONTSERRAT_14 1
 #define LV_FONT_MONTSERRAT_16 1
-#define LV_FONT_MONTSERRAT_18 0
+#define LV_FONT_MONTSERRAT_18 1
 #define LV_FONT_MONTSERRAT_20 1
 #define LV_FONT_MONTSERRAT_22 0
 #define LV_FONT_MONTSERRAT_24 1

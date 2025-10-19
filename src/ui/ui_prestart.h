@@ -9,6 +9,7 @@
 #include "src/params/params.h"
 #include "src/ui/ui_main_screens.h"
 #include "src/sd_card.h"
+#include "src/ui/ui_file_transfer_loader.h"
 
 // Forward declarations
 void ui_file_transfer_show(void);

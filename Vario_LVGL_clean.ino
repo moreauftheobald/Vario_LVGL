@@ -10,7 +10,7 @@
 #include "src/ui/ui_splash.h"
 #include "src/ui/ui_prestart.h"
 #include "src/ui/ui_settings.h"
-#include "src/ui/ui_file_transfer.h"
+// RETIRER: #include "src/ui/ui_file_transfer.h"
 #include "src/ui/ui_settings_pilot.h"
 #include "src/ui/ui_settings_screen.h"
 #include "src/ui/ui_settings_wifi.h"
@@ -47,7 +47,7 @@ void setup() {
 
   params_init();
 
-// 2. SD Card AVANT le LCD (au cas où il y aurait conflit de pins)
+  // 2. SD Card AVANT le LCD
 #ifdef DEBUG_MODE
   Serial.println("Initialisation SD...");
 #endif
@@ -63,22 +63,21 @@ void setup() {
   Serial.printf("Version: %s\n", VARIO_VERSION);
 #endif
 
-  // Initialiser le hardware d'affichage
+  // 3. Initialiser le hardware d'affichage
   static esp_lcd_panel_handle_t panel_handle = NULL;
   static esp_lcd_touch_handle_t tp_handle = NULL;
 
-  // touch_gt911_init() NE DOIT PAS rappeler DEV_I2C_Init()
   tp_handle = touch_gt911_init();
   panel_handle = waveshare_esp32_s3_rgb_lcd_init();
   wavesahre_rgb_lcd_set_brightness(params.system_brightness);
 
-  // Init LVGL
+  // 4. Init LVGL
   esp_err_t ret = lvgl_port_init(panel_handle, tp_handle);
   if (ret != ESP_OK) {
     while (1) vTaskDelay(pdMS_TO_TICKS(1000));
   }
 
-  // UI
+  // 5. UI
   if (lvgl_port_lock(-1)) {
     ui_splash_show();
     lvgl_port_unlock();
@@ -89,9 +88,6 @@ void loop() {
 #ifdef DEBUG_MODE
   static unsigned long last_print = 0;
   if (millis() - last_print > 5000) {
-    //Serial.printf("Free heap: %d bytes\n", ESP.getFreeHeap());
-    //Serial.printf("Min free heap: %d bytes\n", ESP.getMinFreeHeap());
-    //Serial.printf("Free PSRAM: %d bytes\n", ESP.getFreePsram());
     last_print = millis();
   }
 #endif
