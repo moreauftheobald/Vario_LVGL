@@ -323,8 +323,9 @@ esp_lcd_touch_handle_t touch_gt911_init() {
   esp_lcd_panel_io_handle_t tp_io_handle = NULL;
   const esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG();
 
-  DEV_I2C_Port port = DEV_I2C_Init();
-  IO_EXTENSION_Init();
+  // Recuperer le bus I2C existant (deja initialise dans setup)
+  DEV_I2C_Port port = DEV_I2C_Get_Handle();
+  
   delay(10);
 
   pinMode(EXAMPLE_PIN_NUM_TOUCH_INT, OUTPUT);

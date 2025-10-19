@@ -30,4 +30,11 @@ void DEV_I2C_Write_Nbyte(i2c_master_dev_handle_t dev_handle, uint8_t *pdata, uin
 
 void DEV_I2C_Read_Nbyte(i2c_master_dev_handle_t dev_handle, uint8_t Cmd, uint8_t *pdata, uint8_t len);
 
+// Ajouter a la fin du fichier i2c.h
+/**
+ * @brief Get the existing I2C bus handle
+ * @return The I2C bus handle
+ */
+DEV_I2C_Port DEV_I2C_Get_Handle();
+
 #endif

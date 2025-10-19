@@ -19,6 +19,7 @@
 #include "src/ui/ui_main_screens.h"
 #include "src/ui/ui_settings_system.h"
 #include "src/params/params.h"
+#include "src/sd_card.h"
 
 // Definition des variables globales
 Preferences prefs;
@@ -38,55 +39,49 @@ void setup() {
   Serial.setDebugOutput(true);
 #endif
 
-  // Initialiser les parametres
+  // 1. I2C et IO_EXTENSION en PREMIER
+  DEV_I2C_Init();
+  IO_EXTENSION_Init();
+  delay(100);
+
   params_init();
+
+// 2. SD Card AVANT le LCD (au cas où il y aurait conflit de pins)
+#ifdef DEBUG_MODE
+  Serial.println("Initialisation SD...");
+#endif
+  if (!sd_init()) {
+#ifdef DEBUG_MODE
+    Serial.println("SD Failed");
+#endif
+  }
 
 #ifdef DEBUG_MODE
   Serial.println("Starting Vario...");
   Serial.printf("Project: %s\n", VARIO_NAME);
   Serial.printf("Version: %s\n", VARIO_VERSION);
-  Serial.printf("Free heap: %d bytes\n", ESP.getFreeHeap());
-  Serial.printf("Free PSRAM: %d bytes\n", ESP.getFreePsram());
 #endif
 
-  // Initialize hardware
+  // Initialiser le hardware d'affichage
   static esp_lcd_panel_handle_t panel_handle = NULL;
   static esp_lcd_touch_handle_t tp_handle = NULL;
 
+  // touch_gt911_init() NE DOIT PAS rappeler DEV_I2C_Init()
   tp_handle = touch_gt911_init();
   panel_handle = waveshare_esp32_s3_rgb_lcd_init();
-  // Appliquer la luminosite sauvegardee
   wavesahre_rgb_lcd_set_brightness(params.system_brightness);
 
-#ifdef DEBUG_MODE
-  Serial.printf("Free heap after LCD init: %d bytes\n", ESP.getFreeHeap());
-#endif
-
+  // Init LVGL
   esp_err_t ret = lvgl_port_init(panel_handle, tp_handle);
   if (ret != ESP_OK) {
-#ifdef DEBUG_MODE
-    Serial.printf("LVGL init failed with error: 0x%x\n", ret);
-    Serial.printf("Free heap: %d bytes\n", ESP.getFreeHeap());
-    Serial.printf("Free PSRAM: %d bytes\n", ESP.getFreePsram());
-#endif
     while (1) vTaskDelay(pdMS_TO_TICKS(1000));
   }
 
-#ifdef DEBUG_MODE
-  Serial.println("Hardware initialized");
-  Serial.printf("Free heap after LVGL init: %d bytes\n", ESP.getFreeHeap());
-  Serial.printf("Free PSRAM: %d bytes\n", ESP.getFreePsram());
-#endif
-
-  // Create splash UI
+  // UI
   if (lvgl_port_lock(-1)) {
     ui_splash_show();
     lvgl_port_unlock();
   }
-
-#ifdef DEBUG_MODE
-  Serial.println("Setup complete");
-#endif
 }
 
 void loop() {
