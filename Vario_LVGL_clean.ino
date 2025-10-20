@@ -1,3 +1,4 @@
+SET_LOOP_TASK_STACK_SIZE(3 * 1024);
 #define DEBUG_MODE
 #define LV_CONF_INCLUDE_SIMPLE
 
@@ -33,9 +34,37 @@ void force_full_refresh(void) {
   vTaskDelay(pdMS_TO_TICKS(10));
 }
 
-void setup() {
 #ifdef DEBUG_MODE
+void print_all_tasks_stack_usage() {
+  TaskStatus_t *pxTaskStatusArray;
+  volatile UBaseType_t uxArraySize, x;
+  uint32_t ulTotalRunTime;
+
+  uxArraySize = uxTaskGetNumberOfTasks();
+  pxTaskStatusArray = (TaskStatus_t *)malloc(uxArraySize * sizeof(TaskStatus_t));
+
+  if (pxTaskStatusArray != NULL) {
+    uxArraySize = uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, &ulTotalRunTime);
+
+    Serial.println("=== Task Stack HighWaterMarks ===");
+    for (x = 0; x < uxArraySize; x++) {
+      Serial.printf(
+        "%-20s  Stack min free: %5u bytes | Priority: %2u | State: %d\n",
+        pxTaskStatusArray[x].pcTaskName,
+        pxTaskStatusArray[x].usStackHighWaterMark * 4,
+        pxTaskStatusArray[x].uxCurrentPriority,
+        pxTaskStatusArray[x].eCurrentState);
+    }
+    Serial.println("==============================");
+    free(pxTaskStatusArray);
+  }
+}
+#endif
+
+void setup() {
   Serial.begin(115200);
+#ifdef DEBUG_MODE
+  
   Serial.setDebugOutput(true);
 #endif
 
@@ -43,7 +72,7 @@ void setup() {
   DEV_I2C_Init();
   IO_EXTENSION_Init();
   delay(10);
-  IO_EXTENSION_Output(IO_EXTENSION_IO_4, 1); 
+  IO_EXTENSION_Output(IO_EXTENSION_IO_4, 1);
 
   params_init();
 
@@ -87,30 +116,30 @@ void setup() {
 void loop() {
 #ifdef DEBUG_MODE
   static unsigned long last_print = 0;
-  
+
   if (millis() - last_print > 5000) {
     Serial.println("=== Memory Status ===");
-    
+
     // SRAM
     size_t free_heap = ESP.getFreeHeap();
     size_t total_heap = ESP.getHeapSize();
     size_t min_free = ESP.getMinFreeHeap();
     size_t largest = ESP.getMaxAllocHeap();
-    
+
     Serial.printf("SRAM:  Used: %6u / %6u (%.1f%%) | Free: %6u | Min: %6u | Largest: %6u\n",
                   total_heap - free_heap, total_heap,
                   ((total_heap - free_heap) * 100.0) / total_heap,
                   free_heap, min_free, largest);
-    
+
     // PSRAM
     size_t free_psram = ESP.getFreePsram();
     size_t total_psram = ESP.getPsramSize();
-    
+
     Serial.printf("PSRAM: Used: %6u / %6u (%.1f%%) | Free: %6u\n",
                   total_psram - free_psram, total_psram,
                   ((total_psram - free_psram) * 100.0) / total_psram,
                   free_psram);
-    
+
     // ALERTE si critique
     if (free_heap < 10000) {
       Serial.println("⚠️  WARNING: SRAM critically low!");
@@ -118,11 +147,14 @@ void loop() {
     if (largest < 5000) {
       Serial.println("⚠️  WARNING: Severe heap fragmentation!");
     }
-    
+
     Serial.println("====================");
+
+    print_all_tasks_stack_usage();
+
     last_print = millis();
   }
 #endif
-  
+
   vTaskDelay(pdMS_TO_TICKS(200));
 }
