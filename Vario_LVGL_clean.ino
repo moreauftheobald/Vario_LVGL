@@ -1,4 +1,3 @@
-//CONFIG_ESP_TIMER_TASK_STACK_SIZE 4096
 SET_LOOP_TASK_STACK_SIZE(3 * 1024);
 
 #define DEBUG_MODE
@@ -23,12 +22,14 @@ SET_LOOP_TASK_STACK_SIZE(3 * 1024);
 #include "src/ui/ui_settings_system.h"
 #include "src/params/params.h"
 #include "src/sd_card.h"
+#include "src/sensors_i2c_task.h"
 
 // Definition des variables globales
 Preferences prefs;
 lv_obj_t *ta_active = NULL;
 lv_obj_t *keyboard = NULL;
 lv_obj_t *main_screen = NULL;
+sensor_raw_data_t g_sensor_data = {0};
 
 void force_full_refresh(void) {
   lv_obj_invalidate(lv_screen_active());
@@ -72,6 +73,10 @@ void setup() {
 
   // 1. I2C et IO_EXTENSION en PREMIER
   DEV_I2C_Init();
+
+  // Start capteurs I2C
+  sensors_i2c_start();
+
   IO_EXTENSION_Init();
   delay(10);
   IO_EXTENSION_Output(IO_EXTENSION_IO_4, 1);

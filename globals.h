@@ -10,6 +10,61 @@ extern lv_obj_t *ta_active;
 extern lv_obj_t *keyboard;
 extern lv_obj_t *main_screen;  // Ecran principal reutilisable
 
+// Structure pour donnees brutes BMP390
+typedef struct {
+  float temperature;      // Celsius
+  float pressure;         // Pascals
+  uint32_t timestamp;     // millis()
+  bool valid;
+} bmp390_data_t;
+
+// Structure pour donnees brutes BNO080
+typedef struct {
+  float quat_i;           // Quaternion i
+  float quat_j;           // Quaternion j
+  float quat_k;           // Quaternion k
+  float quat_real;        // Quaternion real
+  float accel_x;          // Acceleration X (m/s²)
+  float accel_y;          // Acceleration Y (m/s²)
+  float accel_z;          // Acceleration Z (m/s²)
+  float gyro_x;           // Gyroscope X (rad/s)
+  float gyro_y;           // Gyroscope Y (rad/s)
+  float gyro_z;           // Gyroscope Z (rad/s)
+  uint32_t timestamp;     // millis()
+  bool valid;
+} bno080_data_t;
+
+// Structure pour donnees brutes GPS
+typedef struct {
+  char lastline[120];      // Derniere trame NMEA complete
+  bool fix;                // Fix GPS valide
+  uint8_t fixquality;      // Qualite du fix (0-2)
+  uint8_t satellites;      // Nombre de satellites
+  float latitude;          // Latitude degres decimaux
+  float longitude;         // Longitude degres decimaux
+  float altitude;          // Altitude metres
+  float speed;             // Vitesse noeuds
+  float angle;             // Cap degres
+  uint8_t hour;            // Heure UTC
+  uint8_t minute;          // Minute UTC
+  uint8_t seconds;         // Seconde UTC
+  uint8_t year;            // Annee
+  uint8_t month;           // Mois
+  uint8_t day;             // Jour
+  uint32_t timestamp;      // millis()
+  bool valid;
+} gps_data_t;
+
+// Structure globale accessible par toutes les taches
+typedef struct {
+  bmp390_data_t bmp390;
+  bno080_data_t bno080;
+  gps_data_t gps;          // Ajouter cette ligne
+} sensor_raw_data_t;
+
+// Instance globale
+extern sensor_raw_data_t g_sensor_data;
+
 // Fonction utilitaire partagee
 void force_full_refresh(void);
 
