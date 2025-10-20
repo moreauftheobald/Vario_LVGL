@@ -177,13 +177,14 @@ static void wifi_task_start(void) {
   }
 
   if (wifi_task_handle == NULL) {
-    xTaskCreate(
+    xTaskCreatePinnedToCore(
       wifi_task,
       "wifi_task",
       4096,
       NULL,
       5,
-      &wifi_task_handle
+      &wifi_task_handle,
+      0
     );
   }
 
