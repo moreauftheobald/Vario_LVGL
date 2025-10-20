@@ -25,11 +25,15 @@ static void status_update_timer_cb(lv_timer_t *timer) {
     lv_label_set_text(label_status, LV_SYMBOL_WIFI " Connected");
     lv_obj_set_style_text_color(label_status, lv_color_hex(0x34c759), 0);
     
-    String ssid_text = "SSID: " + wifi_get_current_ssid();
-    lv_label_set_text(label_ssid, ssid_text.c_str());
+    // Construire le texte SSID avec buffer
+    char ssid_buffer[64];
+    snprintf(ssid_buffer, sizeof(ssid_buffer), "SSID: %s", wifi_get_current_ssid());
+    lv_label_set_text(label_ssid, ssid_buffer);
     
-    String ip_text = "IP: " + wifi_get_current_ip();
-    lv_label_set_text(label_ip, ip_text.c_str());
+    // Construire le texte IP avec buffer
+    char ip_buffer[32];
+    snprintf(ip_buffer, sizeof(ip_buffer), "IP: %s", wifi_get_current_ip());
+    lv_label_set_text(label_ip, ip_buffer);
   } else {
     lv_label_set_text(label_status, LV_SYMBOL_WARNING " Connecting...");
     lv_obj_set_style_text_color(label_status, lv_color_hex(0xff9500), 0);
@@ -64,14 +68,25 @@ void ui_file_transfer_init(void) {
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
 
   // Titre
-  ui_create_title(main_frame, txt->file_transfer);
+  lv_obj_t *label_title = ui_create_label(main_frame, txt->file_transfer,
+                                           &lv_font_montserrat_32, lv_color_hex(0x00d4ff));
+  lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, 0);
 
   // Info panel
-  lv_obj_t *info_panel = ui_create_info_panel(main_frame, 900, 400);
+  lv_obj_t *info_panel = lv_obj_create(main_frame);
+  lv_obj_set_size(info_panel, 900, 400);
   lv_obj_align(info_panel, LV_ALIGN_CENTER, 0, 10);
-  lv_obj_set_style_pad_row(info_panel, 20, 0);
+  lv_obj_set_style_bg_color(info_panel, lv_color_hex(0x1a2035), 0);
+  lv_obj_set_style_bg_opa(info_panel, LV_OPA_80, 0);
+  lv_obj_set_style_border_width(info_panel, 2, 0);
+  lv_obj_set_style_border_color(info_panel, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_radius(info_panel, 15, 0);
+  lv_obj_set_style_pad_all(info_panel, 20, 0);
+  lv_obj_set_flex_flow(info_panel, LV_FLEX_FLOW_COLUMN);
   lv_obj_set_flex_align(info_panel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, 
                         LV_FLEX_ALIGN_CENTER);
+  lv_obj_set_style_pad_row(info_panel, 20, 0);
+  lv_obj_clear_flag(info_panel, LV_OBJ_FLAG_SCROLLABLE);
 
   // WiFi status
   label_status = ui_create_label(info_panel, LV_SYMBOL_WIFI " Starting...",
@@ -88,7 +103,10 @@ void ui_file_transfer_init(void) {
   lv_obj_set_style_text_align(label_ip, LV_TEXT_ALIGN_CENTER, 0);
 
   // Separator
-  ui_create_separator(info_panel);
+  lv_obj_t *sep = lv_obj_create(info_panel);
+  lv_obj_set_size(sep, lv_pct(100), 1);
+  lv_obj_set_style_bg_color(sep, lv_color_hex(0x2a3f5f), 0);
+  lv_obj_set_style_border_width(sep, 0, 0);
 
   // Instructions
   lv_obj_t *instructions = ui_create_label(info_panel,
@@ -101,6 +119,7 @@ void ui_file_transfer_init(void) {
   lv_label_set_long_mode(instructions, LV_LABEL_LONG_WRAP);
   lv_obj_set_width(instructions, lv_pct(90));
 
+  // Bouton exit
   ui_button_pair_t buttons = ui_create_save_cancel_buttons(
     main_frame, nullptr, txt->exit, nullptr, 
     false, true, false, 
@@ -126,17 +145,6 @@ void ui_file_transfer_init(void) {
 }
 
 void ui_file_transfer_show(void) {
-  // Charger WiFi seulement maintenant (LCD deja init)
-  #include "src/wifi_task.h"
-  #include "src/file_server_task.h"
-  
-  // Init WiFi maintenant
-  static bool wifi_initialized = false;
-  if (!wifi_initialized) {
-    wifi_task_init();
-    wifi_initialized = true;
-  }
-  
   ui_file_transfer_init();
 
 #ifdef DEBUG_MODE

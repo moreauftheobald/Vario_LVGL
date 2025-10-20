@@ -15,14 +15,25 @@ static lv_obj_t *ta_ssid = NULL;
 static lv_obj_t *ta_password = NULL;
 static int current_priority = 0;
 
-// Donnees temporaires pour les 4 priorites
-static String wifi_data_ssid[4] = {"", "", "", ""};
-static String wifi_data_pass[4] = {"", "", "", ""};
+// Donnees temporaires pour les 4 priorites - allouees en PSRAM
+static char* wifi_data_ssid[4] = {NULL, NULL, NULL, NULL};
+static char* wifi_data_pass[4] = {NULL, NULL, NULL, NULL};
 
 static void load_all_wifi_data(void) {
   for (int i = 0; i < 4; i++) {
-    wifi_data_ssid[i] = params.wifi_ssid[i];
-    wifi_data_pass[i] = params.wifi_password[i];
+    // Liberer anciennes allocations
+    if (wifi_data_ssid[i]) {
+      heap_caps_free(wifi_data_ssid[i]);
+      wifi_data_ssid[i] = NULL;
+    }
+    if (wifi_data_pass[i]) {
+      heap_caps_free(wifi_data_pass[i]);
+      wifi_data_pass[i] = NULL;
+    }
+    
+    // Copier depuis params vers donnees temporaires
+    wifi_data_ssid[i] = psram_strdup(psram_str_get(params.wifi_ssid[i]));
+    wifi_data_pass[i] = psram_strdup(psram_str_get(params.wifi_password[i]));
   }
   
 #ifdef DEBUG_MODE
@@ -32,8 +43,9 @@ static void load_all_wifi_data(void) {
 
 static void save_all_wifi_data(void) {
   for (int i = 0; i < 4; i++) {
-    params.wifi_ssid[i] = wifi_data_ssid[i];
-    params.wifi_password[i] = wifi_data_pass[i];
+    // Sauvegarder depuis donnees temporaires vers params
+    psram_str_set(&params.wifi_ssid[i], wifi_data_ssid[i]);
+    psram_str_set(&params.wifi_password[i], wifi_data_pass[i]);
   }
   
   params_save_wifi();
@@ -45,33 +57,46 @@ static void save_all_wifi_data(void) {
 
 static void save_current_fields_to_memory(void) {
   if (ta_ssid && ta_password) {
-    // Récupérer les textes
-    String ssid = String(lv_textarea_get_text(ta_ssid));
-    String pass = String(lv_textarea_get_text(ta_password));
+    const char* ssid = lv_textarea_get_text(ta_ssid);
+    const char* pass = lv_textarea_get_text(ta_password);
     
-    // TRIM : Supprimer les espaces et caractères invisibles
-    ssid.trim();
-    pass.trim();
+    // Liberer anciennes allocations
+    if (wifi_data_ssid[current_priority]) {
+      heap_caps_free(wifi_data_ssid[current_priority]);
+    }
+    if (wifi_data_pass[current_priority]) {
+      heap_caps_free(wifi_data_pass[current_priority]);
+    }
     
-    wifi_data_ssid[current_priority] = ssid;
-    wifi_data_pass[current_priority] = pass;
+    // Allouer et copier (en supprimant les espaces)
+    String ssid_str = String(ssid);
+    ssid_str.trim();
+    wifi_data_ssid[current_priority] = psram_strdup(ssid_str.c_str());
+    
+    String pass_str = String(pass);
+    pass_str.trim();
+    wifi_data_pass[current_priority] = psram_strdup(pass_str.c_str());
     
 #ifdef DEBUG_MODE
-    Serial.printf("Saved SSID: '%s' (len=%d)\n", ssid.c_str(), ssid.length());
-    Serial.printf("Saved Pass: '***' (len=%d)\n", pass.length());
+    Serial.printf("Saved SSID: '%s' (len=%d)\n", 
+                  wifi_data_ssid[current_priority], 
+                  strlen(wifi_data_ssid[current_priority]));
+    Serial.printf("Saved Pass len: %d\n", strlen(wifi_data_pass[current_priority]));
 #endif
   }
 }
 
 static void load_current_priority_to_fields(void) {
   if (ta_ssid && ta_password) {
-    lv_textarea_set_text(ta_ssid, wifi_data_ssid[current_priority].c_str());
-    lv_textarea_set_text(ta_password, wifi_data_pass[current_priority].c_str());
+    lv_textarea_set_text(ta_ssid, 
+                        wifi_data_ssid[current_priority] ? wifi_data_ssid[current_priority] : "");
+    lv_textarea_set_text(ta_password, 
+                        wifi_data_pass[current_priority] ? wifi_data_pass[current_priority] : "");
   }
 }
 
 // Callbacks
-static void dropdown_event_cb(lv_event_t *e) {
+static void dropdown_wifi_event_cb(lv_event_t *e) {
   lv_event_code_t code = lv_event_get_code(e);
   if (code == LV_EVENT_VALUE_CHANGED) {
     save_current_fields_to_memory();
@@ -112,14 +137,14 @@ static void btn_save_wifi_cb(lv_event_t *e) {
   
   save_current_fields_to_memory();
   
-  // Vérifier avant sauvegarde
+  // Verifier avant sauvegarde
 #ifdef DEBUG_MODE
   for (int i = 0; i < 4; i++) {
     Serial.printf("Priority %d: SSID='%s' (len=%d), Pass len=%d\n", 
                   i+1, 
-                  wifi_data_ssid[i].c_str(), 
-                  wifi_data_ssid[i].length(),
-                  wifi_data_pass[i].length());
+                  wifi_data_ssid[i] ? wifi_data_ssid[i] : "", 
+                  wifi_data_ssid[i] ? strlen(wifi_data_ssid[i]) : 0,
+                  wifi_data_pass[i] ? strlen(wifi_data_pass[i]) : 0);
   }
 #endif
   
@@ -131,6 +156,19 @@ static void btn_cancel_wifi_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("Cancel WiFi settings clicked");
 #endif
+  
+  // Liberer les donnees temporaires
+  for (int i = 0; i < 4; i++) {
+    if (wifi_data_ssid[i]) {
+      heap_caps_free(wifi_data_ssid[i]);
+      wifi_data_ssid[i] = NULL;
+    }
+    if (wifi_data_pass[i]) {
+      heap_caps_free(wifi_data_pass[i]);
+      wifi_data_pass[i] = NULL;
+    }
+  }
+  
   ui_settings_show();
 }
 
@@ -172,7 +210,7 @@ void ui_settings_wifi_init(void) {
   lv_obj_set_style_bg_color(dropdown_priority, lv_color_hex(0x0f1520), 0);
   lv_obj_set_style_text_color(dropdown_priority, lv_color_white(), 0);
   lv_obj_set_style_text_font(dropdown_priority, &lv_font_montserrat_20, 0);
-  lv_obj_add_event_cb(dropdown_priority, dropdown_event_cb, LV_EVENT_ALL, NULL);
+  lv_obj_add_event_cb(dropdown_priority, dropdown_wifi_event_cb, LV_EVENT_ALL, NULL);
   
   // Ligne SSID
   lv_obj_t *ssid_row = ui_create_form_row(fields_container, txt->wifi_ssid, 
@@ -188,43 +226,45 @@ void ui_settings_wifi_init(void) {
   lv_obj_set_style_radius(ta_ssid, 8, 0);
   lv_obj_set_style_text_color(ta_ssid, lv_color_white(), 0);
   lv_obj_set_style_text_font(ta_ssid, &lv_font_montserrat_20, 0);
-  lv_obj_set_style_pad_all(ta_ssid, 8, 0);
-  lv_obj_add_event_cb(ta_ssid, ta_wifi_event_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(ta_ssid, ta_wifi_event_cb, LV_EVENT_FOCUSED, NULL);
   
   // Ligne Password
-  lv_obj_t *pass_row = ui_create_form_row(fields_container, txt->wifi_password, 
-                                           140, lv_color_hex(0x00d4ff));
+  lv_obj_t *password_row = ui_create_form_row(fields_container, txt->wifi_password,
+                                               140, lv_color_hex(0x00d4ff));
   
-  ta_password = lv_textarea_create(pass_row);
+  ta_password = lv_textarea_create(password_row);
   lv_obj_set_size(ta_password, 760, 50);
   lv_textarea_set_one_line(ta_password, true);
   lv_textarea_set_max_length(ta_password, 64);
+  lv_textarea_set_password_mode(ta_password, true);
   lv_obj_set_style_bg_color(ta_password, lv_color_hex(0x0f1520), 0);
   lv_obj_set_style_border_color(ta_password, lv_color_hex(0x4080a0), 0);
   lv_obj_set_style_border_width(ta_password, 2, 0);
   lv_obj_set_style_radius(ta_password, 8, 0);
   lv_obj_set_style_text_color(ta_password, lv_color_white(), 0);
   lv_obj_set_style_text_font(ta_password, &lv_font_montserrat_20, 0);
-  lv_obj_set_style_pad_all(ta_password, 8, 0);
-  lv_obj_add_event_cb(ta_password, ta_wifi_event_cb, LV_EVENT_CLICKED, NULL);
-  
-  load_current_priority_to_fields();
+  lv_obj_add_event_cb(ta_password, ta_wifi_event_cb, LV_EVENT_FOCUSED, NULL);
   
   // Clavier
-  keyboard = ui_create_keyboard(main_frame, LV_KEYBOARD_MODE_TEXT_LOWER);
-  lv_obj_set_size(keyboard, 980, 240);
-  lv_obj_add_event_cb(keyboard, keyboard_wifi_event_cb, LV_EVENT_ALL, NULL);
+  if (!keyboard) {
+    keyboard = lv_keyboard_create(main_frame);
+    lv_obj_set_size(keyboard, lv_pct(100), lv_pct(40));
+    lv_obj_align(keyboard, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_event_cb(keyboard, keyboard_wifi_event_cb, LV_EVENT_ALL, NULL);
+  }
   
-  // Boutons Save/Cancel
-  lv_obj_t *btn_container = ui_create_flex_container(main_frame, LV_FLEX_FLOW_ROW);
-  lv_obj_set_size(btn_container, lv_pct(100), LV_SIZE_CONTENT);
-  lv_obj_align(btn_container, LV_ALIGN_BOTTOM_MID, 0, -5);
-  lv_obj_set_flex_align(btn_container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+  // Boutons
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel,
+                                                            nullptr, true, true, false,
+                                                            btn_save_wifi_cb, btn_cancel_wifi_cb, nullptr,
+                                                            NULL, NULL, NULL);
   
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(btn_container, txt->save, txt->cancel, nullptr, true, true, false, btn_save_wifi_cb, btn_cancel_wifi_cb, nullptr, NULL, NULL, NULL);
-
+  // Charger la priorite 0
+  load_current_priority_to_fields();
+  
   lv_screen_load(main_screen);
-
+  
 #ifdef DEBUG_MODE
   Serial.println("WiFi settings screen initialized");
 #endif
@@ -232,10 +272,6 @@ void ui_settings_wifi_init(void) {
 
 void ui_settings_wifi_show(void) {
   ui_settings_wifi_init();
-  
-#ifdef DEBUG_MODE
-  Serial.println("WiFi settings screen shown");
-#endif
 }
 
 #endif

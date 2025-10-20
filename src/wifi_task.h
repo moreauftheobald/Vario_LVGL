@@ -18,20 +18,22 @@
 static TaskHandle_t wifi_task_handle = NULL;
 static EventGroupHandle_t wifi_event_group = NULL;
 static bool wifi_is_connected = false;
-static String wifi_current_ssid = "";
-static String wifi_current_ip = "";
+
+// Strings allouees en PSRAM
+static char* wifi_current_ssid = NULL;
+static char* wifi_current_ip = NULL;
 
 // Getters pour l'UI
 bool wifi_get_connected_status(void) {
   return wifi_is_connected;
 }
 
-String wifi_get_current_ssid(void) {
-  return wifi_current_ssid;
+const char* wifi_get_current_ssid(void) {
+  return wifi_current_ssid ? wifi_current_ssid : "";
 }
 
-String wifi_get_current_ip(void) {
-  return wifi_current_ip;
+const char* wifi_get_current_ip(void) {
+  return wifi_current_ip ? wifi_current_ip : "";
 }
 
 // Fonction de connexion WiFi avec priorite
@@ -42,20 +44,19 @@ static bool wifi_connect_with_priority(void) {
 
   // Essayer chaque reseau par priorite
   for (int priority = 0; priority < 4; priority++) {
-    if (params.wifi_ssid[priority].length() == 0) {
+    const char* ssid = psram_str_get(params.wifi_ssid[priority]);
+    const char* password = psram_str_get(params.wifi_password[priority]);
+    
+    if (ssid[0] == '\0') {
       continue;
     }
 
 #ifdef DEBUG_MODE
-    Serial.printf("Trying WiFi priority %d: %s\n", priority + 1,
-                  params.wifi_ssid[priority].c_str());
-    Serial.printf("Connecting to SSID: '%s'\n", params.wifi_ssid[priority].c_str());
-    Serial.printf("Password length: %d\n", params.wifi_password[priority].length());
-    Serial.printf("Password (masked): %s\n",
-                  String("*").c_str());  // Ne jamais logger le vrai mot de passe
+    Serial.printf("Trying WiFi priority %d: %s\n", priority + 1, ssid);
+    Serial.printf("Password length: %d\n", strlen(password));
 #endif
-    WiFi.begin(params.wifi_ssid[priority].c_str(),
-               params.wifi_password[priority].c_str());
+
+    WiFi.begin(ssid, password);
 
     // Attendre connexion (max 10 secondes)
     int retry = 0;
@@ -65,18 +66,29 @@ static bool wifi_connect_with_priority(void) {
     }
 
     if (WiFi.status() == WL_CONNECTED) {
-      wifi_current_ssid = params.wifi_ssid[priority];
-      wifi_current_ip = WiFi.localIP().toString();
+      // Liberer anciennes allocations
+      if (wifi_current_ssid) {
+        heap_caps_free(wifi_current_ssid);
+      }
+      if (wifi_current_ip) {
+        heap_caps_free(wifi_current_ip);
+      }
+      
+      // Allouer en PSRAM
+      wifi_current_ssid = psram_strdup(ssid);
+      
+      String ip_str = WiFi.localIP().toString();
+      wifi_current_ip = psram_strdup(ip_str.c_str());
+      
       wifi_is_connected = true;
 
 #ifdef DEBUG_MODE
-      Serial.printf("WiFi connected to: %s\n", wifi_current_ssid.c_str());
-      Serial.printf("IP address: %s\n", wifi_current_ip.c_str());
+      Serial.printf("WiFi connected to: %s\n", wifi_current_ssid);
+      Serial.printf("IP address: %s\n", wifi_current_ip);
       Serial.printf("Free PSRAM after WiFi connect: %u bytes\n", ESP.getFreePsram());
 #endif
 
       xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
-
       return true;
     }
 
@@ -88,8 +100,6 @@ static bool wifi_connect_with_priority(void) {
 #ifdef DEBUG_MODE
   Serial.println("No WiFi network available");
 #endif
-
-  // Remettre PSRAM comme prioritaire meme en cas d'echec
 
   return false;
 }
@@ -109,76 +119,89 @@ static void wifi_task(void *pvParameters) {
       WIFI_START_BIT | WIFI_STOP_BIT,
       pdTRUE,
       pdFALSE,
-      portMAX_DELAY);
+      portMAX_DELAY
+    );
 
     if (bits & WIFI_START_BIT) {
 #ifdef DEBUG_MODE
-      Serial.println("WiFi start requested");
+      Serial.println("Starting WiFi connection...");
 #endif
-
-      if (!wifi_is_connected) {
-        wifi_connect_with_priority();
+      
+      if (wifi_connect_with_priority()) {
+        // Connexion reussie
+        while (WiFi.status() == WL_CONNECTED) {
+          vTaskDelay(pdMS_TO_TICKS(5000));
+        }
+        
+        // Deconnecte
+        wifi_is_connected = false;
+        xEventGroupSetBits(wifi_event_group, WIFI_DISCONNECTED_BIT);
+        
+#ifdef DEBUG_MODE
+        Serial.println("WiFi disconnected");
+#endif
       }
     }
 
     if (bits & WIFI_STOP_BIT) {
 #ifdef DEBUG_MODE
-      Serial.println("WiFi stop requested");
+      Serial.println("Stopping WiFi...");
 #endif
-
-      if (wifi_is_connected) {
-        WiFi.disconnect(true);
-        wifi_is_connected = false;
-        wifi_current_ssid = "";
-        wifi_current_ip = "";
-        xEventGroupSetBits(wifi_event_group, WIFI_DISCONNECTED_BIT);
-      }
-    }
-
-    // Verifier periodiquement la connexion
-    vTaskDelay(pdMS_TO_TICKS(5000));
-
-    if (wifi_is_connected && WiFi.status() != WL_CONNECTED) {
-#ifdef DEBUG_MODE
-      Serial.println("WiFi connection lost, trying to reconnect...");
-#endif
+      WiFi.disconnect(true);
+      WiFi.mode(WIFI_OFF);
       wifi_is_connected = false;
-      xEventGroupSetBits(wifi_event_group, WIFI_DISCONNECTED_BIT);
-      wifi_connect_with_priority();
+      
+      // Liberer la memoire
+      if (wifi_current_ssid) {
+        heap_caps_free(wifi_current_ssid);
+        wifi_current_ssid = NULL;
+      }
+      if (wifi_current_ip) {
+        heap_caps_free(wifi_current_ip);
+        wifi_current_ip = NULL;
+      }
+      
+#ifdef DEBUG_MODE
+      Serial.println("WiFi stopped");
+#endif
     }
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 
-// Fonctions publiques
-void wifi_task_start(void) {
+// Demarrer la tache WiFi
+static void wifi_task_start(void) {
   if (wifi_event_group == NULL) {
     wifi_event_group = xEventGroupCreate();
   }
 
-  xEventGroupSetBits(wifi_event_group, WIFI_START_BIT);
-}
-
-void wifi_task_stop(void) {
-  xEventGroupSetBits(wifi_event_group, WIFI_STOP_BIT);
-}
-
-void wifi_task_init(void) {
-  if (wifi_task_handle != NULL) {
-    return;
+  if (wifi_task_handle == NULL) {
+    xTaskCreate(
+      wifi_task,
+      "wifi_task",
+      4096,
+      NULL,
+      5,
+      &wifi_task_handle
+    );
   }
 
-  wifi_event_group = xEventGroupCreate();
-
-  xTaskCreate(
-    wifi_task,
-    "wifi_task",
-    2560,
-    NULL,
-    5,
-    &wifi_task_handle);
+  xEventGroupSetBits(wifi_event_group, WIFI_START_BIT);
 
 #ifdef DEBUG_MODE
-  Serial.println("WiFi task initialized");
+  Serial.println("WiFi task start requested");
+#endif
+}
+
+// Arreter la tache WiFi
+static void wifi_task_stop(void) {
+  if (wifi_event_group) {
+    xEventGroupSetBits(wifi_event_group, WIFI_STOP_BIT);
+  }
+
+#ifdef DEBUG_MODE
+  Serial.println("WiFi task stop requested");
 #endif
 }
 

@@ -54,7 +54,7 @@ static void save_calibration(void) {
   params.touch_scale_x = calib_scale_x;
   params.touch_scale_y = calib_scale_y;
   
-  params_save_touch_calibration();
+  params_save_calibration();
 
 #ifdef DEBUG_MODE
   Serial.printf("Calibration saved to params: offset_x=%.3f offset_y=%.3f scale_x=%.3f scale_y=%.3f\n",

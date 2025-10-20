@@ -20,22 +20,26 @@ typedef struct {
 
 // Fonctions de sauvegarde/chargement
 static void load_pilot_data(pilot_widgets_t *widgets) {
-  if (widgets->ta_name) lv_textarea_set_text(widgets->ta_name, params.pilot_name.c_str());
-  if (widgets->ta_firstname) lv_textarea_set_text(widgets->ta_firstname, params.pilot_firstname.c_str());
-  if (widgets->ta_wing) lv_textarea_set_text(widgets->ta_wing, params.pilot_wing.c_str());
-  if (widgets->ta_phone) lv_textarea_set_text(widgets->ta_phone, params.pilot_phone.c_str());
+  if (widgets->ta_name) 
+    lv_textarea_set_text(widgets->ta_name, psram_str_get(params.pilot_name));
+  if (widgets->ta_firstname) 
+    lv_textarea_set_text(widgets->ta_firstname, psram_str_get(params.pilot_firstname));
+  if (widgets->ta_wing) 
+    lv_textarea_set_text(widgets->ta_wing, psram_str_get(params.pilot_wing));
+  if (widgets->ta_phone) 
+    lv_textarea_set_text(widgets->ta_phone, psram_str_get(params.pilot_phone));
   
 #ifdef DEBUG_MODE
   Serial.println("Pilot data loaded from params");
 #endif
 }
 
-// Remplace la fonction save_pilot_data
 static void save_pilot_data(pilot_widgets_t *widgets) {
-  params.pilot_name = String(lv_textarea_get_text(widgets->ta_name));
-  params.pilot_firstname = String(lv_textarea_get_text(widgets->ta_firstname));
-  params.pilot_wing = String(lv_textarea_get_text(widgets->ta_wing));
-  params.pilot_phone = String(lv_textarea_get_text(widgets->ta_phone));
+  // Sauvegarder depuis les textarea vers PSRAM
+  psram_str_set(&params.pilot_name, lv_textarea_get_text(widgets->ta_name));
+  psram_str_set(&params.pilot_firstname, lv_textarea_get_text(widgets->ta_firstname));
+  psram_str_set(&params.pilot_wing, lv_textarea_get_text(widgets->ta_wing));
+  psram_str_set(&params.pilot_phone, lv_textarea_get_text(widgets->ta_phone));
   
   params_save_pilot();
   
@@ -45,7 +49,7 @@ static void save_pilot_data(pilot_widgets_t *widgets) {
 }
 
 // Callbacks clavier
-static void ta_event_cb(lv_event_t *e) {
+static void ta_pilot_event_cb(lv_event_t *e) {
   lv_obj_t *ta = (lv_obj_t*)lv_event_get_target(e);
   
   if (ta_active != ta) {
@@ -57,7 +61,7 @@ static void ta_event_cb(lv_event_t *e) {
   }
 }
 
-static void keyboard_event_cb(lv_event_t *e) {
+static void keyboard_pilot_event_cb(lv_event_t *e) {
   lv_event_code_t code = lv_event_get_code(e);
   if (code == LV_EVENT_READY || code == LV_EVENT_CANCEL) {
     lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
@@ -66,14 +70,13 @@ static void keyboard_event_cb(lv_event_t *e) {
   }
 }
 
-static void btn_save_cb(lv_event_t *e) {
+static void btn_save_pilot_cb(lv_event_t *e) {
   pilot_widgets_t *widgets = (pilot_widgets_t*)lv_event_get_user_data(e);
   
 #ifdef DEBUG_MODE
   Serial.println("Save pilot data clicked");
 #endif
 
-  // CORRECTION: Verifier que widgets n'est pas NULL
   if (widgets == NULL) {
 #ifdef DEBUG_MODE
     Serial.println("ERROR: widgets is NULL!");
@@ -81,7 +84,6 @@ static void btn_save_cb(lv_event_t *e) {
     return;
   }
   
-  // Verifier aussi que les pointeurs des widgets sont valides
   if (widgets->ta_name == NULL || widgets->ta_firstname == NULL || 
       widgets->ta_wing == NULL || widgets->ta_phone == NULL) {
 #ifdef DEBUG_MODE
@@ -94,7 +96,7 @@ static void btn_save_cb(lv_event_t *e) {
   ui_settings_show();
 }
 
-static void btn_cancel_cb(lv_event_t *e) {
+static void btn_cancel_pilot_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("Cancel pilot settings clicked");
 #endif
@@ -103,56 +105,112 @@ static void btn_cancel_cb(lv_event_t *e) {
 
 void ui_settings_pilot_init(void) {
   const TextStrings *txt = get_text();
-
+  
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
-
+  
   // Titre
   lv_obj_t *label_title = ui_create_label(main_frame, txt->pilot_settings,
                                            &lv_font_montserrat_32, lv_color_hex(0x00d4ff));
   lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, 0);
-
-  // Structure pour les widgets
+  
+  // Container pour les champs
+  lv_obj_t *fields_container = lv_obj_create(main_frame);
+  lv_obj_set_size(fields_container, 980, 380);
+  lv_obj_align(fields_container, LV_ALIGN_TOP_MID, 0, 60);
+  lv_obj_set_style_bg_color(fields_container, lv_color_hex(0x1a2035), 0);
+  lv_obj_set_style_bg_opa(fields_container, LV_OPA_80, 0);
+  lv_obj_set_style_border_width(fields_container, 2, 0);
+  lv_obj_set_style_border_color(fields_container, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_radius(fields_container, 15, 0);
+  lv_obj_set_style_pad_all(fields_container, 20, 0);
+  lv_obj_set_flex_flow(fields_container, LV_FLEX_FLOW_COLUMN);
+  lv_obj_set_flex_align(fields_container, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+  lv_obj_set_style_pad_row(fields_container, 15, 0);
+  lv_obj_clear_flag(fields_container, LV_OBJ_FLAG_SCROLLABLE);
+  
+  // Widgets statiques
   static pilot_widgets_t widgets;
-
-  // Container pour champs (2 colonnes)
-  lv_obj_t *fields_container = ui_create_flex_container(main_frame, LV_FLEX_FLOW_ROW);
-  lv_obj_set_size(fields_container, lv_pct(100), 230);
-  lv_obj_align(fields_container, LV_ALIGN_TOP_MID, 0, 45);
-  lv_obj_set_style_pad_all(fields_container, 10, 0);
-  lv_obj_set_flex_align(fields_container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-  lv_obj_set_style_pad_column(fields_container, 20, 0);
-
-  // Colonne gauche
-  lv_obj_t *col_left = ui_create_form_column(fields_container, 450);
-  widgets.ta_name = ui_create_input_field(col_left, txt->pilot_name, "", 30);
-  lv_obj_add_event_cb(widgets.ta_name, ta_event_cb, LV_EVENT_CLICKED, NULL);
   
-  widgets.ta_firstname = ui_create_input_field(col_left, txt->pilot_firstname, "", 30);
-  lv_obj_add_event_cb(widgets.ta_firstname, ta_event_cb, LV_EVENT_CLICKED, NULL);
-
-  // Colonne droite
-  lv_obj_t *col_right = ui_create_form_column(fields_container, 450);
-  widgets.ta_wing = ui_create_input_field(col_right, txt->pilot_wing, "", 30);
-  lv_obj_add_event_cb(widgets.ta_wing, ta_event_cb, LV_EVENT_CLICKED, NULL);
+  // Nom
+  lv_obj_t *name_row = ui_create_form_row(fields_container, txt->pilot_name, 
+                                           200, lv_color_hex(0x00d4ff));
+  widgets.ta_name = lv_textarea_create(name_row);
+  lv_obj_set_size(widgets.ta_name, 700, 50);
+  lv_textarea_set_one_line(widgets.ta_name, true);
+  lv_textarea_set_max_length(widgets.ta_name, 32);
+  lv_obj_set_style_bg_color(widgets.ta_name, lv_color_hex(0x0f1520), 0);
+  lv_obj_set_style_border_color(widgets.ta_name, lv_color_hex(0x4080a0), 0);
+  lv_obj_set_style_border_width(widgets.ta_name, 2, 0);
+  lv_obj_set_style_radius(widgets.ta_name, 8, 0);
+  lv_obj_set_style_text_color(widgets.ta_name, lv_color_white(), 0);
+  lv_obj_set_style_text_font(widgets.ta_name, &lv_font_montserrat_20, 0);
+  lv_obj_add_event_cb(widgets.ta_name, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
   
-  widgets.ta_phone = ui_create_input_field(col_right, txt->pilot_phone, "", 30);
-  lv_obj_add_event_cb(widgets.ta_phone, ta_event_cb, LV_EVENT_CLICKED, NULL);
-
+  // Prenom
+  lv_obj_t *firstname_row = ui_create_form_row(fields_container, txt->pilot_firstname,
+                                                 200, lv_color_hex(0x00d4ff));
+  widgets.ta_firstname = lv_textarea_create(firstname_row);
+  lv_obj_set_size(widgets.ta_firstname, 700, 50);
+  lv_textarea_set_one_line(widgets.ta_firstname, true);
+  lv_textarea_set_max_length(widgets.ta_firstname, 32);
+  lv_obj_set_style_bg_color(widgets.ta_firstname, lv_color_hex(0x0f1520), 0);
+  lv_obj_set_style_border_color(widgets.ta_firstname, lv_color_hex(0x4080a0), 0);
+  lv_obj_set_style_border_width(widgets.ta_firstname, 2, 0);
+  lv_obj_set_style_radius(widgets.ta_firstname, 8, 0);
+  lv_obj_set_style_text_color(widgets.ta_firstname, lv_color_white(), 0);
+  lv_obj_set_style_text_font(widgets.ta_firstname, &lv_font_montserrat_20, 0);
+  lv_obj_add_event_cb(widgets.ta_firstname, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
+  
+  // Voile
+  lv_obj_t *wing_row = ui_create_form_row(fields_container, txt->pilot_wing,
+                                           200, lv_color_hex(0x00d4ff));
+  widgets.ta_wing = lv_textarea_create(wing_row);
+  lv_obj_set_size(widgets.ta_wing, 700, 50);
+  lv_textarea_set_one_line(widgets.ta_wing, true);
+  lv_textarea_set_max_length(widgets.ta_wing, 32);
+  lv_obj_set_style_bg_color(widgets.ta_wing, lv_color_hex(0x0f1520), 0);
+  lv_obj_set_style_border_color(widgets.ta_wing, lv_color_hex(0x4080a0), 0);
+  lv_obj_set_style_border_width(widgets.ta_wing, 2, 0);
+  lv_obj_set_style_radius(widgets.ta_wing, 8, 0);
+  lv_obj_set_style_text_color(widgets.ta_wing, lv_color_white(), 0);
+  lv_obj_set_style_text_font(widgets.ta_wing, &lv_font_montserrat_20, 0);
+  lv_obj_add_event_cb(widgets.ta_wing, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
+  
+  // Telephone
+  lv_obj_t *phone_row = ui_create_form_row(fields_container, txt->pilot_phone,
+                                            200, lv_color_hex(0x00d4ff));
+  widgets.ta_phone = lv_textarea_create(phone_row);
+  lv_obj_set_size(widgets.ta_phone, 700, 50);
+  lv_textarea_set_one_line(widgets.ta_phone, true);
+  lv_textarea_set_max_length(widgets.ta_phone, 20);
+  lv_obj_set_style_bg_color(widgets.ta_phone, lv_color_hex(0x0f1520), 0);
+  lv_obj_set_style_border_color(widgets.ta_phone, lv_color_hex(0x4080a0), 0);
+  lv_obj_set_style_border_width(widgets.ta_phone, 2, 0);
+  lv_obj_set_style_radius(widgets.ta_phone, 8, 0);
+  lv_obj_set_style_text_color(widgets.ta_phone, lv_color_white(), 0);
+  lv_obj_set_style_text_font(widgets.ta_phone, &lv_font_montserrat_20, 0);
+  lv_obj_add_event_cb(widgets.ta_phone, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
+  
   // Clavier
-  keyboard = ui_create_keyboard(main_frame, LV_KEYBOARD_MODE_TEXT_UPPER);
-  lv_obj_add_event_cb(keyboard, keyboard_event_cb, LV_EVENT_ALL, NULL);
-
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel, 
-                                                          nullptr, true, true, false,
-                                                          btn_save_cb, btn_cancel_cb, nullptr,
-                                                          &widgets, NULL, NULL);
-
-  lv_obj_set_user_data(buttons.save, &widgets);
-
+  if (!keyboard) {
+    keyboard = lv_keyboard_create(main_frame);
+    lv_obj_set_size(keyboard, lv_pct(100), lv_pct(40));
+    lv_obj_align(keyboard, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_event_cb(keyboard, keyboard_pilot_event_cb, LV_EVENT_ALL, NULL);
+  }
+  
+  // Boutons
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel,
+                                                            nullptr, true, true, false,
+                                                            btn_save_pilot_cb, btn_cancel_pilot_cb, nullptr,
+                                                            &widgets, NULL, NULL);
+  
+  // Charger les donnees
   load_pilot_data(&widgets);
-
+  
   lv_screen_load(main_screen);
-
+  
 #ifdef DEBUG_MODE
   Serial.println("Pilot settings screen initialized");
 #endif
@@ -160,10 +218,6 @@ void ui_settings_pilot_init(void) {
 
 void ui_settings_pilot_show(void) {
   ui_settings_pilot_init();
-
-#ifdef DEBUG_MODE
-  Serial.println("Pilot settings screen shown");
-#endif
 }
 
 #endif

@@ -16,17 +16,64 @@ typedef struct {
   const char* url;
 } TileServer;
 
-static const TileServer tile_servers[] = {
-  {"IGN", "http://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png"},
-  {"Mappy", "https://map3.mappy.net/map/1.0/slab/standard_hd/256/{z}/{x}/{y}"},
-  {"OSM Standart", "http://{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png"},
-  {"OSM Humanitarian", "http://{a-b}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"},
-  {"Outdoor Interactiv Winter", "https://w2.outdooractive.com/map/v1/png/osm_winter/{z}/{x}/{y}/t.png"},
-  {"Outdoor Interactiv Summer", "https://w3.outdooractive.com/map/v1/png/osm/{z}/{x}/{y}/t.png"},
-  {"Stamen terrain", "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png"}
+// Strings en PROGMEM
+static const char tile_name_0[] PROGMEM = "IGN";
+static const char tile_url_0[] PROGMEM = "http://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png";
+
+static const char tile_name_1[] PROGMEM = "Mappy";
+static const char tile_url_1[] PROGMEM = "https://map3.mappy.net/map/1.0/slab/standard_hd/256/{z}/{x}/{y}";
+
+static const char tile_name_2[] PROGMEM = "OSM Standart";
+static const char tile_url_2[] PROGMEM = "http://{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png";
+
+static const char tile_name_3[] PROGMEM = "OSM Humanitarian";
+static const char tile_url_3[] PROGMEM = "http://{a-b}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png";
+
+static const char tile_name_4[] PROGMEM = "Outdoor Interactiv Winter";
+static const char tile_url_4[] PROGMEM = "https://w2.outdooractive.com/map/v1/png/osm_winter/{z}/{x}/{y}/t.png";
+
+static const char tile_name_5[] PROGMEM = "Outdoor Interactiv Summer";
+static const char tile_url_5[] PROGMEM = "https://w3.outdooractive.com/map/v1/png/osm/{z}/{x}/{y}/t.png";
+
+static const char tile_name_6[] PROGMEM = "Stamen terrain";
+static const char tile_url_6[] PROGMEM = "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png";
+
+// Table en PROGMEM
+static const TileServer tile_servers[] PROGMEM = {
+  {tile_name_0, tile_url_0},
+  {tile_name_1, tile_url_1},
+  {tile_name_2, tile_url_2},
+  {tile_name_3, tile_url_3},
+  {tile_name_4, tile_url_4},
+  {tile_name_5, tile_url_5},
+  {tile_name_6, tile_url_6}
 };
 
 static const int tile_servers_count = sizeof(tile_servers) / sizeof(TileServer);
+
+// Helper pour lire un nom de serveur depuis PROGMEM
+static void get_tile_server_name(int index, char* buffer, size_t buf_size) {
+  if (index >= 0 && index < tile_servers_count) {
+    TileServer ts;
+    memcpy_P(&ts, &tile_servers[index], sizeof(TileServer));
+    strncpy_P(buffer, (PGM_P)ts.name, buf_size - 1);
+    buffer[buf_size - 1] = '\0';
+  } else {
+    buffer[0] = '\0';
+  }
+}
+
+// Helper pour lire une URL de serveur depuis PROGMEM
+static void get_tile_server_url(int index, char* buffer, size_t buf_size) {
+  if (index >= 0 && index < tile_servers_count) {
+    TileServer ts;
+    memcpy_P(&ts, &tile_servers[index], sizeof(TileServer));
+    strncpy_P(buffer, (PGM_P)ts.url, buf_size - 1);
+    buffer[buf_size - 1] = '\0';
+  } else {
+    buffer[0] = '\0';
+  }
+}
 
 static void load_map_settings(lv_obj_t *slider_zoom, lv_obj_t *label_zoom_value,
                                lv_obj_t *dropdown_tile_server, lv_obj_t *slider_track_points, 
@@ -115,7 +162,9 @@ static void dropdown_map_event_cb(lv_event_t *e) {
     int selected = lv_dropdown_get_selected(dropdown);
     
 #ifdef DEBUG_MODE
-    Serial.printf("Tile server changed to: %s\n", tile_servers[selected].name);
+    char name[64];
+    get_tile_server_name(selected, name, sizeof(name));
+    Serial.printf("Tile server changed to: %s\n", name);
 #endif
   }
 }
@@ -203,24 +252,16 @@ void ui_settings_map_init(void) {
   lv_obj_set_flex_align(col_left, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
   lv_obj_clear_flag(col_left, LV_OBJ_FLAG_SCROLLABLE);
 
-  // 1. Zoom par defaut
-  lv_obj_t *label_zoom = ui_create_label(col_left, "Zoom par defaut",
+  // 1. Niveau de zoom
+  lv_obj_t *label_zoom = ui_create_label(col_left, "Niveau de zoom",
                                           &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
   
-  lv_obj_t *zoom_container = lv_obj_create(col_left);
-  lv_obj_set_size(zoom_container, lv_pct(100), LV_SIZE_CONTENT);
-  lv_obj_set_style_bg_opa(zoom_container, LV_OPA_TRANSP, 0);
-  lv_obj_set_style_border_width(zoom_container, 0, 0);
-  lv_obj_set_style_pad_all(zoom_container, 0, 0);
-  lv_obj_set_flex_flow(zoom_container, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(zoom_container, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+  widgets.slider_zoom = lv_slider_create(col_left);
+  lv_slider_set_range(widgets.slider_zoom, 1, 18);
+  lv_obj_set_width(widgets.slider_zoom, lv_pct(90));
   
-  widgets.slider_zoom = lv_slider_create(zoom_container);
-  lv_obj_set_width(widgets.slider_zoom, 350);
-  lv_slider_set_range(widgets.slider_zoom, 10, 18);
-  
-  lv_obj_t *label_zoom_value = ui_create_label(zoom_container, "15",
-                                                &lv_font_montserrat_20, lv_color_hex(0xffffff));
+  lv_obj_t *label_zoom_value = ui_create_label(col_left, "13",
+                                                &lv_font_montserrat_20, lv_color_hex(0x808080));
   lv_obj_add_event_cb(widgets.slider_zoom, slider_zoom_event_cb, LV_EVENT_VALUE_CHANGED, label_zoom_value);
 
   // 2. Serveur de tuiles
@@ -228,34 +269,32 @@ void ui_settings_map_init(void) {
                                             &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
   
   widgets.dropdown_tile_server = lv_dropdown_create(col_left);
-  lv_obj_set_width(widgets.dropdown_tile_server, lv_pct(100));
+  lv_obj_set_width(widgets.dropdown_tile_server, lv_pct(90));
   
-  char server_list[512] = "";
+  // Construire la liste des serveurs depuis PROGMEM
+  char names_buffer[256] = "";
+  char temp_name[64];
   for (int i = 0; i < tile_servers_count; i++) {
-    strcat(server_list, tile_servers[i].name);
-    if (i < tile_servers_count - 1) strcat(server_list, "\n");
+    get_tile_server_name(i, temp_name, sizeof(temp_name));
+    if (i > 0) strcat(names_buffer, "\n");
+    strcat(names_buffer, temp_name);
   }
-  lv_dropdown_set_options(widgets.dropdown_tile_server, server_list);
+  lv_dropdown_set_options(widgets.dropdown_tile_server, names_buffer);
+  lv_obj_set_style_bg_color(widgets.dropdown_tile_server, lv_color_hex(0x0f1520), 0);
+  lv_obj_set_style_text_color(widgets.dropdown_tile_server, lv_color_white(), 0);
+  lv_obj_set_style_text_font(widgets.dropdown_tile_server, &lv_font_montserrat_20, 0);
   lv_obj_add_event_cb(widgets.dropdown_tile_server, dropdown_map_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
-  // 3. Nombre de points de trace
+  // 3. Points de trace
   lv_obj_t *label_track = ui_create_label(col_left, "Points de trace",
                                            &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
   
-  lv_obj_t *track_container = lv_obj_create(col_left);
-  lv_obj_set_size(track_container, lv_pct(100), LV_SIZE_CONTENT);
-  lv_obj_set_style_bg_opa(track_container, LV_OPA_TRANSP, 0);
-  lv_obj_set_style_border_width(track_container, 0, 0);
-  lv_obj_set_style_pad_all(track_container, 0, 0);
-  lv_obj_set_flex_flow(track_container, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(track_container, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+  widgets.slider_track_points = lv_slider_create(col_left);
+  lv_slider_set_range(widgets.slider_track_points, 50, 500);
+  lv_obj_set_width(widgets.slider_track_points, lv_pct(90));
   
-  widgets.slider_track_points = lv_slider_create(track_container);
-  lv_obj_set_width(widgets.slider_track_points, 350);
-  lv_slider_set_range(widgets.slider_track_points, 20, 200);
-  
-  lv_obj_t *label_track_value = ui_create_label(track_container, "50",
-                                                 &lv_font_montserrat_20, lv_color_hex(0xffffff));
+  lv_obj_t *label_track_value = ui_create_label(col_left, "200",
+                                                 &lv_font_montserrat_20, lv_color_hex(0x808080));
   lv_obj_add_event_cb(widgets.slider_track_points, slider_track_event_cb, LV_EVENT_VALUE_CHANGED, label_track_value);
 
   // 4. Switch couleurs vario
@@ -298,7 +337,10 @@ void ui_settings_map_init(void) {
   lv_obj_set_style_text_align(label_preview, LV_TEXT_ALIGN_CENTER, 0);
 
   // Boutons Enregistrer et Annuler
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel, nullptr, true, true, false, btn_save_map_cb, btn_cancel_map_cb, nullptr, &widgets, NULL, NULL);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel, 
+                                                            nullptr, true, true, false, 
+                                                            btn_save_map_cb, btn_cancel_map_cb, nullptr, 
+                                                            &widgets, NULL, NULL);
 
   // Charger les valeurs sauvegardees
   load_map_settings(widgets.slider_zoom, label_zoom_value, widgets.dropdown_tile_server,
