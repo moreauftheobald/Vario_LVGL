@@ -5,8 +5,6 @@
 #include "lang.h"
 #include "esp_heap_caps.h"
 
-extern Preferences prefs;
-
 // Helper pour allouer une string en PSRAM
 static inline char* psram_strdup(const char* str) {
     if (!str) return nullptr;

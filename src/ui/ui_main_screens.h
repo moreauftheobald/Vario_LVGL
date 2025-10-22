@@ -108,7 +108,7 @@ void ui_screen_left_init(void) {
   ui_create_status_bar(main_screen);
   
   lv_obj_t *frame = lv_obj_create(main_screen);
-  lv_obj_set_size(frame, SCREEN_WIDTH, SCREEN_HEIGHT - 60);
+  lv_obj_set_size(frame, LCD_H_RES, LCD_V_RES - 60);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
   lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
   lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);
@@ -155,7 +155,7 @@ void ui_screen_center_init(void) {
   ui_create_status_bar(main_screen);
   
   lv_obj_t *frame = lv_obj_create(main_screen);
-  lv_obj_set_size(frame, SCREEN_WIDTH, SCREEN_HEIGHT - 55);
+  lv_obj_set_size(frame, LCD_H_RES, LCD_V_RES - 55);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 55);
   lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
   lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);
@@ -256,7 +256,7 @@ void ui_screen_right_init(void) {
   ui_create_status_bar(main_screen);
   
   lv_obj_t *frame = lv_obj_create(main_screen);
-  lv_obj_set_size(frame, SCREEN_WIDTH , SCREEN_HEIGHT - 60);
+  lv_obj_set_size(frame, LCD_H_RES , LCD_V_RES - 60);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
   lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
   lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);

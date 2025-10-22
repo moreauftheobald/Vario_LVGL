@@ -2,12 +2,8 @@
 #define GT911_H
 
 #include "src/touch/touch.h"
+#include "constants.h"
 
-#define ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS (0x5D)
-#define ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS_BACKUP (0x14)
-
-#define EXAMPLE_PIN_NUM_TOUCH_RST (GPIO_NUM_NC)
-#define EXAMPLE_PIN_NUM_TOUCH_INT (GPIO_NUM_4)
 
 typedef struct {
   uint8_t dev_addr;

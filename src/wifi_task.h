@@ -7,12 +7,7 @@
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 #include "src/params/params.h"
-
-// Event bits
-#define WIFI_CONNECTED_BIT BIT0
-#define WIFI_DISCONNECTED_BIT BIT1
-#define WIFI_START_BIT BIT2
-#define WIFI_STOP_BIT BIT3
+#include "constants.h"
 
 // Variables globales
 static TaskHandle_t wifi_task_handle = NULL;

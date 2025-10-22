@@ -10,44 +10,6 @@
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_rgb.h"
 
-#define LCD_IO_RGB_DISP (-1)
-#define LCD_IO_RGB_VSYNC (GPIO_NUM_3)
-#define LCD_IO_RGB_HSYNC (GPIO_NUM_46)
-#define LCD_IO_RGB_DE (GPIO_NUM_5)
-#define LCD_IO_RGB_PCLK (GPIO_NUM_7)
-
-#define LCD_IO_RGB_DATA0 (GPIO_NUM_14)
-#define LCD_IO_RGB_DATA1 (GPIO_NUM_38)
-#define LCD_IO_RGB_DATA2 (GPIO_NUM_18)
-#define LCD_IO_RGB_DATA3 (GPIO_NUM_17)
-#define LCD_IO_RGB_DATA4 (GPIO_NUM_10)
-#define LCD_IO_RGB_DATA5 (GPIO_NUM_39)
-#define LCD_IO_RGB_DATA6 (GPIO_NUM_0)
-#define LCD_IO_RGB_DATA7 (GPIO_NUM_45)
-#define LCD_IO_RGB_DATA8 (GPIO_NUM_48)
-#define LCD_IO_RGB_DATA9 (GPIO_NUM_47)
-#define LCD_IO_RGB_DATA10 (GPIO_NUM_21)
-#define LCD_IO_RGB_DATA11 (GPIO_NUM_1)
-#define LCD_IO_RGB_DATA12 (GPIO_NUM_2)
-#define LCD_IO_RGB_DATA13 (GPIO_NUM_42)
-#define LCD_IO_RGB_DATA14 (GPIO_NUM_41)
-#define LCD_IO_RGB_DATA15 (GPIO_NUM_40)
-#define LCD_IO_RST (-1)
-
-#define EXAMPLE_LCD_H_RES (1024)
-#define EXAMPLE_LCD_V_RES (600)
-#define EXAMPLE_LCD_PIXEL_CLOCK_HZ (16 * 1000 * 1000)
-
-#define EXAMPLE_LCD_BIT_PER_PIXEL (16)
-#define EXAMPLE_RGB_BIT_PER_PIXEL (16)
-#define EXAMPLE_RGB_DATA_WIDTH (16)
-#define EXAMPLE_LCD_RGB_BUFFER_NUMS (2)
-#define EXAMPLE_RGB_BOUNCE_BUFFER_SIZE (EXAMPLE_LCD_H_RES * 20)
-
-#define EXAMPLE_PIN_NUM_BK_LIGHT (-1)
-#define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL (1)
-#define EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL (!EXAMPLE_LCD_BK_LIGHT_ON_LEVEL)
-
 extern SemaphoreHandle_t sem_vsync_end;
 extern SemaphoreHandle_t sem_gui_ready;
 

@@ -4,28 +4,7 @@
 #include <FS.h>
 #include <SD_MMC.h>
 #include "io_extension/io_extension.h"
-
-// Pin CS sur l'extender I/O (non utilise pour SDMMC, c'est le pin CD/D3)
-#define SD_CS_PIN_EXTENDER IO_EXTENSION_IO_4
-
-// Pins SDMMC (mode 1-bit)
-#define SD_PIN_CLK GPIO_NUM_12
-#define SD_PIN_CMD GPIO_NUM_11
-#define SD_PIN_D0  GPIO_NUM_13
-
-// Repertoires
-#define OSM_TILES_DIR "/sdcard/osm_tiles"
-#define LOGS_DIR "/sdcard/logs"
-#define FLIGHTS_DIR "/sdcard/flights"
-#define CONFIG_DIR "/sdcard/config"
-
-// Point de montage
-#define SD_MOUNT_POINT "/sdcard"
-
-// Option de formatage automatique (mettre true pour forcer FAT32 si echec)
-// ATTENTION: Ceci EFFACERA toutes les donnees de la carte SD!
-#define SD_FORMAT_IF_MOUNT_FAILED false
-// Une fois que ca fonctionne, remettre a false pour eviter formatage accidentel
+#include "constants.h"
 
 // Variables globales
 static bool sd_card_ready = false;
@@ -35,10 +14,6 @@ bool sd_init() {
     #ifdef DEBUG_MODE
     Serial.println("SD: Initialisation...");
     #endif
-    
-    // NE PAS configurer le CS pour la SD card SDMMC !
-    // Le pin EXIO4 est connecte a CD/D3, pas au CS
-    // En mode SDMMC 1-bit, ce pin doit rester flottant
     
     // Configurer les pins SDMMC
     if (!SD_MMC.setPins(SD_PIN_CLK, SD_PIN_CMD, SD_PIN_D0)) {

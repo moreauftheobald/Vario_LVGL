@@ -1,11 +1,4 @@
-#if defined(ARDUINO)
 #include <Arduino.h>
-#endif
-#ifndef __cplusplus
-#error "This file must be compiled as C++"
-#endif
-
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -328,11 +321,11 @@ esp_lcd_touch_handle_t touch_gt911_init() {
   
   delay(10);
 
-  pinMode(EXAMPLE_PIN_NUM_TOUCH_INT, OUTPUT);
+  pinMode(PIN_NUM_TOUCH_INT, OUTPUT);
   IO_EXTENSION_Output(IO_EXTENSION_IO_1, 0);
 
   delay(100);
-  digitalWrite(EXAMPLE_PIN_NUM_TOUCH_INT, 0);
+  digitalWrite(PIN_NUM_TOUCH_INT, 0);
 
   delay(100);
   IO_EXTENSION_Output(IO_EXTENSION_IO_1, 1);
@@ -350,10 +343,10 @@ esp_lcd_touch_handle_t touch_gt911_init() {
 #endif
 
   const esp_lcd_touch_config_t tp_cfg = {
-    .x_max = EXAMPLE_LCD_H_RES,
-    .y_max = EXAMPLE_LCD_V_RES,
-    .rst_gpio_num = EXAMPLE_PIN_NUM_TOUCH_RST,
-    .int_gpio_num = EXAMPLE_PIN_NUM_TOUCH_INT,
+    .x_max = LCD_H_RES,
+    .y_max = LCD_V_RES,
+    .rst_gpio_num = PIN_NUM_TOUCH_RST,
+    .int_gpio_num = PIN_NUM_TOUCH_INT,
     .levels = {
       .reset = 0,
       .interrupt = 0,

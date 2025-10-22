@@ -10,8 +10,6 @@
 #include "constants.h"
 #include "globals.h"
 
-
-
 static BMP3XX_ESP32 bmp390;
 static BNO08x_ESP32 bno080(BNO080_RESET_PIN);
 static gps_i2c_esp32_t gps;
@@ -45,9 +43,6 @@ static void sensors_i2c_task(void *pvParameters) {
       Serial.println("[BMP390] Read failed");
 #endif
     }
-
-    // Apres lecture BMP390, ajouter:
-
     // Lecture BNO080
     sh2_SensorValue_t sensorValue;
     if (bno080.getSensorEvent(&sensorValue)) {

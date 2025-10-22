@@ -101,8 +101,8 @@ static void apply_calibration(int16_t raw_x, int16_t raw_y, int16_t *calib_x, in
 static void update_target_position(void) {
   if (!target_obj) return;
   
-  calib_points[current_point].screen_x = (current_point == 0) ? 50 : (SCREEN_WIDTH - 50);
-  calib_points[current_point].screen_y = (current_point == 0) ? 50 : (SCREEN_HEIGHT - 50);
+  calib_points[current_point].screen_x = (current_point == 0) ? 50 : (LCD_H_RES - 50);
+  calib_points[current_point].screen_y = (current_point == 0) ? 50 : (LCD_V_RES - 50);
   
   lv_obj_set_pos(target_obj, 
                  calib_points[current_point].screen_x - 50,

@@ -1,13 +1,8 @@
-#if defined(ARDUINO)
 #include <Arduino.h>
-#endif
-#ifndef __cplusplus
-#error "This file must be compiled as C++"
-#endif
-
 #include <stdint.h>
 #include <stdbool.h>
 #include "i2c.h"
+#include "constants.h"
 
 static const char *TAG = "i2c";
 
@@ -15,9 +10,9 @@ DEV_I2C_Port handle;
 
 DEV_I2C_Port DEV_I2C_Init() {
   i2c_master_bus_config_t i2c_bus_config = {
-    .i2c_port = EXAMPLE_I2C_MASTER_NUM,
-    .sda_io_num = EXAMPLE_I2C_MASTER_SDA,
-    .scl_io_num = EXAMPLE_I2C_MASTER_SCL,
+    .i2c_port = I2C_MASTER_NUM,
+    .sda_io_num = I2C_MASTER_SDA,
+    .scl_io_num = I2C_MASTER_SCL,
     .clk_source = I2C_CLK_SRC_DEFAULT,
     .glitch_ignore_cnt = 7,
   };
@@ -25,7 +20,7 @@ DEV_I2C_Port DEV_I2C_Init() {
   ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_bus_config, &handle.bus));
 
   i2c_device_config_t i2c_dev_conf = {
-    .scl_speed_hz = EXAMPLE_I2C_MASTER_FREQUENCY,
+    .scl_speed_hz = I2C_MASTER_FREQUENCY,
   };
 
   if (i2c_master_bus_add_device(handle.bus, &i2c_dev_conf, &handle.dev) != ESP_OK) {
@@ -40,7 +35,7 @@ DEV_I2C_Port DEV_I2C_Init() {
 void DEV_I2C_Set_Slave_Addr(i2c_master_dev_handle_t *dev_handle, uint8_t Addr) {
   i2c_device_config_t i2c_dev_conf = {
     .device_address = Addr,
-    .scl_speed_hz = EXAMPLE_I2C_MASTER_FREQUENCY,
+    .scl_speed_hz = I2C_MASTER_FREQUENCY,
   };
 
   if (i2c_master_bus_add_device(handle.bus, &i2c_dev_conf, dev_handle) != ESP_OK) {

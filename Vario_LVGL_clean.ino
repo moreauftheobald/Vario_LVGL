@@ -1,18 +1,14 @@
 SET_LOOP_TASK_STACK_SIZE(3 * 1024);
 
-#define DEBUG_MODE
-#define LV_CONF_INCLUDE_SIMPLE
-
+#include "constants.h"
+#include "globals.h"
 #include "lv_conf.h"
 #include "src/lvgl_port/lvgl_port.h"
 #include "src/rgb_lcd_port/rgb_lcd_port.h"
-#include "constants.h"
 #include "lang.h"
-#include "globals.h"
 #include "src/ui/ui_splash.h"
 #include "src/ui/ui_prestart.h"
 #include "src/ui/ui_settings.h"
-// RETIRER: #include "src/ui/ui_file_transfer.h"
 #include "src/ui/ui_settings_pilot.h"
 #include "src/ui/ui_settings_screen.h"
 #include "src/ui/ui_settings_wifi.h"
@@ -24,50 +20,9 @@ SET_LOOP_TASK_STACK_SIZE(3 * 1024);
 #include "src/sd_card.h"
 #include "src/sensors_i2c_task.h"
 
-// Definition des variables globales
-Preferences prefs;
-lv_obj_t *ta_active = NULL;
-lv_obj_t *keyboard = NULL;
-lv_obj_t *main_screen = NULL;
-sensor_raw_data_t g_sensor_data = {0};
-
-void force_full_refresh(void) {
-  lv_obj_invalidate(lv_screen_active());
-  lv_refr_now(NULL);
-  vTaskDelay(pdMS_TO_TICKS(10));
-}
-
-#ifdef DEBUG_MODE
-void print_all_tasks_stack_usage() {
-  TaskStatus_t *pxTaskStatusArray;
-  volatile UBaseType_t uxArraySize, x;
-  uint32_t ulTotalRunTime;
-
-  uxArraySize = uxTaskGetNumberOfTasks();
-  pxTaskStatusArray = (TaskStatus_t *)malloc(uxArraySize * sizeof(TaskStatus_t));
-
-  if (pxTaskStatusArray != NULL) {
-    uxArraySize = uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, &ulTotalRunTime);
-
-    Serial.println("=== Task Stack HighWaterMarks ===");
-    for (x = 0; x < uxArraySize; x++) {
-      Serial.printf(
-        "%-20s  Stack min free: %5u bytes | Priority: %2u | State: %d\n",
-        pxTaskStatusArray[x].pcTaskName,
-        pxTaskStatusArray[x].usStackHighWaterMark * 4,
-        pxTaskStatusArray[x].uxCurrentPriority,
-        pxTaskStatusArray[x].eCurrentState);
-    }
-    Serial.println("==============================");
-    free(pxTaskStatusArray);
-  }
-}
-#endif
-
 void setup() {
   Serial.begin(115200);
 #ifdef DEBUG_MODE
-  
   Serial.setDebugOutput(true);
 #endif
 

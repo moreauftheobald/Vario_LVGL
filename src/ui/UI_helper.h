@@ -41,7 +41,7 @@ static inline lv_obj_t *ui_create_black_screen_with_frame(uint16_t border_width,
 
   // Frame avec bordure blanche - fond NOIR uni
   lv_obj_t *frame = lv_obj_create(*screen_ptr);
-  lv_obj_set_size(frame, SCREEN_WIDTH, SCREEN_HEIGHT);
+  lv_obj_set_size(frame, LCD_H_RES, LCD_V_RES);
   lv_obj_center(frame);
   lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);  // NOIR
   lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);              // Opaque à 100%
@@ -342,7 +342,7 @@ static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent,
  */
 static inline lv_obj_t *ui_create_status_bar(lv_obj_t *parent) {
   lv_obj_t *bar = lv_obj_create(parent);
-  lv_obj_set_size(bar, SCREEN_WIDTH, 55);
+  lv_obj_set_size(bar, LCD_H_RES, 55);
   lv_obj_align(bar, LV_ALIGN_TOP_MID, 0, 0);
   lv_obj_set_style_bg_color(bar, lv_color_hex(0x000000), 0);
   lv_obj_set_style_bg_opa(bar, LV_OPA_COVER, 0);

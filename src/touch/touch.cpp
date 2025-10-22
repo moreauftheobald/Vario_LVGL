@@ -1,10 +1,4 @@
-#if defined(ARDUINO)
 #include <Arduino.h>
-#endif
-#ifndef __cplusplus
-#error "This file must be compiled as C++"
-#endif
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
