@@ -167,6 +167,8 @@ LVGL AND GRAPHICS CONSTANTS
 #define LVGL_PORT_LCD_RGB_BUFFER_NUMS (2)
 #define LVGL_PORT_DIRECT_MODE (1)
 
+#define UI_TASK_PRIORITY 2
+
 
 /*=========================================================================
 OTHER CONSTANTS

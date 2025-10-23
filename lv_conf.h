@@ -466,7 +466,7 @@
 
 #define LV_USE_CANVAS     1
 
-#define LV_USE_CHECKBOX   0
+#define LV_USE_CHECKBOX   1
 
 #define LV_USE_DROPDOWN   1   /*Requires: lv_label*/
 
@@ -487,7 +487,7 @@
 
 #define LV_USE_SLIDER     1   /*Requires: lv_bar*/
 
-#define LV_USE_SWITCH     0
+#define LV_USE_SWITCH     1
 
 #define LV_USE_TEXTAREA   1   /*Requires: lv_label*/
 #if LV_USE_TEXTAREA != 0
