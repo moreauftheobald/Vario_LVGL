@@ -136,7 +136,7 @@ private:
         
         // Panel principal
         info_panel = new UIWidgetPanel();
-        info_panel->create(screen_frame->getFrame(), 900, 400,
+        info_panel->create(screen_frame->getFrame(), 900, 375,
                          lv_color_hex(0x1a2035), lv_color_hex(0x6080a0), 2, 15);
         info_panel->setFlexLayout(LV_FLEX_FLOW_COLUMN,
                                  LV_FLEX_ALIGN_START,
@@ -191,7 +191,7 @@ private:
         btn_exit->create(screen_frame->getFrame(), txt->exit, nullptr,
                        lv_color_hex(0xff3b30)); // Rouge
         lv_obj_set_size(btn_exit->getContainer(), 300, 70);
-        lv_obj_align(btn_exit->getContainer(), LV_ALIGN_BOTTOM_MID, 0, -15);
+        lv_obj_align(btn_exit->getContainer(), LV_ALIGN_BOTTOM_MID, 0, -5);
         lv_obj_add_event_cb(btn_exit->getContainer(),
                           btnExitCallback, LV_EVENT_CLICKED, nullptr);
     }

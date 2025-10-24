@@ -10,8 +10,9 @@
 #include "src/ui/UIIncludes.h"
 
 // Instances globales
-static UIScreenSplash* splash_screen = nullptr;
-static UIScreenPrestart* prestart_screen = nullptr;
+UIScreenSplash* splash_screen = nullptr;
+UIScreenPrestart* prestart_screen = nullptr;
+UIScreenFileTransfer* file_transfer_screen = nullptr;
 
 // Callback de transition splash -> prestart
 void onSplashComplete() {
