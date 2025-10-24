@@ -37,6 +37,7 @@
 // ============================================================================
 // ECRANS (dans l'ordre d'utilisation)
 // ============================================================================
+#include "screens/UIScreenSettings.h"
 #include "screens/UIScreenFileTransfer.h"
 #include "screens/UIScreenSplash.h"
 #include "screens/UIScreenPrestart.h"

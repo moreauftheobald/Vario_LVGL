@@ -1,6 +1,9 @@
 #ifndef UI_SCREEN_PRESTART_H
 #define UI_SCREEN_PRESTART_H
 
+#include "UIScreenFileTransfer.h"
+#include "UIScreenSettings.h"
+
 class UIScreenPrestart : public UIScreen {
 private:
   UIWidgetScreenFrame* screen_frame;
@@ -52,6 +55,20 @@ private:
 #ifdef DEBUG_MODE
     Serial.println("[PRESTART] Settings clicked");
 #endif
+
+    if (lvgl_port_lock(-1)) {
+      hide();
+
+      UIScreenSettings* settings_screen = new UIScreenSettings();
+      settings_screen->create();
+      settings_screen->load();
+
+      lvgl_port_unlock();
+
+#ifdef DEBUG_MODE
+      Serial.println("[PRESTART] Settings screen shown");
+#endif
+    }
   }
 
   void onStartClicked() {
@@ -118,66 +135,66 @@ private:
                         btnStartCallback, LV_EVENT_CLICKED, nullptr);
   }
 
-void createInfoPanel() {
+  void createInfoPanel() {
     const TextStrings* txt = get_text();
     char info_text[128];
-    
+
     info_panel = new UIWidgetInfoPanel();
     info_panel->create(panel_content->getPanel(), txt->information, 525, 475);
-    
+
     // Carte SD avec espace libre
     if (sd_is_ready()) {
-        uint64_t total_space = sd_get_total_bytes();
-        uint64_t free_space = sd_get_free_bytes();
-        snprintf(info_text, sizeof(info_text), "%s %s: %.1f/%.1f GB",
-                 LV_SYMBOL_SD_CARD, txt->sd_card,
-                 free_space / 1073741824.0, total_space / 1073741824.0);
+      uint64_t total_space = sd_get_total_bytes();
+      uint64_t free_space = sd_get_free_bytes();
+      snprintf(info_text, sizeof(info_text), "%s %s: %.1f/%.1f GB",
+               LV_SYMBOL_SD_CARD, txt->sd_card,
+               free_space / 1073741824.0, total_space / 1073741824.0);
     } else {
-        snprintf(info_text, sizeof(info_text), "%s %s: --", 
-                 LV_SYMBOL_SD_CARD, txt->sd_card);
+      snprintf(info_text, sizeof(info_text), "%s %s: --",
+               LV_SYMBOL_SD_CARD, txt->sd_card);
     }
     info_panel->addInfoLine(info_text);
-    
+
     // Cartes (Maps) - TODO: implementer compteur
     if (sd_is_ready()) {
-        snprintf(info_text, sizeof(info_text), "%s %s: --",
-                 LV_SYMBOL_IMAGE, txt->maps);
+      snprintf(info_text, sizeof(info_text), "%s %s: --",
+               LV_SYMBOL_IMAGE, txt->maps);
     } else {
-        snprintf(info_text, sizeof(info_text), "%s %s: --",
-                 LV_SYMBOL_IMAGE, txt->maps);
+      snprintf(info_text, sizeof(info_text), "%s %s: --",
+               LV_SYMBOL_IMAGE, txt->maps);
     }
     info_panel->addInfoLine(info_text);
-    
+
     // Vols IGC
     if (sd_is_ready()) {
-        int igc_count = sd_count_igc_files();
-        snprintf(info_text, sizeof(info_text), "%s %s: %d",
-                 LV_SYMBOL_LIST, txt->flights, igc_count);
+      int igc_count = sd_count_igc_files();
+      snprintf(info_text, sizeof(info_text), "%s %s: %d",
+               LV_SYMBOL_LIST, txt->flights, igc_count);
     } else {
-        snprintf(info_text, sizeof(info_text), "%s %s: --",
-                 LV_SYMBOL_LIST, txt->flights);
+      snprintf(info_text, sizeof(info_text), "%s %s: --",
+               LV_SYMBOL_LIST, txt->flights);
     }
     info_panel->addInfoLine(info_text);
-    
+
     // Pilote avec prenom + nom
     String pilot_display = String(LV_SYMBOL_HOME) + " " + txt->pilot + ": ";
     if (params.pilot_firstname != "" || params.pilot_name != "") {
-        pilot_display += params.pilot_firstname;
-        if (params.pilot_firstname != "" && params.pilot_name != "") {
-            pilot_display += " ";
-        }
-        pilot_display += params.pilot_name;
+      pilot_display += params.pilot_firstname;
+      if (params.pilot_firstname != "" && params.pilot_name != "") {
+        pilot_display += " ";
+      }
+      pilot_display += params.pilot_name;
     } else {
-        pilot_display += "--";
+      pilot_display += "--";
     }
     info_panel->addInfoLine(pilot_display.c_str());
-    
+
     // Telephone si renseigne
     if (params.pilot_phone != "") {
-        String phone_display = String(LV_SYMBOL_CALL) + " " + txt->phone + ": " + params.pilot_phone;
-        info_panel->addInfoLine(phone_display.c_str());
+      String phone_display = String(LV_SYMBOL_CALL) + " " + txt->phone + ": " + params.pilot_phone;
+      info_panel->addInfoLine(phone_display.c_str());
     }
-}
+  }
 
 public:
   UIScreenPrestart()
@@ -223,7 +240,5 @@ public:
     UIScreen::hide();
   }
 };
-
-UIScreenPrestart* UIScreenPrestart::instance = nullptr;
 
 #endif

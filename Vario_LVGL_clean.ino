@@ -13,6 +13,7 @@
 UIScreenSplash* splash_screen = nullptr;
 UIScreenPrestart* prestart_screen = nullptr;
 UIScreenFileTransfer* file_transfer_screen = nullptr;
+UIScreenSettings* settings_screen = nullptr;
 
 // Callback de transition splash -> prestart
 void onSplashComplete() {
