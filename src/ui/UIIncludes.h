@@ -32,6 +32,7 @@
 #include "widgets/UIWidgetFormRow.h"
 #include "widgets/UIWidgetInfoPanel.h"
 #include "widgets/UIWidgetKeyboard.h"
+#include "widgets/UIWidgetScreenFrame.h"
 
 // ============================================================================
 // ECRANS (dans l'ordre d'utilisation)
