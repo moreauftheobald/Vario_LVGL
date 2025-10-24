@@ -1,5 +1,3 @@
-// Dans votre fichier .ino principal
-
 #include "constants.h"
 #include "globals.h"
 #include "src/params/params.h"
@@ -7,39 +5,19 @@
 #include "src/sensors_i2c_task.h"
 #include "src/lvgl_port/lvgl_port.h"
 #include "src/rgb_lcd_port/rgb_lcd_port.h"
-#include "src/ui/UIIncludes.h"
 
-// Instances globales
-UIScreenSplash* splash_screen = nullptr;
-UIScreenPrestart* prestart_screen = nullptr;
-UIScreenFileTransfer* file_transfer_screen = nullptr;
-UIScreenSettings* settings_screen = nullptr;
-
-// Callback de transition splash -> prestart
-void onSplashComplete() {
-#ifdef DEBUG_MODE
-    Serial.println("[MAIN] Splash complete, showing prestart");
-#endif
-    
-    if (lvgl_port_lock(-1)) {
-        // Liberer splash
-        if (splash_screen) {
-            delete splash_screen;
-            splash_screen = nullptr;
-        }
-        
-        // Creer et afficher prestart
-        prestart_screen = new UIScreenPrestart();
-        prestart_screen->create();
-        prestart_screen->load();
-        
-        lvgl_port_unlock();
-        
-#ifdef DEBUG_MODE
-        Serial.println("[MAIN] Prestart screen shown");
-#endif
-    }
-}
+#include "src/ui/UI_helper.h"
+#include "src/ui/ui_settings_pilot.h"
+#include "src/ui/ui_settings_wifi.h"
+#include "src/ui/ui_settings_screen.h"
+#include "src/ui/ui_settings_vario.h"
+#include "src/ui/ui_settings_map.h"
+#include "src/ui/ui_settings_system.h"
+#include "src/ui/ui_settings.h"
+#include "src/ui/ui_file_transfer_loader.h"
+#include "src/ui/ui_main_screens.h"
+#include "src/ui/ui_prestart.h"
+#include "src/ui/ui_splash.h"
 
 void setup() {
     Serial.begin(115200);
@@ -87,16 +65,13 @@ void setup() {
         while (1) vTaskDelay(pdMS_TO_TICKS(1000));
     }
     
-    // 5. Creer et afficher splash screen
+    // 5. Afficher splash screen (ancienne UI)
     if (lvgl_port_lock(-1)) {
-        splash_screen = new UIScreenSplash();
-        splash_screen->setOnCompleteCallback(onSplashComplete);
-        splash_screen->create();
-        splash_screen->load();
+        ui_splash_show();
         lvgl_port_unlock();
         
 #ifdef DEBUG_MODE
-        Serial.println("[MAIN] Splash screen initialized");
+        Serial.println("[MAIN] Splash screen shown (old UI)");
 #endif
     }
 }
