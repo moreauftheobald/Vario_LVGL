@@ -39,6 +39,7 @@
 // ============================================================================
 #include "screens/UIScreenSplash.h"
 #include "screens/UIScreenPrestart.h"
+#include "screens/UIScreenFileTransfer.h"
 
 // TODO: Ajouter les futurs ecrans ici au fur et a mesure
 // #include "screens/UIScreenSettings.h"
