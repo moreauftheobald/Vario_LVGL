@@ -4,6 +4,9 @@
 #include <Preferences.h>
 #include "lvgl.h"
 
+// Flag pour test logger
+extern bool mainscreen_active;
+
 // Variables globales partagees entre tous les ecrans
 /*extern Preferences prefs;
 extern lv_obj_t *ta_active;

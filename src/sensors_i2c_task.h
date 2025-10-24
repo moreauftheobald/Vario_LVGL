@@ -115,13 +115,13 @@ static void sensors_i2c_task(void *pvParameters) {
           g_sensor_data.gps.valid = true;
 
 #ifdef DEBUG_MODE
-          Serial.printf("[GPS] Fix:%d Sat:%d Lat:%.6f Lon:%.6f Alt:%.1fm\n",
+          /*Serial.printf("[GPS] Fix:%d Sat:%d Lat:%.6f Lon:%.6f Alt:%.1fm\n",
                         g_sensor_data.gps.fix,
                         g_sensor_data.gps.satellites,
                         g_sensor_data.gps.latitude,
                         g_sensor_data.gps.longitude,
                         g_sensor_data.gps.altitude);
-          Serial.printf("[GPS] Raw: %s\n", g_sensor_data.gps.lastline);
+          Serial.printf("[GPS] Raw: %s\n", g_sensor_data.gps.lastline);*/
 #endif
         }
       }

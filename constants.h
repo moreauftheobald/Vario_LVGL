@@ -12,6 +12,9 @@ Project Global constants
 //Debug Mode
 #define DEBUG_MODE
 
+// Mode test
+#define TEST_MODE  // Decommente pour activer
+
 //LVGL Include Mode
 #define LV_CONF_INCLUDE_SIMPLE
 

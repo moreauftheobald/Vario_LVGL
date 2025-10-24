@@ -3,7 +3,7 @@
 
 #include <WiFi.h>
 #include <WebServer.h>
-#include <SD.h>
+#include <SD_MMC.h>  // CHANGÉ: SD_MMC au lieu de SD
 #include <FS.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -15,27 +15,43 @@ static bool server_is_running = false;
 // Handler pour la page d'accueil
 static void handle_root() {
   static const char PAGE_HEADER[] PROGMEM = R"rawliteral(
-                                            <!DOCTYPE html><html><head>
-                                            <meta charset="UTF-8">
-                                            <title>Vario File Server</title>
-                                            <style>
-                                            body{font-family:Arial;background:#1a1a2e;color:#eee;padding:20px}
-                                            h1{color:#00d4ff}
-                                            a{color:#00d4ff;text-decoration:none;padding:5px 10px;background:#2a2a4e;border-radius:5px;display:inline-block;margin:5px}
-                                            a:hover{background:#3a3a6e}
-                                            .file{margin:10px 0}
-                                            .size{color:#888;font-size:0.9em;margin-left:10px}
-                                            </style></head><body>
-                                            <h1>Vario File Server</h1>
-                                            <h2>Flight Files</h2>
-                                            )rawliteral";
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title>Vario File Server</title>
+<style>
+body{font-family:Arial;background:#1a1a2e;color:#eee;padding:20px}
+h1{color:#00d4ff}
+a{color:#00d4ff;text-decoration:none;padding:5px 10px;background:#2a2a4e;border-radius:5px;display:inline-block;margin:5px}
+a:hover{background:#3a3a6e}
+.file{margin:10px 0}
+.size{color:#888;font-size:0.9em;margin-left:10px}
+</style></head><body>
+<h1>Vario File Server</h1>
+<h2>Flight Files</h2>
+)rawliteral";
 
   static const char PAGE_FOOTER[] PROGMEM = R"rawliteral(</body></html>)rawliteral";
+  
+  if(!web_server) {
+    #ifdef DEBUG_MODE
+    Serial.println("[FILE_SERVER] web_server is NULL!");
+    #endif
+    return;
+  }
+  
+  web_server->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  web_server->send(200, "text/html", "");
   web_server->sendContent_P(PAGE_HEADER);
 
-  File root = SD.open("/flights");
+  // Attendre un peu que SD soit dispo
+  vTaskDelay(pdMS_TO_TICKS(100));
+
+  File root = SD_MMC.open("/flights");
   if (!root) {
     web_server->sendContent("<p>No flights directory found</p>");
+    #ifdef DEBUG_MODE
+    Serial.println("[FILE_SERVER] Cannot open /flights");
+    #endif
   } else {
     File file = root.openNextFile();
     bool has_files = false;
@@ -78,12 +94,12 @@ static void handle_download() {
   String filename = web_server->arg("file");
   String filepath = "/flights/" + filename;
 
-  if (!SD.exists(filepath)) {
+  if (!SD_MMC.exists(filepath)) {  // CHANGÉ: SD_MMC
     web_server->send(404, "text/plain", "File not found");
     return;
   }
 
-  File file = SD.open(filepath, FILE_READ);
+  File file = SD_MMC.open(filepath, FILE_READ);  // CHANGÉ: SD_MMC
   if (!file) {
     web_server->send(500, "text/plain", "Failed to open file");
     return;
@@ -140,7 +156,7 @@ void file_server_start(void) {
   xTaskCreatePinnedToCore(
     file_server_task,
     "file_server",
-    3072,
+    4096,
     NULL,
     3,
     &file_server_task_handle,

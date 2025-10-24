@@ -10,6 +10,11 @@
 #include "src/wifi_task.h"
 #include "src/file_server_task.h"
 
+
+#ifdef TEST_MODE
+#include "src/test_logger_task.h"  // AJOUTE CETTE LIGNE
+#endif
+
 static lv_obj_t *label_status = NULL;
 static lv_obj_t *label_ssid = NULL;
 static lv_obj_t *label_ip = NULL;
@@ -20,16 +25,16 @@ static void status_update_timer_cb(lv_timer_t *timer) {
   if (!label_status || !label_ssid || !label_ip) {
     return;
   }
-  
+
   if (wifi_get_connected_status()) {
     lv_label_set_text(label_status, LV_SYMBOL_WIFI " Connected");
     lv_obj_set_style_text_color(label_status, lv_color_hex(0x34c759), 0);
-    
+
     // Construire le texte SSID avec buffer
     char ssid_buffer[64];
     snprintf(ssid_buffer, sizeof(ssid_buffer), "SSID: %s", wifi_get_current_ssid());
     lv_label_set_text(label_ssid, ssid_buffer);
-    
+
     // Construire le texte IP avec buffer
     char ip_buffer[32];
     snprintf(ip_buffer, sizeof(ip_buffer), "IP: %s", wifi_get_current_ip());
@@ -47,17 +52,17 @@ static void btn_exit_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("Exit file transfer - stopping services...");
 #endif
-  
+
   // Arreter le timer
   if (status_timer) {
     lv_timer_del(status_timer);
     status_timer = NULL;
   }
-  
+
   // Arreter les services
   file_server_stop();
   wifi_task_stop();
-  
+
   vTaskDelay(pdMS_TO_TICKS(500));
   esp_restart();
 }
@@ -65,11 +70,21 @@ static void btn_exit_cb(lv_event_t *e) {
 void ui_file_transfer_init(void) {
   const TextStrings *txt = get_text();
 
+#ifdef TEST_MODE
+  // CRITIQUE: Arrêter le logger avant de démarrer le serveur
+  test_logger_stop();
+  vTaskDelay(pdMS_TO_TICKS(500));  // Laisser le temps de fermer proprement
+
+#ifdef DEBUG_MODE
+  Serial.println("[FILE_TRANSFER] Test logger stopped");
+#endif
+#endif
+
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
 
   // Titre
   lv_obj_t *label_title = ui_create_label(main_frame, txt->file_transfer,
-                                           &lv_font_montserrat_32, lv_color_hex(0x00d4ff));
+                                          &lv_font_montserrat_32, lv_color_hex(0x00d4ff));
   lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, 0);
 
   // Info panel
@@ -83,7 +98,7 @@ void ui_file_transfer_init(void) {
   lv_obj_set_style_radius(info_panel, 15, 0);
   lv_obj_set_style_pad_all(info_panel, 20, 0);
   lv_obj_set_flex_flow(info_panel, LV_FLEX_FLOW_COLUMN);
-  lv_obj_set_flex_align(info_panel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, 
+  lv_obj_set_flex_align(info_panel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER,
                         LV_FLEX_ALIGN_CENTER);
   lv_obj_set_style_pad_row(info_panel, 20, 0);
   lv_obj_clear_flag(info_panel, LV_OBJ_FLAG_SCROLLABLE);
@@ -113,7 +128,7 @@ void ui_file_transfer_init(void) {
                                            "1. Wait for WiFi connection\n"
                                            "2. Open your web browser\n"
                                            "3. Go to the IP address shown above",
-                                           &lv_font_montserrat_20, 
+                                           &lv_font_montserrat_20,
                                            lv_color_hex(0xaabbcc));
   lv_obj_set_style_text_align(instructions, LV_TEXT_ALIGN_CENTER, 0);
   lv_label_set_long_mode(instructions, LV_LABEL_LONG_WRAP);
@@ -121,21 +136,20 @@ void ui_file_transfer_init(void) {
 
   // Bouton exit
   ui_button_pair_t buttons = ui_create_save_cancel_buttons(
-    main_frame, nullptr, txt->exit, nullptr, 
-    false, true, false, 
-    nullptr, btn_exit_cb, nullptr, 
-    NULL, NULL, NULL
-  );
+    main_frame, nullptr, txt->exit, nullptr,
+    false, true, false,
+    nullptr, btn_exit_cb, nullptr,
+    NULL, NULL, NULL);
 
   lv_screen_load(main_screen);
-  
+
   // Demarrer WiFi et serveur de fichiers
   wifi_task_start();
-  
+
   // Attendre un peu avant de lancer le serveur
   vTaskDelay(pdMS_TO_TICKS(2000));
   file_server_start();
-  
+
   // Creer le timer pour mettre a jour le statut
   status_timer = lv_timer_create(status_update_timer_cb, 1000, NULL);
 

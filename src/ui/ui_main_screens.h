@@ -320,6 +320,9 @@ void ui_main_screens_show(void) {
   
   ui_main_screens_init();
   
+  // Activer flag pour test logger
+  mainscreen_active = true;
+  
 #ifdef DEBUG_MODE
   Serial.println("Main screens displayed");
 #endif

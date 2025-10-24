@@ -15,6 +15,57 @@
 void ui_file_transfer_show(void);
 void ui_settings_show(void);
 
+// Ajoute au début du fichier après les forward declarations
+#ifdef TEST_MODE
+static lv_obj_t *label_bmp_status = NULL;
+static lv_obj_t *label_bno_status = NULL;
+static lv_obj_t *label_gps_status = NULL;
+static lv_timer_t *sensor_status_timer = NULL;
+
+// Callback timer pour mise à jour status capteurs
+static void sensor_status_update_cb(lv_timer_t *timer) {
+  if (!label_bmp_status || !label_bno_status || !label_gps_status) return;
+
+  char info_text[128];
+
+  // Update BMP390
+  snprintf(info_text, sizeof(info_text), "%s BMP390: %s",
+           LV_SYMBOL_SETTINGS,
+           g_sensor_data.bmp390.valid ? "OK" : "ERROR");
+  lv_label_set_text(label_bmp_status, info_text);
+  lv_obj_set_style_text_color(label_bmp_status,
+                              g_sensor_data.bmp390.valid ? lv_color_hex(0x00ff00) : lv_color_hex(0xff0000), 0);
+
+  // Update BNO080
+  snprintf(info_text, sizeof(info_text), "%s BNO080: %s",
+           LV_SYMBOL_GPS,
+           g_sensor_data.bno080.valid ? "OK" : "ERROR");
+  lv_label_set_text(label_bno_status, info_text);
+  lv_obj_set_style_text_color(label_bno_status,
+                              g_sensor_data.bno080.valid ? lv_color_hex(0x00ff00) : lv_color_hex(0xff0000), 0);
+
+  // Update GPS
+  if (g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
+    snprintf(info_text, sizeof(info_text), "%s GPS: FIX (%d sats)",
+             LV_SYMBOL_WIFI,
+             g_sensor_data.gps.satellites);
+    lv_label_set_text(label_gps_status, info_text);
+    lv_obj_set_style_text_color(label_gps_status, lv_color_hex(0x00ff00), 0);
+  } else if (g_sensor_data.gps.valid) {
+    snprintf(info_text, sizeof(info_text), "%s GPS: NO FIX (%d sats)",
+             LV_SYMBOL_WIFI,
+             g_sensor_data.gps.satellites);
+    lv_label_set_text(label_gps_status, info_text);
+    lv_obj_set_style_text_color(label_gps_status, lv_color_hex(0xffaa00), 0);
+  } else {
+    snprintf(info_text, sizeof(info_text), "%s GPS: ERROR",
+             LV_SYMBOL_WIFI);
+    lv_label_set_text(label_gps_status, info_text);
+    lv_obj_set_style_text_color(label_gps_status, lv_color_hex(0xff0000), 0);
+  }
+}
+#endif
+
 // Callbacks
 static void btn_file_transfer_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
@@ -41,27 +92,27 @@ static void btn_start_cb(lv_event_t *e) {
  * @brief Initialize prestart screen
  */
 void ui_prestart_init(void) {
-  #ifdef DEBUG_MODE
+#ifdef DEBUG_MODE
   Serial.println("DEBUG: Debut ui_prestart_init");
-  #endif
-  
+#endif
+
   const TextStrings *txt = get_text();
-  
+
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
-  
+
   // Titre
   lv_obj_t *label_title = lv_label_create(main_frame);
-   
+
   lv_label_set_text(label_title, VARIO_NAME);
-    
+
   lv_obj_set_style_text_font(label_title, &lv_font_montserrat_48, 0);
   lv_obj_set_style_text_color(label_title, lv_color_hex(0x00d4ff), 0);
   lv_obj_set_style_text_align(label_title, LV_TEXT_ALIGN_CENTER, 0);
   lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, 5);
   lv_obj_set_style_bg_opa(label_title, LV_OPA_TRANSP, 0);
   lv_obj_set_style_pad_all(label_title, 0, 0);
-  
-    // Conteneur principal 2 colonnes
+
+  // Conteneur principal 2 colonnes
   lv_obj_t *content_container = ui_create_flex_container(main_frame, LV_FLEX_FLOW_ROW);
   lv_obj_set_size(content_container, lv_pct(100), LV_SIZE_CONTENT);
   lv_obj_align(content_container, LV_ALIGN_CENTER, 0, 40);
@@ -153,11 +204,11 @@ void ui_prestart_init(void) {
     color_sd = lv_color_hex(0xff3b30);
   }
   lv_obj_t *label_sd = ui_create_label(info_panel, info_text,
-                                         &lv_font_montserrat_20, color_sd);  // Rouge
+                                       &lv_font_montserrat_20, color_sd);  // Rouge
   lv_obj_set_width(label_sd, lv_pct(100));
 
   // Espace libre
-    if (sd_is_ready()) {
+  if (sd_is_ready()) {
     uint64_t total_kb, free_kb;
     sd_get_capacity(&total_kb, &free_kb);
 
@@ -229,6 +280,63 @@ void ui_prestart_init(void) {
     lv_obj_set_width(label_phone, lv_pct(100));
   }
 
+#ifdef TEST_MODE
+  // Separateur
+  lv_obj_t *separator = lv_obj_create(info_panel);
+  lv_obj_set_size(separator, lv_pct(90), 2);
+  lv_obj_set_style_bg_color(separator, lv_color_hex(0x00d4ff), 0);
+  lv_obj_set_style_border_width(separator, 0, 0);
+  lv_obj_center(separator);
+
+  // Label TEST MODE
+  lv_obj_t *label_test = ui_create_label(info_panel, "=== MODE TEST ACTIF ===",
+                                         &lv_font_montserrat_24, lv_color_hex(0xff6600));
+  lv_obj_set_width(label_test, lv_pct(100));
+  lv_obj_set_style_text_align(label_test, LV_TEXT_ALIGN_CENTER, 0);
+
+  // Status BMP390 (sauvegarde référence)
+  snprintf(info_text, sizeof(info_text), "%s BMP390: %s",
+           LV_SYMBOL_SETTINGS,
+           g_sensor_data.bmp390.valid ? "OK" : "ERROR");
+  label_bmp_status = ui_create_label(info_panel, info_text,
+                                     &lv_font_montserrat_20,
+                                     g_sensor_data.bmp390.valid ? lv_color_hex(0x00ff00) : lv_color_hex(0xff0000));
+  lv_obj_set_width(label_bmp_status, lv_pct(100));
+
+  // Status BNO080 (sauvegarde référence)
+  snprintf(info_text, sizeof(info_text), "%s BNO080: %s",
+           LV_SYMBOL_GPS,
+           g_sensor_data.bno080.valid ? "OK" : "ERROR");
+  label_bno_status = ui_create_label(info_panel, info_text,
+                                     &lv_font_montserrat_20,
+                                     g_sensor_data.bno080.valid ? lv_color_hex(0x00ff00) : lv_color_hex(0xff0000));
+  lv_obj_set_width(label_bno_status, lv_pct(100));
+
+  // Status GPS (sauvegarde référence)
+  if (g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
+    snprintf(info_text, sizeof(info_text), "%s GPS: FIX (%d sats)",
+             LV_SYMBOL_WIFI,
+             g_sensor_data.gps.satellites);
+    label_gps_status = ui_create_label(info_panel, info_text,
+                                       &lv_font_montserrat_20, lv_color_hex(0x00ff00));
+  } else if (g_sensor_data.gps.valid) {
+    snprintf(info_text, sizeof(info_text), "%s GPS: NO FIX (%d sats)",
+             LV_SYMBOL_WIFI,
+             g_sensor_data.gps.satellites);
+    label_gps_status = ui_create_label(info_panel, info_text,
+                                       &lv_font_montserrat_20, lv_color_hex(0xffaa00));
+  } else {
+    snprintf(info_text, sizeof(info_text), "%s GPS: ERROR",
+             LV_SYMBOL_WIFI);
+    label_gps_status = ui_create_label(info_panel, info_text,
+                                       &lv_font_montserrat_20, lv_color_hex(0xff0000));
+  }
+  lv_obj_set_width(label_gps_status, lv_pct(100));
+
+  // Créer timer de mise à jour (1Hz)
+  sensor_status_timer = lv_timer_create(sensor_status_update_cb, 1000, NULL);
+#endif
+
   lv_screen_load(main_screen);
 
 #ifdef DEBUG_MODE
@@ -240,6 +348,14 @@ void ui_prestart_init(void) {
  * @brief Show prestart screen
  */
 void ui_prestart_show(void) {
+#ifdef TEST_MODE
+  // Arrêter timer précédent si existe
+  if (sensor_status_timer != NULL) {
+    lv_timer_del(sensor_status_timer);
+    sensor_status_timer = NULL;
+  }
+#endif
+
   ui_prestart_init();
 
 #ifdef DEBUG_MODE
