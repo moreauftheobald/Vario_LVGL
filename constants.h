@@ -194,10 +194,23 @@ OTHER CONSTANTS
 #define OSM_TILE_SIZE 256
 
 // Position test: Décollage parapente Volmerange-les-Mines
-#define TEST_LAT 49.446845
-#define TEST_LON 6.099846
+//#define TEST_LAT 49.446845
+//#define TEST_LON 6.099846
+
+// Position test: 62 rue de verdun 57700 HAYANGE
+#define TEST_LAT 49.327626
+#define TEST_LON 6.057100
 
 // Nom du serveur de cartes (peut être paramétrable plus tard)
 #define OSM_SERVER_NAME "osm"
+
+//METAR CONSTANTS
+// Event bits
+#define METAR_FETCH_BIT BIT0
+#define METAR_STOP_BIT BIT1
+
+// API config
+#define METAR_API_URL "https://aviationweather.gov/api/data/metar"
+#define METAR_BBOX_RADIUS 1.0f  // Degres autour de la position (~100km)
 
 #endif

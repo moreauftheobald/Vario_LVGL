@@ -21,6 +21,7 @@ typedef struct {
   bool valid;
 } bmp390_data_t;
 
+
 // Structure pour donnees brutes BNO080
 typedef struct {
   float quat_i;           // Quaternion i
@@ -62,19 +63,38 @@ typedef struct {
 typedef struct {
   bmp390_data_t bmp390;
   bno080_data_t bno080;
-  gps_data_t gps;          // Ajouter cette ligne
+  gps_data_t gps;
+  float qnh_metar;      // QNH du METAR en hPa (default: 1013.25)
 } sensor_raw_data_t;
+
+// Structure donnees METAR
+typedef struct {
+  char station[5];      // Code ICAO
+  float qnh;            // hPa
+  float temperature;    // Celsius
+  float dewpoint;       // Celsius
+  int wind_dir;         // Degres
+  float wind_speed;     // m/s
+  int visibility;       // metres
+  char conditions[32];  // Description
+  uint32_t timestamp;   // millis()
+  bool valid;
+} metar_data_t;
 
 // Definition des variables globales
 Preferences prefs;
 lv_obj_t *ta_active = NULL;
 lv_obj_t *keyboard = NULL;
 lv_obj_t *main_screen = NULL;
-sensor_raw_data_t g_sensor_data = {0};
-
 
 // Instance globale
-//extern sensor_raw_data_t g_sensor_data;
+// Et initialiser dans la déclaration de g_sensor_data :
+sensor_raw_data_t g_sensor_data = {
+  .bmp390 = {0},
+  .bno080 = {0},
+  .gps = {0},
+  .qnh_metar = 1013.25f  // Valeur standard par défaut
+};
 
 void force_full_refresh(void) {
   lv_obj_invalidate(lv_screen_active());

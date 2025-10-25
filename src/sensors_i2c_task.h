@@ -30,13 +30,14 @@ static void sensors_i2c_task(void *pvParameters) {
       g_sensor_data.bmp390.pressure = bmp390.pressure;
       g_sensor_data.bmp390.timestamp = millis();
       g_sensor_data.bmp390.valid = true;
+      float alti = bmp390.readAltitude(g_sensor_data.qnh_metar);
+      // Utiliser QNH METAR si disponible, sinon standard
+      float qnh_ref = g_sensor_data.qnh_metar;
 
-      /*#ifdef DEBUG_MODE
-      Serial.printf("[BMP390] T=%.2f C, P=%.2f Pa\n",
-                    g_sensor_data.bmp390.temperature,
-                    g_sensor_data.bmp390.pressure);
-#endif*/
-
+#ifdef DEBUG_MODE
+      /*Serial.printf("[BMP390] Using QNH: %.1f hPa altitude: %.1f\n",
+                    qnh_ref,alti);*/
+#endif
     } else {
       g_sensor_data.bmp390.valid = false;
 #ifdef DEBUG_MODE

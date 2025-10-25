@@ -5,210 +5,212 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <math.h>
 #include "constants.h"
 #include "globals.h"
 #include "src/wifi_task.h"
 #include "src/kalman_task.h"
 
-// Structure donnees METAR
-typedef struct {
-  char station[5];      // Code ICAO
-  float qnh;           // hPa
-  float temperature;   // Celsius
-  float dewpoint;      // Celsius
-  int wind_dir;        // Degres
-  float wind_speed;    // m/s
-  int visibility;      // metres
-  char conditions[32]; // Description
-  uint32_t timestamp;  // millis()
-  bool valid;
-} metar_data_t;
-
 // Variables globales
-static metar_data_t metar_data = {0};
+static metar_data_t metar_data = { 0 };
 static SemaphoreHandle_t metar_mutex = NULL;
 static TaskHandle_t metar_task_handle = NULL;
 static EventGroupHandle_t metar_event_group = NULL;
 
-// Event bits
-#define METAR_FETCH_BIT BIT0
-#define METAR_STOP_BIT BIT1
-
-// API config
-#define METAR_API_URL "https://aviationweather.gov/api/data/metar"
-#define METAR_RADIUS_KM 100
-
-// Stations METAR proches (Luxembourg, Metz, etc)
-static const char* nearby_stations[] = {
-  "ELLX",  // Luxembourg
-  "LFJL",  // Metz-Nancy
-  "EBLG",  // Liege
-  "EDRS",  // Saarbrucken
-  NULL
-};
-
-// Calcul distance entre 2 coordonnees
-static float calc_distance(float lat1, float lon1, float lat2, float lon2) {
-  const float R = 6371.0f; // km
-  float dlat = (lat2 - lat1) * M_PI / 180.0f;
-  float dlon = (lon2 - lon1) * M_PI / 180.0f;
-  
-  float a = sin(dlat/2) * sin(dlat/2) + 
-            cos(lat1 * M_PI / 180.0f) * cos(lat2 * M_PI / 180.0f) * 
-            sin(dlon/2) * sin(dlon/2);
-  float c = 2 * atan2(sqrt(a), sqrt(1-a));
-  
+static float haversine_km(float lat1, float lon1, float lat2, float lon2) {
+  const float R = 6371.0f;
+  float dLat = radians(lat2 - lat1);
+  float dLon = radians(lon2 - lon1);
+  float a = sin(dLat / 2) * sin(dLat / 2) + cos(radians(lat1)) * cos(radians(lat2)) * sin(dLon / 2) * sin(dLon / 2);
+  float c = 2 * atan2(sqrt(a), sqrt(1 - a));
   return R * c;
 }
 
-// Parser METAR pour extraire QNH
-static bool parse_metar_qnh(const String& metar, float* qnh) {
-  // Chercher pattern QNH: Q1234 ou A2992
-  int idx = metar.indexOf(" Q");
-  if (idx > 0) {
-    String qnh_str = metar.substring(idx + 2, idx + 6);
-    *qnh = qnh_str.toFloat();
-    return true;
-  }
-  
-  // Format US: A2992 (inches Hg)
-  idx = metar.indexOf(" A");
-  if (idx > 0) {
-    String alt_str = metar.substring(idx + 2, idx + 6);
-    float inches = alt_str.toFloat() / 100.0f;
-    *qnh = inches * 33.8639f; // Conversion en hPa
-    return true;
-  }
-  
-  return false;
-}
+// Chercher METAR dans une zone geographique
+static bool fetch_metar_by_bbox(float lat, float lon) {
+  if (!wifi_get_connected_status()) return false;
 
-// Recuperer METAR depuis API
-static bool fetch_metar_from_api(const char* station) {
-  if (!wifi_get_connected_status()) {
+  float min_lat = lat - METAR_BBOX_RADIUS;
+  float min_lon = lon - METAR_BBOX_RADIUS;
+  float max_lat = lat + METAR_BBOX_RADIUS;
+  float max_lon = lon + METAR_BBOX_RADIUS;
+
+  HTTPClient http;
+  char bbox_params[128];
+  snprintf(bbox_params, sizeof(bbox_params),
+           "?bbox=%.2f%%2C%.2f%%2C%.2f%%2C%.2f&format=json&taf=false&hours=1.5",
+           min_lat, min_lon, max_lat, max_lon);
+
+  String url = String(METAR_API_URL) + String(bbox_params);
+
+#ifdef DEBUG_MODE
+  Serial.printf("[METAR] URL: %s\n", url.c_str());
+#endif
+
+  http.begin(url);
+  http.setTimeout(10000);
+  int httpCode = http.GET();
+
+  if (httpCode != HTTP_CODE_OK) {
+    http.end();
     return false;
   }
-  
-  HTTPClient http;
-  String url = String(METAR_API_URL) + "?ids=" + station + "&format=raw";
-  
+
+  String payload = http.getString();
+  http.end();
+
+  // --- Parser JSON ---
+  JsonDocument doc;
+  DeserializationError err = deserializeJson(doc, payload);
+  if (err) {
 #ifdef DEBUG_MODE
-  Serial.printf("[METAR] Fetching: %s\n", url.c_str());
+    Serial.printf("[METAR] JSON parse error: %s\n", err.c_str());
 #endif
-  
-  http.begin(url);
-  http.setTimeout(5000);
-  
-  int httpCode = http.GET();
-  if (httpCode == HTTP_CODE_OK) {
-    String payload = http.getString();
-    
+    return false;
+  }
+
+  JsonArray data = doc.as<JsonArray>();
+  if (data.isNull() || data.size() == 0) {
 #ifdef DEBUG_MODE
-    Serial.printf("[METAR] Response: %s\n", payload.c_str());
+    Serial.println("[METAR] No METAR data in JSON");
 #endif
-    
-    float qnh = 0;
-    if (parse_metar_qnh(payload, &qnh)) {
-      if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
-        strcpy(metar_data.station, station);
-        metar_data.qnh = qnh;
-        metar_data.timestamp = millis();
-        metar_data.valid = true;
-        xSemaphoreGive(metar_mutex);
-        
+    return false;
+  }
+
+  float sum_weight = 0.0f;
+  float weighted_qnh = 0.0f;
+  int count_valid = 0;
+
+  for (JsonObject metar : doc.as<JsonArray>()) {
+    if (!metar.containsKey("altim") || !metar.containsKey("lat") || !metar.containsKey("lon")) {
+      Serial.println("[METAR] skipping entry: missing altim/lat/lon");
+      continue;
+    }
+
+    float slat = metar["lat"];
+    float slon = metar["lon"];
+    float altim = metar["altim"];  // QNH en hPa
+    if (altim <= 0.0f) {
 #ifdef DEBUG_MODE
-        Serial.printf("[METAR] QNH: %.1f hPa from %s\n", qnh, station);
+      Serial.println("[METAR] skipping entry: altim <= 0");
 #endif
-        
-        // Appliquer au filtre de Kalman
-        kalman_set_qnh(qnh);
-        
-        http.end();
-        return true;
+      continue;
+    }
+
+    const char* sid = "----";
+    if (metar.containsKey("station_id")) {
+      // safe extraction: get<const char*> returns nullptr if not string
+      if (!metar["station_id"].isNull()) {
+        sid = metar["station_id"];
+        if (sid == nullptr) sid = "----";
       }
     }
+
+    float qnh = altim;
+    float dist = haversine_km(lat, lon, slat, slon);
+    if (dist < 0.1f) dist = 0.1f;
+    float w = 1.0f / (dist * dist);
+
+    weighted_qnh += qnh * w;
+    sum_weight += w;
+    count_valid++;
+
+#ifdef DEBUG_MODE
+    // utiliser %s uniquement avec sid garanti non-NULL, et types corrects
+    Serial.printf("[METAR] %s altim=%.2f inHg, QNH=%.1f hPa, dist=%.1f km\n",
+                  sid, (double)altim, (double)qnh, (double)dist);
+#endif
   }
-  
-  http.end();
-  return false;
+
+  if (count_valid == 0 || sum_weight == 0) {
+#ifdef DEBUG_MODE
+    Serial.println("[METAR] No valid QNH found");
+#endif
+    return false;
+  }
+
+  float qnh_est = weighted_qnh / sum_weight;
+
+  // Sauvegarde dans la structure globale
+  if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
+    strcpy(metar_data.station, "AVG");
+    metar_data.qnh = qnh_est;
+    metar_data.timestamp = millis();
+    metar_data.valid = true;
+    g_sensor_data.qnh_metar = qnh_est;
+    xSemaphoreGive(metar_mutex);
+  }
+
+#ifdef DEBUG_MODE
+  Serial.printf("[METAR] QNH local estimé = %.1f hPa (%d stations)\n", qnh_est, count_valid);
+#endif
+
+  kalman_set_qnh(qnh_est);
+  return true;
 }
 
 // Chercher station la plus proche
 static bool find_nearest_station() {
-  // Si pas de GPS, utiliser stations par defaut
+  float lat, lon;
+  bool has_position = false;
+
+#ifdef FLIGHT_TEST_MODE
+  // Mode test: utiliser position fixe
+  lat = TEST_LAT;
+  lon = TEST_LON;
+  has_position = true;
+
+#ifdef DEBUG_MODE
+  Serial.printf("[METAR] Using test position: %.6f, %.6f\n", lat, lon);
+#endif
+
+#else
+  // Mode normal: attendre fix GPS
   if (!g_sensor_data.gps.valid || !g_sensor_data.gps.fix) {
 #ifdef DEBUG_MODE
-    Serial.println("[METAR] No GPS, trying default stations");
+    Serial.println("[METAR] Waiting for GPS fix...");
 #endif
-    
-    for (int i = 0; nearby_stations[i]; i++) {
-      if (fetch_metar_from_api(nearby_stations[i])) {
-        return true;
-      }
-    }
     return false;
   }
-  
-  // Avec GPS, chercher la plus proche
-  float lat = g_sensor_data.gps.latitude;
-  float lon = g_sensor_data.gps.longitude;
-  
-  // Positions approximatives des stations
-  struct {
-    const char* code;
-    float lat;
-    float lon;
-  } stations[] = {
-    {"ELLX", 49.6233, 6.2044},   // Luxembourg
-    {"LFJL", 48.9821, 6.2513},   // Metz
-    {"EBLG", 50.6374, 5.4433},   // Liege
-    {"EDRS", 49.2147, 7.1095},   // Saarbrucken
-    {NULL, 0, 0}
-  };
-  
-  const char* nearest = NULL;
-  float min_dist = 999999;
-  
-  for (int i = 0; stations[i].code; i++) {
-    float dist = calc_distance(lat, lon, stations[i].lat, stations[i].lon);
-    if (dist < min_dist && dist < METAR_RADIUS_KM) {
-      min_dist = dist;
-      nearest = stations[i].code;
-    }
-  }
-  
-  if (nearest) {
+
+  lat = g_sensor_data.gps.latitude;
+  lon = g_sensor_data.gps.longitude;
+  has_position = true;
+
 #ifdef DEBUG_MODE
-    Serial.printf("[METAR] Nearest station: %s (%.1f km)\n", nearest, min_dist);
+  Serial.printf("[METAR] Using GPS position: %.6f, %.6f\n", lat, lon);
 #endif
-    return fetch_metar_from_api(nearest);
+#endif
+
+  if (!has_position) {
+    return false;
   }
-  
-  return false;
+
+  // Chercher METAR dans la zone via API
+  return fetch_metar_by_bbox(lat, lon);
 }
 
 // Tache METAR
 static void metar_task(void* parameter) {
   TickType_t last_fetch = 0;
-  const TickType_t fetch_interval = pdMS_TO_TICKS(1800000); // 30 min
-  
+  const TickType_t fetch_interval = pdMS_TO_TICKS(1800000);  // 30 min
+
 #ifdef DEBUG_MODE
   Serial.println("[METAR] Task started");
 #endif
-  
+
   while (1) {
     EventBits_t bits = xEventGroupWaitBits(
       metar_event_group,
       METAR_FETCH_BIT | METAR_STOP_BIT,
       pdTRUE,
       pdFALSE,
-      portMAX_DELAY
-    );
-    
+      portMAX_DELAY);
+
     if (bits & METAR_STOP_BIT) {
       break;
     }
-    
+
     if (bits & METAR_FETCH_BIT) {
       // Attendre connexion WiFi (max 30s)
       int retry = 0;
@@ -216,13 +218,27 @@ static void metar_task(void* parameter) {
         vTaskDelay(pdMS_TO_TICKS(500));
         retry++;
       }
-      
+
       if (wifi_get_connected_status()) {
+#ifdef FLIGHT_TEST_MODE
+        // En mode test, on peut fetch immediatement
         if (find_nearest_station()) {
           last_fetch = xTaskGetTickCount();
         }
+#else
+        // En mode normal, attendre GPS fix
+        int gps_retry = 0;
+        while ((!g_sensor_data.gps.valid || !g_sensor_data.gps.fix) && gps_retry < 120) {
+          vTaskDelay(pdMS_TO_TICKS(500));
+          gps_retry++;
+        }
+
+        if (find_nearest_station()) {
+          last_fetch = xTaskGetTickCount();
+        }
+#endif
       }
-      
+
       // Auto-refresh toutes les 30 min
       if ((xTaskGetTickCount() - last_fetch) > fetch_interval) {
         if (wifi_get_connected_status()) {
@@ -231,10 +247,10 @@ static void metar_task(void* parameter) {
         }
       }
     }
-    
+
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
-  
+
   vTaskDelete(NULL);
 }
 
@@ -243,20 +259,19 @@ void metar_start(void) {
   if (!metar_mutex) {
     metar_mutex = xSemaphoreCreateMutex();
   }
-  
+
   if (!metar_event_group) {
     metar_event_group = xEventGroupCreate();
   }
-  
+
   if (!metar_task_handle) {
     xTaskCreate(
       metar_task,
       "metar_task",
-      4096,
+      5120,
       NULL,
       3,
-      &metar_task_handle
-    );
+      &metar_task_handle);
   }
 }
 
@@ -270,7 +285,7 @@ void metar_stop(void) {
   if (metar_event_group) {
     xEventGroupSetBits(metar_event_group, METAR_STOP_BIT);
   }
-  
+
   if (metar_task_handle) {
     vTaskDelay(pdMS_TO_TICKS(100));
     metar_task_handle = NULL;

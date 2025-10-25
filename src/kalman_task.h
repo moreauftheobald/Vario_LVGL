@@ -307,8 +307,8 @@ static void kalman_task(void* parameter) {
 #ifdef DEBUG_MODE
     static uint32_t last_debug = 0;
     if (now - last_debug >= 1000) {
-      /*Serial.printf("[KALMAN] Alt:%.1fm Vario:%.2fm/s Accel:%.2fm/s2\n",
-                    kf.x[0], kf.x[1], kf.x[2]);*/
+      Serial.printf("[KALMAN] Alt:%.1fm Vario:%.2fm/s Accel:%.2fm/s2\n",
+                    kf.x[0], kf.x[1], kf.x[2]);
       last_debug = now;
     }
 #endif
