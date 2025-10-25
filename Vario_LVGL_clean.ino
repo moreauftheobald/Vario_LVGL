@@ -5,6 +5,8 @@
 #include "src/sensors_i2c_task.h"
 #include "src/lvgl_port/lvgl_port.h"
 #include "src/rgb_lcd_port/rgb_lcd_port.h"
+#include "src/wifi_task.h"
+#include "src/metar_task.h"
 
 #include "src/ui/UI_helper.h"
 #include "src/ui/ui_settings_pilot.h"
@@ -70,6 +72,9 @@ void setup() {
     while (1) vTaskDelay(pdMS_TO_TICKS(1000));
   }
 
+  // 5. Démarrer METAR (mais ne pas fetch encore)
+  metar_start();
+
 #ifdef TEST_MODE
   test_logger_start();
 #ifdef DEBUG_MODE
@@ -77,15 +82,8 @@ void setup() {
 #endif
 #endif
 
-  // 5. Afficher splash screen (ancienne UI)
-  if (lvgl_port_lock(-1)) {
-    ui_splash_show();
-    lvgl_port_unlock();
-
-#ifdef DEBUG_MODE
-    Serial.println("[MAIN] Splash screen shown (old UI)");
-#endif
-  }
+  // 6. Afficher splash
+  ui_splash_show();
 }
 
 void loop() {
