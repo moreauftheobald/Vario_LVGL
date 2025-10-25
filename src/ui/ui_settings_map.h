@@ -303,7 +303,7 @@ void ui_settings_map_init(void) {
                                          &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
 
   widgets.slider_zoom = lv_slider_create(col_left);
-  lv_slider_set_range(widgets.slider_zoom, 1, 18);
+  lv_slider_set_range(widgets.slider_zoom, MAP_ZOOM_MIN, MAP_ZOOM_MAX);
   lv_obj_set_width(widgets.slider_zoom, lv_pct(90));
 
   lv_obj_t *label_zoom_value = ui_create_label(col_left, "13",

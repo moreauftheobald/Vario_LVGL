@@ -205,6 +205,9 @@ TILES CONSTANTS
 // Nom du serveur de cartes (peut être paramétrable plus tard)
 #define OSM_SERVER_NAME "osm"
 
+#define MAP_ZOOM_MIN  6
+#define MAP_ZOOM_MAX 16
+
 /*=========================================================================
 METAR CONSTANTS
 /*=========================================================================*/
