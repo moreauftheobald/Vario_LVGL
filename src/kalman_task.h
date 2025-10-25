@@ -33,7 +33,6 @@ static float qnh_setting = 1013.25f;  // hPa
 static float qfe_offset = 0.0f;       // m
 
 // Buffer init
-#define INIT_SAMPLES 20
 static float init_buffer[INIT_SAMPLES];
 static int init_count = 0;
 
@@ -91,8 +90,7 @@ static bool kalman_try_init() {
   float alt = pressure_to_altitude(g_sensor_data.bmp390.pressure, qnh_setting);
 
 #ifdef DEBUG_MODE
-  Serial.printf("[KALMAN] Init sample %d: P=%.1fPa Alt=%.1fm\n",
-                init_count, g_sensor_data.bmp390.pressure, alt);
+  Serial.printf("[KALMAN] Init sample %d: P=%.1fPa Alt=%.1fm\n", init_count, g_sensor_data.bmp390.pressure, alt);
 #endif
 
   init_buffer[init_count++] = alt;
@@ -169,8 +167,7 @@ static void kalman_update(float measurement, float variance, int measurement_idx
   // Outlier rejection (plus tolerant)
   if (measurement_idx == 0 && fabs(y) > 100.0f) {
 #ifdef DEBUG_MODE
-    Serial.printf("[KALMAN] Outlier rejected: meas=%.1fm state=%.1fm diff=%.1fm\n",
-                  measurement, kf.x[0], y);
+    Serial.printf("[KALMAN] Outlier rejected: meas=%.1fm state=%.1fm diff=%.1fm\n", measurement, kf.x[0], y);
 #endif
     return;
   }
@@ -266,9 +263,7 @@ static void kalman_task(void* parameter) {
     // Update baro
     if (g_sensor_data.bmp390.valid) {
       if (now - last_baro_time >= 20) {
-        float alt_baro = pressure_to_altitude(
-          g_sensor_data.bmp390.pressure,
-          qnh_setting);
+        float alt_baro = pressure_to_altitude(g_sensor_data.bmp390.pressure, qnh_setting);
         kalman_update(alt_baro, 0.25f, 0);
         last_baro_time = now;
       }
@@ -294,8 +289,7 @@ static void kalman_task(void* parameter) {
       if (xSemaphoreTake(kalman_mutex, pdMS_TO_TICKS(5))) {
         kalman_data.altitude = kf.x[0];
         kalman_data.vario = kf.x[1];
-        kalman_data.altitude_qne = pressure_to_altitude(
-          g_sensor_data.bmp390.pressure, 1013.25f);
+        kalman_data.altitude_qne = pressure_to_altitude(g_sensor_data.bmp390.pressure, 1013.25f);
         kalman_data.altitude_qnh = kf.x[0];
         kalman_data.altitude_qfe = kf.x[0] - qfe_offset;
         kalman_data.timestamp = now;
@@ -307,12 +301,10 @@ static void kalman_task(void* parameter) {
 #ifdef DEBUG_MODE
     static uint32_t last_debug = 0;
     if (now - last_debug >= 1000) {
-      Serial.printf("[KALMAN] Alt:%.1fm Vario:%.2fm/s Accel:%.2fm/s2\n",
-                    kf.x[0], kf.x[1], kf.x[2]);
+      Serial.printf("[KALMAN] Alt:%.1fm Vario:%.2fm/s Accel:%.2fm/s2\n", kf.x[0], kf.x[1], kf.x[2]);
       last_debug = now;
     }
 #endif
-
     vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(20));
   }
 }
@@ -321,13 +313,14 @@ static void kalman_task(void* parameter) {
 static TaskHandle_t kalman_task_handle = NULL;
 
 static bool kalman_start() {
-  BaseType_t ret = xTaskCreate(
+  BaseType_t ret = xTaskCreatePinnedToCore(
     kalman_task,
     "kalman",
     4096,
     NULL,
     4,
-    &kalman_task_handle);
+    &kalman_task_handle,
+    0);
 
   if (ret != pdPASS) {
 #ifdef DEBUG_MODE

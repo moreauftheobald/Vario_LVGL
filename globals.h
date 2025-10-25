@@ -7,12 +7,6 @@
 // Flag pour test logger
 extern bool mainscreen_active;
 
-// Variables globales partagees entre tous les ecrans
-/*extern Preferences prefs;
-extern lv_obj_t *ta_active;
-extern lv_obj_t *keyboard;
-extern lv_obj_t *main_screen;  // Ecran principal reutilisable*/
-
 // Structure pour donnees brutes BMP390
 typedef struct {
   float temperature;      // Celsius

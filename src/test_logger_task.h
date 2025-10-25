@@ -335,13 +335,14 @@ static void test_logger_task(void* parameter) {
 
 // Demarrage
 static bool test_logger_start() {
-    BaseType_t ret = xTaskCreate(
+    BaseType_t ret = xTaskCreatePinnedToCore(
         test_logger_task,
         "test_log",
         6144,
         NULL,
         3,
-        &test_logger_task_handle
+        &test_logger_task_handle,
+        0
     );
     
     if(ret != pdPASS) {

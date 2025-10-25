@@ -7,7 +7,6 @@
 #include "src/rgb_lcd_port/rgb_lcd_port.h"
 #include "src/wifi_task.h"
 #include "src/metar_task.h"
-
 #include "src/ui/UI_helper.h"
 #include "src/ui/ui_settings_pilot.h"
 #include "src/ui/ui_settings_wifi.h"
@@ -99,19 +98,15 @@ void loop() {
     size_t min_free = ESP.getMinFreeHeap();
     size_t largest = ESP.getMaxAllocHeap();
 
-    Serial.printf("SRAM:  Used: %6u / %6u (%.1f%%) | Free: %6u | Min: %6u | Largest: %6u\n",
-                  total_heap - free_heap, total_heap,
-                  ((total_heap - free_heap) * 100.0) / total_heap,
-                  free_heap, min_free, largest);
+    Serial.printf("SRAM:  Used: %6u / %6u (%.1f%%) | Free: %6u | Min: %6u | Largest: %6u\n", total_heap - free_heap, total_heap,
+                  ((total_heap - free_heap) * 100.0) / total_heap, free_heap, min_free, largest);
 
     // PSRAM
     size_t free_psram = ESP.getFreePsram();
     size_t total_psram = ESP.getPsramSize();
 
-    Serial.printf("PSRAM: Used: %6u / %6u (%.1f%%) | Free: %6u\n",
-                  total_psram - free_psram, total_psram,
-                  ((total_psram - free_psram) * 100.0) / total_psram,
-                  free_psram);
+    Serial.printf("PSRAM: Used: %6u / %6u (%.1f%%) | Free: %6u\n", total_psram - free_psram, total_psram,
+                  ((total_psram - free_psram) * 100.0) / total_psram, free_psram);
 
     // ALERTE si critique
     if (free_heap < 10000) {

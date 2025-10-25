@@ -7,16 +7,6 @@
 #include "lvgl.h"
 #include "constants.h"
 
-// Taille standard tuile OSM
-#define OSM_TILE_SIZE 256
-
-// Position test: Décollage parapente Volmerange-les-Mines
-#define TEST_LAT 49.446745
-#define TEST_LON 6.099718
-
-// Nom du serveur de cartes
-#define OSM_SERVER_NAME "osm"
-
 // Conversion lat/lon vers tuile OSM et position pixel dans la tuile
 static void lat_lon_to_tile_pixel(double lat, double lon, int zoom, 
                                   int* tile_x, int* tile_y, 

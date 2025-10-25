@@ -181,15 +181,16 @@ LVGL AND GRAPHICS CONSTANTS
 
 
 /*=========================================================================
-OTHER CONSTANTS
+WIFI CONSTANTS
 /*=========================================================================*/
-//WIFI CONSTANTS
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_DISCONNECTED_BIT BIT1
 #define WIFI_START_BIT BIT2
 #define WIFI_STOP_BIT BIT3
 
-//TILES CONSTANTS
+/*=========================================================================
+TILES CONSTANTS
+/*=========================================================================*/
 // Taille standard tuile OSM
 #define OSM_TILE_SIZE 256
 
@@ -204,7 +205,9 @@ OTHER CONSTANTS
 // Nom du serveur de cartes (peut être paramétrable plus tard)
 #define OSM_SERVER_NAME "osm"
 
-//METAR CONSTANTS
+/*=========================================================================
+METAR CONSTANTS
+/*=========================================================================*/
 // Event bits
 #define METAR_FETCH_BIT BIT0
 #define METAR_STOP_BIT BIT1
@@ -212,5 +215,11 @@ OTHER CONSTANTS
 // API config
 #define METAR_API_URL "https://aviationweather.gov/api/data/metar"
 #define METAR_BBOX_RADIUS 1.0f  // Degres autour de la position (~100km)
+
+/*=========================================================================
+OTHER CONSTANTS
+/*=========================================================================*/
+//KALMAN CONSTANTS
+#define INIT_SAMPLES 20
 
 #endif

@@ -265,13 +265,14 @@ void metar_start(void) {
   }
 
   if (!metar_task_handle) {
-    xTaskCreate(
+    xTaskCreatePinnedToCore(
       metar_task,
       "metar_task",
       5120,
       NULL,
       3,
-      &metar_task_handle);
+      &metar_task_handle,
+      0);
   }
 }
 
