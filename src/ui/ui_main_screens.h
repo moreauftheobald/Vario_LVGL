@@ -114,7 +114,7 @@ void ui_screen_left_init(void) {
   lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(frame, 3, 0);
   lv_obj_set_style_border_color(frame, lv_color_hex(0xFFFFFF), 0);
-  lv_obj_set_style_radius(frame, 20, 0);
+  lv_obj_set_style_radius(frame, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_pad_all(frame, 20, 0);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_CLICKABLE);
@@ -168,7 +168,7 @@ void ui_screen_center_init(void) {
   
   int16_t col_height = 540; 
   int16_t col_center_width = 540;
-  int16_t col_side_width = 237;
+  int16_t col_side_width = 479;
   
   // Colonne gauche
   lv_obj_t *col_left = lv_obj_create(frame);
@@ -178,7 +178,7 @@ void ui_screen_center_init(void) {
   lv_obj_set_style_bg_opa(col_left, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(col_left, 2, 0);
   lv_obj_set_style_border_color(col_left, lv_color_hex(0xFFFFFF), 0);
-  lv_obj_set_style_radius(col_left, 15, 0);
+  lv_obj_set_style_radius(col_left, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_pad_all(col_left, 10, 0);
   lv_obj_clear_flag(col_left, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(col_left, LV_OBJ_FLAG_CLICKABLE);
@@ -197,7 +197,7 @@ void ui_screen_center_init(void) {
   lv_obj_set_style_bg_opa(col_center, LV_OPA_80, 0);
   lv_obj_set_style_border_width(col_center, 2, 0);
   lv_obj_set_style_border_color(col_center, lv_color_hex(0xFFFFFF), 0);
-  lv_obj_set_style_radius(col_center, 15, 0);
+  lv_obj_set_style_radius(col_center, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_pad_all(col_center, 10, 0);
   lv_obj_clear_flag(col_center, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(col_center, LV_OBJ_FLAG_CLICKABLE);
@@ -207,26 +207,7 @@ void ui_screen_center_init(void) {
   lv_obj_set_style_text_font(label_center, &lv_font_montserrat_20, 0);
   lv_obj_set_style_text_color(label_center, lv_color_hex(0x00d4ff), 0);
   lv_obj_center(label_center);
-  
-  // Colonne droite
-  lv_obj_t *col_right = lv_obj_create(frame);
-  lv_obj_set_size(col_right, col_side_width, col_height);
-  lv_obj_set_pos(col_right, col_side_width + 5 + col_center_width + 5, 5);
-  lv_obj_set_style_bg_color(col_right, lv_color_hex(0x000000), 0);
-  lv_obj_set_style_bg_opa(col_right, LV_OPA_80, 0);
-  lv_obj_set_style_border_width(col_right, 2, 0);
-  lv_obj_set_style_border_color(col_right, lv_color_hex(0xFFFFFF), 0);
-  lv_obj_set_style_radius(col_right, 15, 0);
-  lv_obj_set_style_pad_all(col_right, 10, 0);
-  lv_obj_clear_flag(col_right, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_clear_flag(col_right, LV_OBJ_FLAG_CLICKABLE);
-  
-  lv_obj_t *label_right = lv_label_create(col_right);
-  lv_label_set_text(label_right, "Droite");
-  lv_obj_set_style_text_font(label_right, &lv_font_montserrat_20, 0);
-  lv_obj_set_style_text_color(label_right, lv_color_hex(0x00d4ff), 0);
-  lv_obj_center(label_right);
-  
+    
   // Ajouter handler swipe sur l'ecran complet
   lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);
   lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_RELEASED, NULL);
@@ -262,7 +243,7 @@ void ui_screen_right_init(void) {
   lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(frame, 3, 0);
   lv_obj_set_style_border_color(frame, lv_color_hex(0xFFFFFF), 0);
-  lv_obj_set_style_radius(frame, 20, 0);
+  lv_obj_set_style_radius(frame, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_pad_all(frame, 20, 0);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_CLICKABLE);

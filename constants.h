@@ -13,7 +13,10 @@ Project Global constants
 #define DEBUG_MODE
 
 // Mode test
-#define TEST_MODE  // Decommente pour activer
+//#define TEST_MODE  // Decommente pour activer
+
+// Mode test
+#define FLIGHT_TEST_MODE  // Decommente pour activer
 
 //LVGL Include Mode
 #define LV_CONF_INCLUDE_SIMPLE
@@ -88,10 +91,10 @@ SDMMC GPIO AND CONSTANTS
 #define SD_MOUNT_POINT "/sdcard"
 
 // Repertoires
-#define OSM_TILES_DIR "/sdcard/osm_tiles"
-#define LOGS_DIR "/sdcard/logs"
-#define FLIGHTS_DIR "/sdcard/flights"
-#define CONFIG_DIR "/sdcard/config"
+#define OSM_TILES_DIR "/osm_tiles"
+#define LOGS_DIR "/logs"
+#define FLIGHTS_DIR "/flights"
+#define CONFIG_DIR "/config"
 
 // Option de formatage automatique (mettre true pour forcer FAT32 si echec)
 #define SD_FORMAT_IF_MOUNT_FAILED false
@@ -151,6 +154,10 @@ LVGL AND GRAPHICS CONSTANTS
 #define COLOR_WARNING lv_palette_main(LV_PALETTE_ORANGE)
 #define COLOR_TEXT lv_color_white()
 
+//Graphical Constants
+#define ROUND_FRANE_RADUIS_SMALL  9
+#define ROUND_FRANE_RADUIS_BIG   15
+
 //LVGL PORT CONSTANTS
 #define LVGL_PORT_H_RES (LCD_H_RES)
 #define LVGL_PORT_V_RES (LCD_V_RES)
@@ -181,5 +188,16 @@ OTHER CONSTANTS
 #define WIFI_DISCONNECTED_BIT BIT1
 #define WIFI_START_BIT BIT2
 #define WIFI_STOP_BIT BIT3
+
+//TILES CONSTANTS
+// Taille standard tuile OSM
+#define OSM_TILE_SIZE 256
+
+// Position test: Décollage parapente Volmerange-les-Mines
+#define TEST_LAT 49.446845
+#define TEST_LON 6.099846
+
+// Nom du serveur de cartes (peut être paramétrable plus tard)
+#define OSM_SERVER_NAME "osm"
 
 #endif

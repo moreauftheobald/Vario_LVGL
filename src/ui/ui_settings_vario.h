@@ -173,7 +173,7 @@ static void save_vario_settings(void) {
 void ui_settings_vario_init(void) {
   const TextStrings *txt = get_text();
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
 
   ui_create_title(main_frame, txt->vario_settings);
 
@@ -219,7 +219,7 @@ void ui_settings_vario_init(void) {
   lv_obj_set_style_bg_opa(chart_container, LV_OPA_80, 0);
   lv_obj_set_style_border_width(chart_container, 2, 0);
   lv_obj_set_style_border_color(chart_container, lv_color_hex(0x6080a0), 0);
-  lv_obj_set_style_radius(chart_container, 10, 0);
+  lv_obj_set_style_radius(chart_container, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_pad_all(chart_container, 15, 0);
   lv_obj_clear_flag(chart_container, LV_OBJ_FLAG_SCROLLABLE);
 

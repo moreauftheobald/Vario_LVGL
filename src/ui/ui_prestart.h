@@ -15,8 +15,6 @@
 void ui_file_transfer_show(void);
 void ui_settings_show(void);
 
-// Ajoute au début du fichier après les forward declarations
-#ifdef TEST_MODE
 static lv_obj_t *label_bmp_status = NULL;
 static lv_obj_t *label_bno_status = NULL;
 static lv_obj_t *label_gps_status = NULL;
@@ -24,7 +22,32 @@ static lv_timer_t *sensor_status_timer = NULL;
 
 // Callback timer pour mise à jour status capteurs
 static void sensor_status_update_cb(lv_timer_t *timer) {
-  if (!label_bmp_status || !label_bno_status || !label_gps_status) return;
+  // SÉCURITÉ: Vérifier que tous les labels existent
+  if (!label_bmp_status || !label_bno_status || !label_gps_status) {
+#ifdef DEBUG_MODE
+    Serial.println("[PRESTART] Timer callback: labels destroyed, stopping timer");
+#endif
+    if (timer) {
+      lv_timer_del(timer);
+      sensor_status_timer = NULL;
+    }
+    return;
+  }
+
+  // Double vérification que les labels sont valides
+  if (!lv_obj_is_valid(label_bmp_status) || !lv_obj_is_valid(label_bno_status) || !lv_obj_is_valid(label_gps_status)) {
+#ifdef DEBUG_MODE
+    Serial.println("[PRESTART] Timer callback: labels invalid, stopping timer");
+#endif
+    if (timer) {
+      lv_timer_del(timer);
+      sensor_status_timer = NULL;
+    }
+    label_bmp_status = NULL;
+    label_bno_status = NULL;
+    label_gps_status = NULL;
+    return;
+  }
 
   char info_text[128];
 
@@ -64,13 +87,23 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
     lv_obj_set_style_text_color(label_gps_status, lv_color_hex(0xff0000), 0);
   }
 }
-#endif
+
 
 // Callbacks
 static void btn_file_transfer_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("File transfer button clicked");
 #endif
+
+  // CRITIQUE: Arrêter le timer avant de changer d'écran
+  if (sensor_status_timer != NULL) {
+    lv_timer_del(sensor_status_timer);
+    sensor_status_timer = NULL;
+    label_bmp_status = NULL;
+    label_bno_status = NULL;
+    label_gps_status = NULL;
+  }
+
   ui_file_transfer_show();
 }
 
@@ -78,6 +111,16 @@ static void btn_settings_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("Settings button clicked");
 #endif
+
+  // CRITIQUE: Arrêter le timer avant de changer d'écran
+  if (sensor_status_timer != NULL) {
+    lv_timer_del(sensor_status_timer);
+    sensor_status_timer = NULL;
+    label_bmp_status = NULL;
+    label_bno_status = NULL;
+    label_gps_status = NULL;
+  }
+
   ui_settings_show();
 }
 
@@ -85,6 +128,16 @@ static void btn_start_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("Start button clicked");
 #endif
+
+  // CRITIQUE: Arrêter le timer avant de changer d'écran
+  if (sensor_status_timer != NULL) {
+    lv_timer_del(sensor_status_timer);
+    sensor_status_timer = NULL;
+    label_bmp_status = NULL;
+    label_bno_status = NULL;
+    label_gps_status = NULL;
+  }
+
   ui_main_screens_show();
 }
 
@@ -98,7 +151,7 @@ void ui_prestart_init(void) {
 
   const TextStrings *txt = get_text();
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
 
   // Titre
   lv_obj_t *label_title = lv_label_create(main_frame);
@@ -229,11 +282,18 @@ void ui_prestart_init(void) {
                                           &lv_font_montserrat_20, lv_color_hex(0xaabbcc));
   lv_obj_set_width(label_space, lv_pct(100));
 
-  // Cartes OSM
+    // Cartes OSM - Affichage rapide
   if (sd_is_ready()) {
-    int osm_count = sd_count_osm_tiles();
-    snprintf(info_text, sizeof(info_text), "%s %s: %d",
-             LV_SYMBOL_IMAGE, txt->maps, osm_count);
+    uint64_t osm_size_mb;
+    if(sd_get_osm_info(&osm_size_mb)) {
+      // Dossier présent
+      snprintf(info_text, sizeof(info_text), "%s %s: Disponibles",
+               LV_SYMBOL_IMAGE, txt->maps);
+    } else {
+      // Dossier absent
+      snprintf(info_text, sizeof(info_text), "%s %s: Aucune",
+               LV_SYMBOL_IMAGE, txt->maps);
+    }
   } else {
     snprintf(info_text, sizeof(info_text), "%s %s: --",
              LV_SYMBOL_IMAGE, txt->maps);
@@ -241,12 +301,13 @@ void ui_prestart_init(void) {
   lv_obj_t *label_maps = ui_create_label(info_panel, info_text,
                                          &lv_font_montserrat_20, lv_color_hex(0xaabbcc));
   lv_obj_set_width(label_maps, lv_pct(100));
-
+  
   // Vols IGC
   if (sd_is_ready()) {
-    int igc_count = sd_count_igc_files();
+    // En mode test: compter tous les fichiers
+    int flight_count = sd_count_files_recursive(FLIGHTS_DIR, NULL);  // CHANGÉ
     snprintf(info_text, sizeof(info_text), "%s %s: %d",
-             LV_SYMBOL_LIST, txt->flights, igc_count);
+             LV_SYMBOL_LIST, txt->flights, flight_count);
   } else {
     snprintf(info_text, sizeof(info_text), "%s %s: --",
              LV_SYMBOL_LIST, txt->flights);
@@ -293,7 +354,7 @@ void ui_prestart_init(void) {
                                          &lv_font_montserrat_24, lv_color_hex(0xff6600));
   lv_obj_set_width(label_test, lv_pct(100));
   lv_obj_set_style_text_align(label_test, LV_TEXT_ALIGN_CENTER, 0);
-
+#endif
   // Status BMP390 (sauvegarde référence)
   snprintf(info_text, sizeof(info_text), "%s BMP390: %s",
            LV_SYMBOL_SETTINGS,
@@ -335,7 +396,6 @@ void ui_prestart_init(void) {
 
   // Créer timer de mise à jour (1Hz)
   sensor_status_timer = lv_timer_create(sensor_status_update_cb, 1000, NULL);
-#endif
 
   lv_screen_load(main_screen);
 
@@ -348,13 +408,18 @@ void ui_prestart_init(void) {
  * @brief Show prestart screen
  */
 void ui_prestart_show(void) {
-#ifdef TEST_MODE
   // Arrêter timer précédent si existe
   if (sensor_status_timer != NULL) {
     lv_timer_del(sensor_status_timer);
     sensor_status_timer = NULL;
-  }
+#ifdef DEBUG_MODE
+    Serial.println("[PRESTART] Deleted existing timer");
 #endif
+  }
+  // Reset labels
+  label_bmp_status = NULL;
+  label_bno_status = NULL;
+  label_gps_status = NULL;
 
   ui_prestart_init();
 

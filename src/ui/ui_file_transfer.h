@@ -80,7 +80,7 @@ void ui_file_transfer_init(void) {
 #endif
 #endif
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
 
   // Titre
   lv_obj_t *label_title = ui_create_label(main_frame, txt->file_transfer,
@@ -95,7 +95,7 @@ void ui_file_transfer_init(void) {
   lv_obj_set_style_bg_opa(info_panel, LV_OPA_80, 0);
   lv_obj_set_style_border_width(info_panel, 2, 0);
   lv_obj_set_style_border_color(info_panel, lv_color_hex(0x6080a0), 0);
-  lv_obj_set_style_radius(info_panel, 15, 0);
+  lv_obj_set_style_radius(info_panel, ROUND_FRANE_RADUIS_BIG, 0);
   lv_obj_set_style_pad_all(info_panel, 20, 0);
   lv_obj_set_flex_flow(info_panel, LV_FLEX_FLOW_COLUMN);
   lv_obj_set_flex_align(info_panel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER,

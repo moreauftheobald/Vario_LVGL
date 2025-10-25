@@ -46,7 +46,7 @@ a:hover{background:#3a3a6e}
   // Attendre un peu que SD soit dispo
   vTaskDelay(pdMS_TO_TICKS(100));
 
-  File root = SD_MMC.open("/flights");
+  File root = SD_MMC.open(FLIGHTS_DIR);
   if (!root) {
     web_server->sendContent("<p>No flights directory found</p>");
     #ifdef DEBUG_MODE
@@ -92,14 +92,17 @@ static void handle_download() {
   }
 
   String filename = web_server->arg("file");
-  String filepath = "/flights/" + filename;
+  
+  // CORRIGÉ: Construire le chemin proprement
+  char filepath[128];
+  snprintf(filepath, sizeof(filepath), "%s/%s", FLIGHTS_DIR, filename.c_str());
 
-  if (!SD_MMC.exists(filepath)) {  // CHANGÉ: SD_MMC
+  if (!SD_MMC.exists(filepath)) {
     web_server->send(404, "text/plain", "File not found");
     return;
   }
 
-  File file = SD_MMC.open(filepath, FILE_READ);  // CHANGÉ: SD_MMC
+  File file = SD_MMC.open(filepath, FILE_READ);
   if (!file) {
     web_server->send(500, "text/plain", "Failed to open file");
     return;

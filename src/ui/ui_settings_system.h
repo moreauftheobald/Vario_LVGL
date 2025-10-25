@@ -91,7 +91,7 @@ static void btn_cancel_system_cb(lv_event_t *e) {
 void ui_settings_system_init(void) {
   const TextStrings *txt = get_text();
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
 
   // Titre
   lv_obj_t *label_title = ui_create_label(main_frame, txt->system_settings,

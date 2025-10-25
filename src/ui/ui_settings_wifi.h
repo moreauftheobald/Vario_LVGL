@@ -178,7 +178,7 @@ void ui_settings_wifi_init(void) {
   load_all_wifi_data();
   current_priority = 0;
   
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, 20, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
   
   // Titre
   lv_obj_t *label_title = ui_create_label(main_frame, txt->wifi_settings,
@@ -193,7 +193,7 @@ void ui_settings_wifi_init(void) {
   lv_obj_set_style_bg_opa(fields_container, LV_OPA_80, 0);
   lv_obj_set_style_border_width(fields_container, 2, 0);
   lv_obj_set_style_border_color(fields_container, lv_color_hex(0x6080a0), 0);
-  lv_obj_set_style_radius(fields_container, 15, 0);
+  lv_obj_set_style_radius(fields_container, ROUND_FRANE_RADUIS_BIG, 0);
   lv_obj_set_style_pad_all(fields_container, 20, 0);
   lv_obj_set_flex_flow(fields_container, LV_FLEX_FLOW_COLUMN);
   lv_obj_set_flex_align(fields_container, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
@@ -223,7 +223,7 @@ void ui_settings_wifi_init(void) {
   lv_obj_set_style_bg_color(ta_ssid, lv_color_hex(0x0f1520), 0);
   lv_obj_set_style_border_color(ta_ssid, lv_color_hex(0x4080a0), 0);
   lv_obj_set_style_border_width(ta_ssid, 2, 0);
-  lv_obj_set_style_radius(ta_ssid, 8, 0);
+  lv_obj_set_style_radius(ta_ssid, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_text_color(ta_ssid, lv_color_white(), 0);
   lv_obj_set_style_text_font(ta_ssid, &lv_font_montserrat_20, 0);
   lv_obj_add_event_cb(ta_ssid, ta_wifi_event_cb, LV_EVENT_FOCUSED, NULL);
@@ -240,7 +240,7 @@ void ui_settings_wifi_init(void) {
   lv_obj_set_style_bg_color(ta_password, lv_color_hex(0x0f1520), 0);
   lv_obj_set_style_border_color(ta_password, lv_color_hex(0x4080a0), 0);
   lv_obj_set_style_border_width(ta_password, 2, 0);
-  lv_obj_set_style_radius(ta_password, 8, 0);
+  lv_obj_set_style_radius(ta_password, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_text_color(ta_password, lv_color_white(), 0);
   lv_obj_set_style_text_font(ta_password, &lv_font_montserrat_20, 0);
   lv_obj_add_event_cb(ta_password, ta_wifi_event_cb, LV_EVENT_FOCUSED, NULL);

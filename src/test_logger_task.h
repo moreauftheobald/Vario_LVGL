@@ -100,7 +100,7 @@ static bool test_logger_create_file() {
     #endif
     
     // Utiliser les fonctions sd_card.h qui gerent correctement les chemins
-    const char* flights_dir = "/flights";  // Sans /sdcard
+    const char* flights_dir = FLIGHTS_DIR;
     
     #ifdef DEBUG_MODE
     Serial.printf("[TEST_LOG] Checking dir: %s\n", flights_dir);
@@ -124,18 +124,22 @@ static bool test_logger_create_file() {
     char filename[80];
     
     if(g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
-        snprintf(filename, sizeof(filename), 
-                 "/flights/test_%04d%02d%02d_%02d%02d%02d.csv",
+        // CORRIGÉ: Construire le chemin en 2 étapes
+        char file_only[60];
+        snprintf(file_only, sizeof(file_only), 
+                 "test_%04d%02d%02d_%02d%02d%02d.csv",
                  g_sensor_data.gps.year + 2000,
                  g_sensor_data.gps.month,
                  g_sensor_data.gps.day,
                  g_sensor_data.gps.hour,
                  g_sensor_data.gps.minute,
                  g_sensor_data.gps.seconds);
+        snprintf(filename, sizeof(filename), "%s/%s", FLIGHTS_DIR, file_only);
     } else {
-        snprintf(filename, sizeof(filename), 
-                 "/flights/test_%lu.csv",
-                 millis());
+        // CORRIGÉ: Construire le chemin en 2 étapes
+        char file_only[40];
+        snprintf(file_only, sizeof(file_only), "test_%lu.csv", millis());
+        snprintf(filename, sizeof(filename), "%s/%s", FLIGHTS_DIR, file_only);
     }
     
     #ifdef DEBUG_MODE

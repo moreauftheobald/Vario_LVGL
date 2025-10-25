@@ -89,7 +89,7 @@ static inline lv_obj_t *ui_create_info_panel(lv_obj_t *parent, int width, int he
   lv_obj_set_style_bg_color(panel, lv_color_hex(0x000000), 0);
   lv_obj_set_style_bg_opa(panel, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(panel, 0, 0);
-  lv_obj_set_style_radius(panel, 15, 0);
+  lv_obj_set_style_radius(panel, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_pad_all(panel, 20, 0);
   lv_obj_set_flex_flow(panel, LV_FLEX_FLOW_COLUMN);
   lv_obj_set_flex_align(panel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
@@ -108,7 +108,7 @@ static inline lv_obj_t *ui_create_button(lv_obj_t *parent, const char *text, con
   lv_obj_t *btn = lv_button_create(parent);
   lv_obj_set_size(btn, width, height);
   lv_obj_set_style_bg_color(btn, color, 0);
-  lv_obj_set_style_radius(btn, 15, 0);
+  lv_obj_set_style_radius(btn, ROUND_FRANE_RADUIS_BIG, 0);
   lv_obj_set_style_shadow_width(btn, 5, 0);
   lv_obj_set_style_shadow_color(btn, lv_color_black(), 0);
   lv_obj_set_style_shadow_opa(btn, LV_OPA_20, 0);
@@ -192,7 +192,7 @@ static inline lv_obj_t *ui_create_textarea(lv_obj_t *parent, const char *placeho
   lv_obj_set_style_bg_color(ta, lv_color_hex(0x0f1520), 0);
   lv_obj_set_style_border_color(ta, lv_color_hex(0x4080a0), 0);
   lv_obj_set_style_border_width(ta, 2, 0);
-  lv_obj_set_style_radius(ta, 8, 0);
+  lv_obj_set_style_radius(ta, ROUND_FRANE_RADUIS_SMALL, 0);
   return ta;
 }
 
@@ -218,7 +218,7 @@ static inline lv_obj_t *ui_create_info_panel_bordered(lv_obj_t *parent, int widt
   lv_obj_set_style_bg_opa(panel, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(panel, 3, 0);
   lv_obj_set_style_border_color(panel, lv_color_hex(0xFFFFFF), 0);
-  lv_obj_set_style_radius(panel, 15, 0);
+  lv_obj_set_style_radius(panel, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_pad_all(panel, 20, 0);
   lv_obj_set_flex_flow(panel, LV_FLEX_FLOW_COLUMN);
   lv_obj_set_flex_align(panel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
@@ -240,7 +240,7 @@ static inline lv_obj_t *ui_create_input_field(lv_obj_t *parent, const char *labe
   lv_obj_set_style_bg_color(ta, lv_color_hex(0x0f1520), 0);
   lv_obj_set_style_border_color(ta, lv_color_hex(0x4080a0), 0);
   lv_obj_set_style_border_width(ta, 2, 0);
-  lv_obj_set_style_radius(ta, 8, 0);
+  lv_obj_set_style_radius(ta, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_text_color(ta, lv_color_white(), 0);
   lv_obj_set_style_text_font(ta, &lv_font_montserrat_20, 0);
   lv_obj_set_style_pad_all(ta, 8, 0);
@@ -274,7 +274,7 @@ static inline lv_obj_t *ui_create_form_column(lv_obj_t *parent, int width) {
   lv_obj_set_style_bg_opa(col, LV_OPA_80, 0);
   lv_obj_set_style_border_width(col, 2, 0);
   lv_obj_set_style_border_color(col, lv_color_hex(0x6080a0), 0);
-  lv_obj_set_style_radius(col, 15, 0);
+  lv_obj_set_style_radius(col, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_pad_all(col, 15, 0);
   lv_obj_set_flex_flow(col, LV_FLEX_FLOW_COLUMN);
   lv_obj_set_flex_align(col, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);

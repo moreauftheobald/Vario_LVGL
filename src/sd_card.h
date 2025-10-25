@@ -315,23 +315,56 @@ int sd_count_files_recursive(const char* dirPath, const char* extension) {
     
     return count;
 }
+/**
+ * @brief Calcule la taille d'un repertoire (non recursif, niveau 1 seulement)
+ * @param dirPath Chemin du repertoire
+ * @return Taille en octets
+ */
+uint64_t sd_get_dir_size_fast(const char* dirPath) {
+    if (!sd_card_ready) return 0;
+    
+    File dir = SD_MMC.open(dirPath);
+    if (!dir || !dir.isDirectory()) {
+        if (dir) dir.close();
+        return 0;
+    }
+    
+    uint64_t total_size = 0;
+    File file = dir.openNextFile();
+    int file_count = 0;
+    
+    // Limiter à 1000 fichiers max pour vitesse
+    while (file && file_count < 1000) {
+        if (!file.isDirectory()) {
+            total_size += file.size();
+        }
+        file.close();
+        file = dir.openNextFile();
+        file_count++;
+    }
+    
+    dir.close();
+    
+    // Si on a atteint la limite, c'est une estimation basse
+    return total_size;
+}
 
 /**
- * @brief Compte les fichiers de tuiles OSM
- * @return Nombre de fichiers
+ * @brief Obtient info rapide sur repertoire OSM
+ * @param size_mb Taille en MB (sortie)
+ * @return true si dossier existe
  */
-int sd_count_osm_tiles() {
-    #ifdef DEBUG_MODE
-    Serial.println("SD: Debut comptage OSM tiles");
-    #endif
+bool sd_get_osm_info(uint64_t* size_mb) {
+    if (!sd_card_ready) return false;
     
-    int count = sd_count_files_recursive(OSM_TILES_DIR, NULL);
+    if (!SD_MMC.exists(OSM_TILES_DIR)) {
+        *size_mb = 0;
+        return false;
+    }
     
-    #ifdef DEBUG_MODE
-    Serial.printf("SD: Fin comptage OSM tiles: %d\n", count);
-    #endif
-    
-    return count;
+    // Juste vérifier présence, ne pas calculer taille (trop lent)
+    *size_mb = 0;
+    return true;
 }
 
 /**
