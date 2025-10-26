@@ -30,18 +30,15 @@ void setup() {
   Serial.setDebugOutput(true);
 #endif
 
-  // 1. I2C et IO_EXTENSION en PREMIER
+  // 1. Bus I2C + IO Extender
   DEV_I2C_Init();
-  sensors_i2c_start();
-  kalman_start();
-
   IO_EXTENSION_Init();
   delay(10);
   IO_EXTENSION_Output(IO_EXTENSION_IO_4, 1);
 
+  // 2. Params + SD Card
   params_init();
 
-  // 2. SD Card
 #ifdef DEBUG_MODE
   Serial.println("Initialisation SD...");
 #endif
@@ -57,22 +54,25 @@ void setup() {
   Serial.printf("Version: %s\n", VARIO_VERSION);
 #endif
 
-  // 3. Hardware affichage
-  static esp_lcd_panel_handle_t panel_handle = NULL;
-  static esp_lcd_touch_handle_t tp_handle = NULL;
+  // 3. Capteurs I2C (BMP390, BNO080, GPS)
+  sensors_i2c_start();
 
-  tp_handle = touch_gt911_init();
-  panel_handle = waveshare_esp32_s3_rgb_lcd_init();
+  // 4. Kalman
+  kalman_start();
+
+  // 5. Ecran + Touch
+  esp_lcd_touch_handle_t tp_handle = touch_gt911_init();
+  esp_lcd_panel_handle_t panel_handle = waveshare_esp32_s3_rgb_lcd_init();
   wavesahre_rgb_lcd_set_brightness(params.system_brightness);
 
-  // 4. Init LVGL
+  // 6. Init LVGL
   esp_err_t ret = lvgl_port_init(panel_handle, tp_handle);
   if (ret != ESP_OK) {
+#ifdef DEBUG_MODE
+    Serial.println("LVGL init failed!");
+#endif
     while (1) vTaskDelay(pdMS_TO_TICKS(1000));
   }
-
-  // 5. Démarrer METAR (mais ne pas fetch encore)
-  metar_start();
 
 #ifdef TEST_MODE
   test_logger_start();
@@ -81,8 +81,12 @@ void setup() {
 #endif
 #endif
 
-  // 6. Afficher splash
+  // 7. Afficher splash (3s) -> puis ui_prestart_show()
   ui_splash_show();
+
+#ifdef DEBUG_MODE
+  Serial.println("Setup complete");
+#endif
 }
 
 void loop() {
@@ -98,22 +102,26 @@ void loop() {
     size_t min_free = ESP.getMinFreeHeap();
     size_t largest = ESP.getMaxAllocHeap();
 
-    Serial.printf("SRAM:  Used: %6u / %6u (%.1f%%) | Free: %6u | Min: %6u | Largest: %6u\n", total_heap - free_heap, total_heap,
-                  ((total_heap - free_heap) * 100.0) / total_heap, free_heap, min_free, largest);
+    Serial.printf("SRAM:  Used: %6u / %6u (%.1f%%) | Free: %6u | Min: %6u | Largest: %6u\n",
+                  total_heap - free_heap, total_heap,
+                  ((total_heap - free_heap) * 100.0) / total_heap,
+                  free_heap, min_free, largest);
 
     // PSRAM
     size_t free_psram = ESP.getFreePsram();
     size_t total_psram = ESP.getPsramSize();
 
-    Serial.printf("PSRAM: Used: %6u / %6u (%.1f%%) | Free: %6u\n", total_psram - free_psram, total_psram,
-                  ((total_psram - free_psram) * 100.0) / total_psram, free_psram);
+    Serial.printf("PSRAM: Used: %6u / %6u (%.1f%%) | Free: %6u\n",
+                  total_psram - free_psram, total_psram,
+                  ((total_psram - free_psram) * 100.0) / total_psram,
+                  free_psram);
 
     // ALERTE si critique
     if (free_heap < 10000) {
-      Serial.println("⚠️  WARNING: SRAM critically low!");
+      Serial.println("WARNING: SRAM critically low!");
     }
     if (largest < 5000) {
-      Serial.println("⚠️  WARNING: Severe heap fragmentation!");
+      Serial.println("WARNING: Severe heap fragmentation!");
     }
 
     last_print = millis();
