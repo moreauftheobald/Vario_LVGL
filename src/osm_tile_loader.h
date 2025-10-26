@@ -58,12 +58,6 @@ static bool load_single_tile(int zoom, int tile_x, int tile_y, uint16_t* buffer)
         return false;
     }
     
-    // Swap octets RGB565
-    for(int i = 0; i < OSM_TILE_SIZE * OSM_TILE_SIZE; i++) {
-        uint16_t pixel = buffer[i];
-        buffer[i] = (pixel >> 8) | (pixel << 8);
-    }
-    
     return true;
 }
 
