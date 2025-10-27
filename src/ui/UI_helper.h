@@ -20,6 +20,22 @@ static lv_obj_t *g_label_battery = NULL;
 // CREATION ECRANS ET WIDGETS DE BASE
 // ============================================================================
 
+static inline void ui_cleanup_old_screen(lv_obj_t **screen_ptr) {
+  if (*screen_ptr != NULL && *screen_ptr != lv_scr_act()) {
+    // Détruire complètement l'ancien écran s'il n'est pas actif
+    lv_obj_del(*screen_ptr);
+    *screen_ptr = NULL;
+
+#ifdef DEBUG_MODE
+    Serial.println("[UI] Old screen deleted");
+    lv_mem_monitor_t mon;
+    lv_mem_monitor(&mon);
+    Serial.printf("[UI] LVGL Memory - Used: %d, Free: %d, Frag: %d%%\n",
+                  mon.used_cnt, mon.free_cnt, mon.frag_pct);
+#endif
+  }
+}
+
 /**
  * @brief Cree un ecran noir avec un frame principal ayant une bordure blanche
  * @param border_width Epaisseur de la bordure en pixels
@@ -29,7 +45,7 @@ static lv_obj_t *g_label_battery = NULL;
  */
 static inline lv_obj_t *ui_create_black_screen_with_frame(uint16_t border_width, uint16_t radius, lv_obj_t **screen_ptr) {
   // Ecran noir sans bordure
-  if (*screen_ptr != NULL) {
+ if (*screen_ptr != NULL) {
     lv_obj_clean(*screen_ptr);
   } else {
     *screen_ptr = lv_obj_create(NULL);
@@ -256,7 +272,7 @@ static inline lv_obj_t *ui_create_label(lv_obj_t *parent, const char *text,
   lv_label_set_text(label, text);
   lv_obj_set_style_text_font(label, font, 0);
   lv_obj_set_style_text_color(label, color, 0);
-  lv_obj_set_width(label, lv_pct(100));
+  lv_obj_set_width(label, LV_SIZE_CONTENT);
   return label;
 }
 

@@ -76,7 +76,7 @@ void ui_settings_init(void) {
 
   // Ecran et frame
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &screen_settings);
-  
+
   ui_create_main_frame(main_frame, true, txt->settings);
 
   // Boutons de parametres
@@ -105,7 +105,7 @@ void ui_settings_init(void) {
                                           NULL, (lv_align_t)0, NULL, NULL);
 
   // Bouton retour
-  lv_obj_t *btn_back = ui_create_button(btn_container, txt->back, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR), 
+  lv_obj_t *btn_back = ui_create_button(btn_container, txt->back, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
                                         PRE_BTN_W, PRE_BTN_H, INFO_FONT_BIG, INFO_FONT_BIG, btn_back_cb,
                                         NULL, LV_ALIGN_BOTTOM_MID, NULL, NULL);
 
@@ -115,6 +115,9 @@ void ui_settings_init(void) {
 }
 
 void ui_settings_show(void) {
+  // Sauvegarder ancien écran
+  lv_obj_t *old_screen = lv_scr_act();
+
   if (screen_settings == NULL) {
     if (lvgl_port_lock(-1)) {
       ui_settings_init();
@@ -126,6 +129,14 @@ void ui_settings_show(void) {
     lv_screen_load(screen_settings);
     force_full_refresh();
     lvgl_port_unlock();
+  }
+
+  // Détruire l'ancien écran SI ce n'est pas le même
+  if (old_screen != main_screen && old_screen != NULL) {
+    lv_obj_del(old_screen);
+#ifdef DEBUG_MODE
+    Serial.println("[PRESTART] Old screen deleted");
+#endif
   }
 
 #ifdef DEBUG_MODE

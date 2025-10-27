@@ -116,7 +116,7 @@ void ui_settings_pilot_init(void) {
   widgets.ta_name = ui_create_textarea(name_row, TXT_AREA_W, TXT_AREA_H, 32, true);
   lv_obj_add_event_cb(widgets.ta_name, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
   // Prenom
-  lv_obj_t *firstname_row = ui_create_form_row(main_left, txt->pilot_firstname,PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
+  lv_obj_t *firstname_row = ui_create_form_row(main_left, txt->pilot_firstname, PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
   widgets.ta_firstname = ui_create_textarea(firstname_row, TXT_AREA_W, TXT_AREA_H, 32, true);
   lv_obj_add_event_cb(widgets.ta_firstname, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
 
@@ -148,16 +148,29 @@ void ui_settings_pilot_init(void) {
 
   // Charger les donnees
   load_pilot_data(&widgets);
-
-  lv_screen_load(main_screen);
-
+  if (lvgl_port_lock(-1)) {
+    lv_screen_load(main_screen);
+    lvgl_port_unlock();
+  }
+  
 #ifdef DEBUG_MODE
   Serial.println("Pilot settings screen initialized");
 #endif
 }
 
 void ui_settings_pilot_show(void) {
+  // Sauvegarder ancien écran
+  lv_obj_t *old_screen = lv_scr_act();
+
   ui_settings_pilot_init();
+
+  // Détruire l'ancien écran SI ce n'est pas le même
+  if (old_screen != main_screen && old_screen != NULL) {
+    lv_obj_del(old_screen);
+#ifdef DEBUG_MODE
+    Serial.println("[PRESTART] Old screen deleted");
+#endif
+  }
 }
 
 #endif

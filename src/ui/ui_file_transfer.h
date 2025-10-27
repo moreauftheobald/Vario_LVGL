@@ -140,8 +140,10 @@ void ui_file_transfer_init(void) {
     false, true, false,
     nullptr, btn_exit_cb, nullptr,
     NULL, NULL, NULL);
-
-  lv_screen_load(main_screen);
+  if (lvgl_port_lock(-1)) {
+    lv_screen_load(main_screen);
+    lvgl_port_unlock();
+  }
 
   // Demarrer WiFi et serveur de fichiers
   wifi_task_start();
@@ -159,8 +161,16 @@ void ui_file_transfer_init(void) {
 }
 
 void ui_file_transfer_show(void) {
+  lv_obj_t *old_screen = lv_scr_act();
+
   ui_file_transfer_init();
 
+  if (old_screen != main_screen && old_screen != NULL) {
+    lv_obj_del(old_screen);
+#ifdef DEBUG_MODE
+    Serial.println("[PRESTART] Old screen deleted");
+#endif
+  }
 #ifdef DEBUG_MODE
   Serial.println("File transfer screen shown");
 #endif

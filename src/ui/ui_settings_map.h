@@ -370,22 +370,25 @@ void ui_settings_map_init(void) {
     lv_obj_set_style_border_color(marker, lv_color_hex(BORDERS_COLOR), 0);
   }
 
-// Bouton Save
-  lv_obj_t *btn_save_map = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(START_BTN_COLOR), 
+  // Bouton Save
+  lv_obj_t *btn_save_map = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(START_BTN_COLOR),
                                             PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_save_map_cb,
                                             &widgets, (lv_align_t)0, NULL, NULL);
 
   // Bouton Cancel
   lv_obj_t *btn_cancel_map = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
-                                                 PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_cancel_map_cb,
-                                                 &widgets, (lv_align_t)0, NULL, NULL);
+                                              PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_cancel_map_cb,
+                                              &widgets, (lv_align_t)0, NULL, NULL);
 
   // Charger valeurs actuelles
   load_map_settings(widgets.slider_zoom, label_zoom_value,
                     widgets.dropdown_tile_server, widgets.slider_track_points,
                     label_track_value, widgets.switch_vario_colors, NULL);
 
-  lv_screen_load(main_screen);
+  if (lvgl_port_lock(-1)) {
+    lv_screen_load(main_screen);
+    lvgl_port_unlock();
+  }
 
 #ifdef DEBUG_MODE
   Serial.println("Map settings screen initialized with map preview");
@@ -393,7 +396,18 @@ void ui_settings_map_init(void) {
 }
 
 void ui_settings_map_show(void) {
+  // Sauvegarder ancien écran
+  lv_obj_t *old_screen = lv_scr_act();
+
   ui_settings_map_init();
+
+  // Détruire l'ancien écran SI ce n'est pas le même
+  if (old_screen != main_screen && old_screen != NULL) {
+    lv_obj_del(old_screen);
+#ifdef DEBUG_MODE
+    Serial.println("[PRESTART] Old screen deleted");
+#endif
+  }
 
 #ifdef DEBUG_MODE
   Serial.println("Map settings screen shown");

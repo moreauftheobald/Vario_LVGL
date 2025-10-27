@@ -140,7 +140,7 @@ static void load_vario_settings(void) {
     lv_slider_set_value(slider_integration, params.vario_integration_period, LV_ANIM_OFF);
     lv_label_set_text_fmt(label_integration_value, "%d s", params.vario_integration_period);
   }
-  
+
   // Charger les frequences audio
   for (int i = 0; i < 16; i++) {
     audio_frequencies[i] = params.vario_audio_frequencies[i];
@@ -148,9 +148,9 @@ static void load_vario_settings(void) {
       lv_chart_set_value_by_id(chart_audio, series_audio, i, audio_frequencies[i]);
     }
   }
-  
+
   lv_chart_refresh(chart_audio);
-  
+
 #ifdef DEBUG_MODE
   Serial.println("Vario settings loaded from params");
 #endif
@@ -158,13 +158,13 @@ static void load_vario_settings(void) {
 
 static void save_vario_settings(void) {
   params.vario_integration_period = (int)lv_slider_get_value(slider_integration);
-  
+
   for (int i = 0; i < 16; i++) {
     params.vario_audio_frequencies[i] = audio_frequencies[i];
   }
-  
+
   params_save_vario();
-  
+
 #ifdef DEBUG_MODE
   Serial.println("Vario settings saved to params");
 #endif
@@ -267,8 +267,8 @@ void ui_settings_vario_init(void) {
 
   // Bouton Reset
   lv_obj_t *btn_reset_vario = ui_create_button(btn_container, txt->reset, LV_SYMBOL_BACKSPACE, lv_color_hex(RESET_BTN_COLOR),
-                                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_reset_audio_cb,
-                                                NULL, (lv_align_t)0, NULL, NULL);
+                                               PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_reset_audio_cb,
+                                               NULL, (lv_align_t)0, NULL, NULL);
 
   load_vario_settings();
 
@@ -276,7 +276,10 @@ void ui_settings_vario_init(void) {
   Serial.println("OK LA");
 #endif
 
-  lv_screen_load(main_screen);
+  if (lvgl_port_lock(-1)) {
+    lv_screen_load(main_screen);
+    lvgl_port_unlock();
+  }
 
 #ifdef DEBUG_MODE
   Serial.println("Vario settings screen initialized");
@@ -284,7 +287,18 @@ void ui_settings_vario_init(void) {
 }
 
 void ui_settings_vario_show(void) {
+  // Sauvegarder ancien écran
+  lv_obj_t *old_screen = lv_scr_act();
+
   ui_settings_vario_init();
+
+  // Détruire l'ancien écran SI ce n'est pas le même
+  if (old_screen != main_screen && old_screen != NULL) {
+    lv_obj_del(old_screen);
+#ifdef DEBUG_MODE
+    Serial.println("[PRESTART] Old screen deleted");
+#endif
+  }
 
 #ifdef DEBUG_MODE
   Serial.println("Vario settings screen displayed");

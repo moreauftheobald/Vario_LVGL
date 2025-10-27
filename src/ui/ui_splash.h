@@ -21,19 +21,19 @@ static void splash_timer_cb(lv_timer_t *timer) {
 #endif
 
   if (screen_splash) {
-    // Appeler prestart (qui gere son propre lock)
-    ui_prestart_show();
-    
     // Nettoyer le splash
-    if (lvgl_port_lock(-1)) {
-      lv_obj_del(screen_splash);
-      screen_splash = NULL;
-      lvgl_port_unlock();
-    }
+    lv_obj_del(screen_splash);
+    screen_splash = NULL;
+    
+    // Appeler DIRECTEMENT init (pas show) car on est déjà dans un contexte LVGL locké
+    ui_prestart_init();
   }
   
-  // Le timer sera automatiquement supprime
-  splash_timer = NULL;
+  // Supprimer le timer
+  if (splash_timer) {
+    lv_timer_del(splash_timer);
+    splash_timer = NULL;
+  }
 }
 
 void ui_splash_init(void) {
@@ -57,12 +57,13 @@ void ui_splash_init(void) {
   lv_obj_center(logo);
 
   // Charger l'ecran
+  
   lv_screen_load(screen_splash);
 
   lvgl_port_unlock();
 
-  // Timer pour fermer apres 3 secondes
   splash_timer = lv_timer_create(splash_timer_cb, 3000, NULL);
+  lv_timer_set_repeat_count(splash_timer, 1);  // S'exécute une seule fois
 
 #ifdef DEBUG_MODE
   Serial.println("[SPLASH] Screen loaded, timer started");

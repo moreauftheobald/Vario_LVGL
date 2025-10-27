@@ -53,7 +53,7 @@ static void save_calibration(void) {
   params.touch_offset_y = calib_offset_y;
   params.touch_scale_x = calib_scale_x;
   params.touch_scale_y = calib_scale_y;
-  
+
   params_save_calibration();
 
 #ifdef DEBUG_MODE
@@ -65,10 +65,10 @@ static void save_calibration(void) {
 static void calculate_calibration(void) {
 #ifdef DEBUG_MODE
   Serial.println("Calibration lineaire simple");
-  Serial.printf("Point 0: ecran(%d,%d) brut(%d,%d)\n", 
+  Serial.printf("Point 0: ecran(%d,%d) brut(%d,%d)\n",
                 calib_points[0].screen_x, calib_points[0].screen_y,
                 calib_points[0].raw_x, calib_points[0].raw_y);
-  Serial.printf("Point 1: ecran(%d,%d) brut(%d,%d)\n", 
+  Serial.printf("Point 1: ecran(%d,%d) brut(%d,%d)\n",
                 calib_points[1].screen_x, calib_points[1].screen_y,
                 calib_points[1].raw_x, calib_points[1].raw_y);
 #endif
@@ -100,11 +100,11 @@ static void apply_calibration(int16_t raw_x, int16_t raw_y, int16_t *calib_x, in
 
 static void update_target_position(void) {
   if (!target_obj) return;
-  
+
   calib_points[current_point].screen_x = (current_point == 0) ? 50 : (LCD_H_RES - 50);
   calib_points[current_point].screen_y = (current_point == 0) ? 50 : (LCD_V_RES - 50);
-  
-  lv_obj_set_pos(target_obj, 
+
+  lv_obj_set_pos(target_obj,
                  calib_points[current_point].screen_x - 50,
                  calib_points[current_point].screen_y - 50);
 }
@@ -113,57 +113,57 @@ static void btn_test_calib_cb(lv_event_t *e);
 
 static void screen_touch_cb(lv_event_t *e) {
   lv_event_code_t code = lv_event_get_code(e);
-  
+
   if (code == LV_EVENT_PRESSED) {
     lv_point_t point;
     lv_indev_t *indev = lv_indev_get_act();
     if (!indev) return;
-    
+
     lv_indev_get_point(indev, &point);
 
 #ifdef DEBUG_MODE
     Serial.printf("Touch detected at: (%d, %d)\n", point.x, point.y);
 #endif
-    
+
     // Mode test
     if (test_mode && test_point != NULL) {
       int16_t calib_x, calib_y;
       apply_calibration(point.x, point.y, &calib_x, &calib_y);
       lv_obj_set_pos(test_point, calib_x - 10, calib_y - 10);
-      
+
 #ifdef DEBUG_MODE
-      Serial.printf("Test: brut(%d,%d) -> calibre(%d,%d)\n", 
+      Serial.printf("Test: brut(%d,%d) -> calibre(%d,%d)\n",
                     point.x, point.y, calib_x, calib_y);
 #endif
       return;
     }
-    
+
     // Mode calibration
     if (calibration_done || current_point >= 2) return;
-    
+
     int16_t target_x = calib_points[current_point].screen_x;
     int16_t target_y = calib_points[current_point].screen_y;
     int16_t distance = abs(point.x - target_x) + abs(point.y - target_y);
-    
+
 #ifdef DEBUG_MODE
     Serial.printf("Distance from target: %d (threshold: 150)\n", distance);
 #endif
-    
+
     if (distance < 150) {
       calib_points[current_point].raw_x = point.x;
       calib_points[current_point].raw_y = point.y;
 
 #ifdef DEBUG_MODE
-      Serial.printf("Point %d captured: ecran(%d,%d) brut(%d,%d)\n", 
-                    current_point, 
-                    calib_points[current_point].screen_x, 
+      Serial.printf("Point %d captured: ecran(%d,%d) brut(%d,%d)\n",
+                    current_point,
+                    calib_points[current_point].screen_x,
                     calib_points[current_point].screen_y,
-                    calib_points[current_point].raw_x, 
+                    calib_points[current_point].raw_x,
                     calib_points[current_point].raw_y);
 #endif
-      
+
       current_point++;
-      
+
       if (current_point < 2) {
         update_target_position();
         char text[64];
@@ -174,7 +174,7 @@ static void screen_touch_cb(lv_event_t *e) {
         calibration_done = true;
         lv_obj_add_flag(target_obj, LV_OBJ_FLAG_HIDDEN);
         lv_label_set_text(instruction_label, "Calibration terminee!");
-        
+
         lv_obj_t *btn_test = lv_btn_create(screen_settings_screen);
         lv_obj_set_size(btn_test, 120, 40);
         lv_obj_align(btn_test, LV_ALIGN_CENTER, 0, 20);
@@ -193,7 +193,7 @@ static void screen_touch_cb(lv_event_t *e) {
 
 static void btn_test_calib_cb(lv_event_t *e) {
   test_mode = true;
-  
+
   if (test_point == NULL) {
     test_point = lv_obj_create(screen_settings_screen);
     lv_obj_set_size(test_point, 20, 20);
@@ -205,9 +205,9 @@ static void btn_test_calib_cb(lv_event_t *e) {
     lv_obj_clear_flag(test_point, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(test_point, LV_OBJ_FLAG_SCROLLABLE);
   }
-  
+
   lv_label_set_text(instruction_label, "Mode test: touchez l'ecran");
-  lv_obj_t *btn = (lv_obj_t*)lv_event_get_target(e);
+  lv_obj_t *btn = (lv_obj_t *)lv_event_get_target(e);
   lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
 }
 
@@ -234,18 +234,18 @@ static void btn_cancel_calib_cb(lv_event_t *e) {
 
 void ui_settings_screen_init(void) {
   const TextStrings *txt = get_text();
-  
+
   current_point = 0;
   calibration_done = false;
   test_mode = false;
   test_point = NULL;
-  
+
   load_calibration();
-  
+
   screen_settings_screen = ui_create_screen();
   lv_obj_clear_flag(screen_settings_screen, LV_OBJ_FLAG_SCROLLABLE);  // IMPORTANT: désactiver scroll
   lv_obj_add_event_cb(screen_settings_screen, screen_touch_cb, LV_EVENT_PRESSED, NULL);
-  
+
   // Instructions (directement sur l'écran principal)
   instruction_label = lv_label_create(screen_settings_screen);
   lv_label_set_text(instruction_label, "Point 1/2 - Touchez la cible");
@@ -254,7 +254,7 @@ void ui_settings_screen_init(void) {
   lv_obj_set_style_text_align(instruction_label, LV_TEXT_ALIGN_CENTER, 0);
   lv_obj_align(instruction_label, LV_ALIGN_TOP_MID, 0, 20);
   lv_obj_clear_flag(instruction_label, LV_OBJ_FLAG_CLICKABLE);
-  
+
   // Cible (cercle + point central)
   target_obj = lv_obj_create(screen_settings_screen);
   lv_obj_set_size(target_obj, 100, 100);
@@ -263,7 +263,7 @@ void ui_settings_screen_init(void) {
   lv_obj_set_style_pad_all(target_obj, 0, 0);
   lv_obj_clear_flag(target_obj, LV_OBJ_FLAG_CLICKABLE);
   lv_obj_clear_flag(target_obj, LV_OBJ_FLAG_SCROLLABLE);
-  
+
   lv_obj_t *circle = lv_obj_create(target_obj);
   lv_obj_set_size(circle, 100, 100);
   lv_obj_set_style_radius(circle, LV_RADIUS_CIRCLE, 0);
@@ -274,7 +274,7 @@ void ui_settings_screen_init(void) {
   lv_obj_center(circle);
   lv_obj_clear_flag(circle, LV_OBJ_FLAG_CLICKABLE);
   lv_obj_clear_flag(circle, LV_OBJ_FLAG_SCROLLABLE);
-  
+
   lv_obj_t *center_point = lv_obj_create(target_obj);
   lv_obj_set_size(center_point, 10, 10);
   lv_obj_set_style_radius(center_point, LV_RADIUS_CIRCLE, 0);
@@ -284,14 +284,14 @@ void ui_settings_screen_init(void) {
   lv_obj_center(center_point);
   lv_obj_clear_flag(center_point, LV_OBJ_FLAG_CLICKABLE);
   lv_obj_clear_flag(center_point, LV_OBJ_FLAG_SCROLLABLE);
-  
+
   update_target_position();
-  
+
   ui_button_pair_t buttons = ui_create_save_cancel_buttons(screen_settings_screen, txt->save, txt->cancel, nullptr, true, true, false, btn_save_calib_cb, btn_cancel_calib_cb, nullptr, NULL, NULL, NULL);
 
 #ifdef DEBUG_MODE
   Serial.println("Screen calibration initialized");
-  Serial.printf("Target position: (%d, %d)\n", 
+  Serial.printf("Target position: (%d, %d)\n",
                 calib_points[0].screen_x, calib_points[0].screen_y);
 #endif
 }
@@ -304,10 +304,25 @@ void get_touch_calibration(float *offset_x, float *offset_y, float *scale_x, flo
 }
 
 void ui_settings_screen_show(void) {
+  // Sauvegarder ancien écran
+  lv_obj_t *old_screen = lv_scr_act();
+
   if (screen_settings_screen == NULL) {
     ui_settings_screen_init();
   }
-  lv_screen_load(screen_settings_screen);
+  
+  if (lvgl_port_lock(-1)) {
+    lv_screen_load(screen_settings_screen);
+    lvgl_port_unlock();
+  }
+
+  // Détruire l'ancien écran SI ce n'est pas le même
+  if (old_screen != main_screen && old_screen != NULL) {
+    lv_obj_del(old_screen);
+#ifdef DEBUG_MODE
+    Serial.println("[PRESTART] Old screen deleted");
+#endif
+  }
 
 #ifdef DEBUG_MODE
   Serial.println("Screen calibration shown");

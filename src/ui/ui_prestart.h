@@ -30,7 +30,7 @@ static lv_timer_t *sensor_status_timer = NULL;
 static bool check_start_conditions() {
   // Verifier SD Card (obligatoire pour tous les modes)
   bool sd_ok = sd_is_ready();
-  
+
 #ifdef FLIGHT_TEST_MODE
   // Mode Test Flight: SD obligatoire, reste optionnel
   return sd_ok;
@@ -39,19 +39,18 @@ static bool check_start_conditions() {
   bool bmp_ok = g_sensor_data.bmp390.valid;
   bool bno_ok = g_sensor_data.bno080.valid;
   bool gps_ok = g_sensor_data.gps.valid && g_sensor_data.gps.fix;
-  
+
   kalman_data_t kdata;
   kalman_get_data(&kdata);
   bool kalman_ok = kdata.valid;
-  
+
   return (sd_ok && bmp_ok && bno_ok && gps_ok && kalman_ok);
 #endif
 }
 
 // Callback timer pour mise a jour status
 static void sensor_status_update_cb(lv_timer_t *timer) {
-  if (!label_bmp_status || !label_bno_status || !label_gps_status || 
-      !label_wifi_status || !label_qnh_status || !label_kalman_status || !label_sd_status) {
+  if (!label_bmp_status || !label_bno_status || !label_gps_status || !label_wifi_status || !label_qnh_status || !label_kalman_status || !label_sd_status) {
 #ifdef DEBUG_MODE
     Serial.println("[PRESTART] Labels invalides, arret timer");
 #endif
@@ -62,10 +61,7 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
     return;
   }
 
-  if (!lv_obj_is_valid(label_bmp_status) || !lv_obj_is_valid(label_bno_status) || 
-      !lv_obj_is_valid(label_gps_status) || !lv_obj_is_valid(label_wifi_status) ||
-      !lv_obj_is_valid(label_qnh_status) || !lv_obj_is_valid(label_kalman_status) ||
-      !lv_obj_is_valid(label_sd_status)) {
+  if (!lv_obj_is_valid(label_bmp_status) || !lv_obj_is_valid(label_bno_status) || !lv_obj_is_valid(label_gps_status) || !lv_obj_is_valid(label_wifi_status) || !lv_obj_is_valid(label_qnh_status) || !lv_obj_is_valid(label_kalman_status) || !lv_obj_is_valid(label_sd_status)) {
 #ifdef DEBUG_MODE
     Serial.println("[PRESTART] Labels detruits, arret timer");
 #endif
@@ -84,7 +80,7 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
     sd_get_capacity(&total_kb, &free_kb);
     uint64_t total_gb = total_kb / (1024 * 1024);
     uint64_t free_gb = free_kb / (1024 * 1024);
-    
+
     snprintf(info_text, sizeof(info_text), "%s SD: %lluGB (%lluGB libre)",
              LV_SYMBOL_SD_CARD, total_gb, free_gb);
     lv_label_set_text(label_sd_status, info_text);
@@ -136,10 +132,10 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
              wifi_get_current_ssid());
     lv_label_set_text(label_wifi_status, info_text);
     lv_obj_set_style_text_color(label_wifi_status, lv_color_hex(OK_COLOR), 0);
-    
+
     // Lancer recuperation METAR si WiFi OK
     static bool metar_fetched = false;
-    
+
 #ifdef FLIGHT_TEST_MODE
     // Mode Flight Test: fetch immediat des que WiFi connecte (pas besoin GPS)
     if (!metar_fetched) {
@@ -194,7 +190,7 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
   // Activer/desactiver bouton Start
   if (btn_start) {
     bool can_start = check_start_conditions();
-    
+
     if (can_start) {
       lv_obj_clear_state(btn_start, LV_STATE_DISABLED);
       lv_obj_set_style_bg_opa(btn_start, LV_OPA_COVER, 0);
@@ -215,7 +211,7 @@ static void btn_file_transfer_cb(lv_event_t *e) {
     lv_timer_del(sensor_status_timer);
     sensor_status_timer = NULL;
   }
-  
+
   metar_stop();
   wifi_task_stop();
   ui_file_transfer_show();
@@ -230,7 +226,7 @@ static void btn_settings_cb(lv_event_t *e) {
     lv_timer_del(sensor_status_timer);
     sensor_status_timer = NULL;
   }
-  
+
   metar_stop();
   wifi_task_stop();
   ui_settings_show();
@@ -245,7 +241,7 @@ static void btn_start_cb(lv_event_t *e) {
     lv_timer_del(sensor_status_timer);
     sensor_status_timer = NULL;
   }
-  
+
   metar_stop();
   wifi_task_stop();
   ui_main_screens_show();
@@ -268,9 +264,9 @@ void ui_prestart_init(void) {
 
   // Separateur
   ui_create_separator(main_left);
-  
+
   char info_text[128];
-  snprintf(info_text, sizeof(info_text), "Version Systeme: %s",VARIO_VERSION);
+  snprintf(info_text, sizeof(info_text), "Version Systeme: %s", VARIO_VERSION);
 
   lv_obj_t *label_version = ui_create_label(main_left, info_text, INFO_FONT_S, lv_color_hex(TITLE_COLOR));
 
@@ -280,7 +276,7 @@ void ui_prestart_init(void) {
     sd_get_capacity(&total_kb, &free_kb);
     uint64_t total_gb = total_kb / (1024 * 1024);
     uint64_t free_gb = free_kb / (1024 * 1024);
-    
+
     snprintf(info_text, sizeof(info_text), "%s SD: %lluGB (%lluGB libre)", LV_SYMBOL_SD_CARD, total_gb, free_gb);
     label_sd_status = ui_create_label(main_left, info_text, INFO_FONT_S, lv_color_hex(OK_COLOR));
   } else {
@@ -294,7 +290,7 @@ void ui_prestart_init(void) {
 
   // BNO080
   snprintf(info_text, sizeof(info_text), "%s BNO080: %s", LV_SYMBOL_GPS, g_sensor_data.bno080.valid ? "OK" : "ERROR");
-  label_bno_status = ui_create_label(main_left, info_text, INFO_FONT_S,  g_sensor_data.bno080.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR));
+  label_bno_status = ui_create_label(main_left, info_text, INFO_FONT_S, g_sensor_data.bno080.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR));
 
   // GPS
   if (g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
@@ -364,7 +360,7 @@ void ui_prestart_init(void) {
   lv_obj_t *label_name_title = ui_create_label(name_row, txt->pilot_name, INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   lv_obj_set_width(label_name_title, PRE_LINE_HEADER_W);
   lv_obj_t *label_name_sep = ui_create_label(name_row, ":", INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
-  const char* name_str = psram_str_get(params.pilot_name);
+  const char *name_str = psram_str_get(params.pilot_name);
   lv_obj_t *label_name_value = ui_create_label(name_row, (name_str && strlen(name_str) > 0) ? name_str : "---", INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Prenom (libelle et valeur sur meme ligne)
@@ -372,7 +368,7 @@ void ui_prestart_init(void) {
   lv_obj_t *label_firstname_title = ui_create_label(firstname_row, txt->pilot_firstname, INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   lv_obj_set_width(label_firstname_title, PRE_LINE_HEADER_W);
   lv_obj_t *label_firstname_sep = ui_create_label(firstname_row, ":", INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
-  const char* firstname_str = psram_str_get(params.pilot_firstname);
+  const char *firstname_str = psram_str_get(params.pilot_firstname);
   lv_obj_t *label_firstname_value = ui_create_label(firstname_row, (firstname_str && strlen(firstname_str) > 0) ? firstname_str : "---", INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Telephone (libelle et valeur sur meme ligne)
@@ -380,7 +376,7 @@ void ui_prestart_init(void) {
   lv_obj_t *label_phone_title = ui_create_label(phone_row, txt->pilot_phone, INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   lv_obj_set_width(label_phone_title, PRE_LINE_HEADER_W);
   lv_obj_t *label_phone_sep = ui_create_label(phone_row, ":", INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
-  const char* phone_str = psram_str_get(params.pilot_phone);
+  const char *phone_str = psram_str_get(params.pilot_phone);
   lv_obj_t *label_phone_value = ui_create_label(phone_row, (phone_str && strlen(phone_str) > 0) ? phone_str : "---", INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Modele d'aile (libelle et valeur sur meme ligne)
@@ -388,7 +384,7 @@ void ui_prestart_init(void) {
   lv_obj_t *label_wing_title = ui_create_label(wing_row, txt->pilot_wing, INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   lv_obj_set_width(label_wing_title, PRE_LINE_HEADER_W);
   lv_obj_t *label_wing_sep = ui_create_label(wing_row, ":", INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
-  const char* wing_str = psram_str_get(params.pilot_wing);
+  const char *wing_str = psram_str_get(params.pilot_wing);
   lv_obj_t *label_wing_value = ui_create_label(wing_row, (wing_str && strlen(wing_str) > 0) ? wing_str : "---", INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Separateur avant I.C.E.
@@ -421,19 +417,19 @@ void ui_prestart_init(void) {
 
   //Right Col Content
   // Bouton Transfer
-  lv_obj_t *btn_transfer = ui_create_button(btn_container, txt->file_transfer, LV_SYMBOL_UPLOAD, lv_color_hex(FILES_BTN_COLOR), 
+  lv_obj_t *btn_transfer = ui_create_button(btn_container, txt->file_transfer, LV_SYMBOL_UPLOAD, lv_color_hex(FILES_BTN_COLOR),
                                             PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_file_transfer_cb,
                                             NULL, (lv_align_t)0, NULL, NULL);
 
   // Bouton Settings
   lv_obj_t *btn_settings_obj = ui_create_button(btn_container, txt->settings, LV_SYMBOL_SETTINGS, lv_color_hex(SETUP_BTN_COLOR),
-                                                 PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_settings_cb,
-                                                 NULL, (lv_align_t)0, NULL, NULL);
+                                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_settings_cb,
+                                                NULL, (lv_align_t)0, NULL, NULL);
 
   // Bouton Start (desactive au debut)
-  btn_start = ui_create_button(btn_container, txt->start, LV_SYMBOL_PLAY, lv_color_hex(START_BTN_COLOR), 
-                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_start_cb,
-                                NULL, (lv_align_t)0, NULL, NULL);
+  btn_start = ui_create_button(btn_container, txt->start, LV_SYMBOL_PLAY, lv_color_hex(START_BTN_COLOR),
+                               PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_start_cb,
+                               NULL, (lv_align_t)0, NULL, NULL);
 
 #ifdef FLIGHT_TEST_MODE
   // Mode Test Flight: Start immediatement disponible
@@ -446,8 +442,10 @@ void ui_prestart_init(void) {
 
   // Timer de mise a jour (1Hz)
   sensor_status_timer = lv_timer_create(sensor_status_update_cb, 1000, NULL);
-
-  lv_screen_load(main_screen);
+  if (lvgl_port_lock(-1)) {
+    lv_screen_load(main_screen);
+    lvgl_port_unlock();
+  }
 
 #ifdef DEBUG_MODE
   Serial.println("[PRESTART] Screen loaded");
@@ -456,11 +454,12 @@ void ui_prestart_init(void) {
 
 // Affichage ecran prestart
 void ui_prestart_show(void) {
+
   if (sensor_status_timer != NULL) {
     lv_timer_del(sensor_status_timer);
     sensor_status_timer = NULL;
   }
-  
+
   label_bmp_status = NULL;
   label_bno_status = NULL;
   label_gps_status = NULL;
@@ -470,7 +469,18 @@ void ui_prestart_show(void) {
   label_sd_status = NULL;
   btn_start = NULL;
 
+  // Sauvegarder ancien écran
+  lv_obj_t *old_screen = lv_scr_act();
+
   ui_prestart_init();
+
+   Détruire l'ancien écran SI ce n'est pas le même
+  if (old_screen != main_screen && old_screen != NULL) {
+    lv_obj_del(old_screen);
+#ifdef DEBUG_MODE
+    Serial.println("[PRESTART] Old screen deleted");
+#endif
+  }
 
   // Demarrer WiFi et METAR
   wifi_task_start();
