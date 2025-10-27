@@ -174,51 +174,26 @@ void ui_settings_vario_init(void) {
   const TextStrings *txt = get_text();
 
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
-
-  ui_create_title(main_frame, txt->vario_settings);
-
-  // Container principal
-  lv_obj_t *main_container = ui_create_flex_container(main_frame, LV_FLEX_FLOW_COLUMN);
-  lv_obj_set_size(main_container, 940, 560);
-  lv_obj_align(main_container, LV_ALIGN_CENTER, 0, 80);
-  lv_obj_set_flex_align(main_container, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-  lv_obj_set_style_pad_row(main_container, 20, 0);
+  ui_create_main_frame(main_frame, false, txt->vario_settings);
 
   // 1. Periode d'integration du vario
-  lv_obj_t *integration_row = ui_create_flex_container(main_container, LV_FLEX_FLOW_ROW);
-  lv_obj_set_width(integration_row, lv_pct(100));
-  lv_obj_set_flex_align(integration_row, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_column(integration_row, 20, 0);
-
-  lv_obj_t *label_integration = ui_create_label(integration_row, "Periode d'integration",
-                                                &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
-  lv_obj_set_width(label_integration, 280);
-
-  slider_integration = lv_slider_create(integration_row);
-  lv_obj_set_size(slider_integration, 500, 20);
-  lv_slider_set_range(slider_integration, 1, 20);
-  lv_slider_set_value(slider_integration, 5, LV_ANIM_OFF);
-  lv_obj_set_style_bg_color(slider_integration, lv_color_hex(0x2a3f5f), LV_PART_MAIN);
-  lv_obj_set_style_bg_color(slider_integration, lv_color_hex(0x00d4ff), LV_PART_INDICATOR);
-  lv_obj_set_style_bg_color(slider_integration, lv_color_hex(0x00d4ff), LV_PART_KNOB);
-  lv_obj_set_style_pad_all(slider_integration, 5, LV_PART_KNOB);
+  lv_obj_t *integration_row = ui_create_form_row(main_left, "Periode d'integration", PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
+  slider_integration = ui_create_slider(integration_row, VARIO_SLIDER_W, VARIO_SLIDER_W, INT_MIN_PER, INT_MAX_PER);
   lv_obj_add_event_cb(slider_integration, slider_integration_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
-  label_integration_value = ui_create_label(integration_row, "5 s",
-                                            &lv_font_montserrat_20, lv_color_white());
+  label_integration_value = ui_create_label(integration_row, "5 s", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
   lv_obj_set_width(label_integration_value, 60);
 
   // 2. Profil sonore avec graphique
-  lv_obj_t *label_audio = ui_create_label(main_container, "Profil sonore (Vario m/s -> Frequence Hz)",
-                                          &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
+  lv_obj_t *label_audio = ui_create_label(main_left, "Profil sonore (Vario m/s -> Frequence Hz)", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
 
   // Container pour le graphique avec labels (augmente de 40px)
-  chart_container = lv_obj_create(main_container);
-  lv_obj_set_size(chart_container, lv_pct(100), 320);
-  lv_obj_set_style_bg_color(chart_container, lv_color_hex(0x1a2035), 0);
+  chart_container = lv_obj_create(main_left);
+  lv_obj_set_size(chart_container, lv_pct(100), AUDIO_CHART_H);
+  lv_obj_set_style_bg_color(chart_container, lv_color_hex(AUDIO_CHART_BG), 0);
   lv_obj_set_style_bg_opa(chart_container, LV_OPA_80, 0);
   lv_obj_set_style_border_width(chart_container, 2, 0);
-  lv_obj_set_style_border_color(chart_container, lv_color_hex(0x6080a0), 0);
+  lv_obj_set_style_border_color(chart_container, lv_color_hex(TITLE_COLOR), 0);
   lv_obj_set_style_radius(chart_container, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_pad_all(chart_container, 15, 0);
   lv_obj_clear_flag(chart_container, LV_OBJ_FLAG_SCROLLABLE);
@@ -229,7 +204,7 @@ void ui_settings_vario_init(void) {
     lv_obj_t *label_y = lv_label_create(chart_container);
     lv_label_set_text_fmt(label_y, "%d", freq);
     lv_obj_set_style_text_font(label_y, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_text_color(label_y, lv_color_hex(0x808080), 0);
+    lv_obj_set_style_text_color(label_y, lv_color_hex(INFO_LABEL_COLOR), 0);
     lv_obj_set_pos(label_y, 5, 20 + (i * 60));
   }
 
@@ -239,8 +214,7 @@ void ui_settings_vario_init(void) {
     lv_obj_t *label_x = lv_label_create(chart_container);
     lv_label_set_text_fmt(label_x, "%d", vario);
     lv_obj_set_style_text_font(label_x, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_text_color(label_x, lv_color_hex(0x808080), 0);
-    // Calcul position centree: debut_graph + (i * largeur_graph / 15) - largeur_label/2
+    lv_obj_set_style_text_color(label_x, lv_color_hex(INFO_LABEL_COLOR), 0);
     lv_obj_set_pos(label_x, 45 + 6 + (i * 870 / 15) - 6, 275);
   }
 
@@ -250,7 +224,7 @@ void ui_settings_vario_init(void) {
   lv_obj_set_pos(chart_audio, 45, 15);
   lv_chart_set_type(chart_audio, LV_CHART_TYPE_LINE);
   lv_chart_set_point_count(chart_audio, 16);
-  lv_chart_set_range(chart_audio, LV_CHART_AXIS_PRIMARY_Y, 600, 1400);
+  lv_chart_set_range(chart_audio, LV_CHART_AXIS_PRIMARY_Y, MIN_FREQ, MAX_FREQ);
 
   // Suppression des lignes de division verticales (garder seulement horizontales)
   lv_chart_set_div_line_count(chart_audio, 5, 0);
@@ -281,9 +255,26 @@ void ui_settings_vario_init(void) {
   lv_obj_add_event_cb(chart_audio, chart_audio_event_cb, LV_EVENT_PRESSED, NULL);
   lv_obj_add_event_cb(chart_audio, chart_audio_event_cb, LV_EVENT_PRESSING, NULL);
 
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_container, txt->save, txt->cancel, txt->reset, true, true, true, btn_save_vario_cb, btn_cancel_vario_cb, btn_reset_audio_cb, NULL, NULL, NULL);
+  // Bouton Save
+  lv_obj_t *btn_save_vario = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(START_BTN_COLOR),
+                                              PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_save_vario_cb,
+                                              NULL, (lv_align_t)0, NULL, NULL);
+
+  // Bouton Cancel
+  lv_obj_t *btn_cancel_vario = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
+                                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_cancel_vario_cb,
+                                                NULL, (lv_align_t)0, NULL, NULL);
+
+  // Bouton Reset
+  lv_obj_t *btn_reset_vario = ui_create_button(btn_container, txt->reset, LV_SYMBOL_BACKSPACE, lv_color_hex(RESET_BTN_COLOR),
+                                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_reset_audio_cb,
+                                                NULL, (lv_align_t)0, NULL, NULL);
 
   load_vario_settings();
+
+#ifdef DEBUG_MODE
+  Serial.println("OK LA");
+#endif
 
   lv_screen_load(main_screen);
 

@@ -279,12 +279,12 @@ static inline lv_obj_t *ui_create_textarea(lv_obj_t *parent, int32_t w, int32_t 
   lv_obj_set_size(ta, w, h);
   lv_textarea_set_one_line(ta, one_line);
   lv_textarea_set_max_length(ta, max_length);
-  lv_obj_set_style_bg_color(ta, lv_color_hex(0x0f1520), 0);
-  lv_obj_set_style_border_color(ta, lv_color_hex(0x4080a0), 0);
+  lv_obj_set_style_bg_color(ta, lv_color_hex(CTL_BG_COLOR), 0);
+  lv_obj_set_style_border_color(ta, lv_color_hex(TITLE_COLOR), 0);
   lv_obj_set_style_border_width(ta, 2, 0);
   lv_obj_set_style_radius(ta, ROUND_FRANE_RADUIS_SMALL, 0);
   lv_obj_set_style_text_color(ta, lv_color_white(), 0);
-  lv_obj_set_style_text_font(ta, &lv_font_montserrat_20, 0);
+  lv_obj_set_style_text_font(ta, INFO_FONT_BIG, 0);
   return ta;
 }
 
@@ -342,8 +342,7 @@ static inline lv_obj_t *ui_create_input_field(lv_obj_t *parent, const char *labe
 /**
  * @brief Cree une ligne de formulaire avec label et widget
  */
-static inline lv_obj_t *ui_create_form_row(lv_obj_t *parent, const char *label_text,
-                                           int label_width, lv_color_t label_color) {
+static inline lv_obj_t *ui_create_form_row(lv_obj_t *parent, const char *label_text, int label_width, lv_color_t label_color) {
   lv_obj_t *row = ui_create_flex_container(parent, LV_FLEX_FLOW_ROW);
   lv_obj_set_size(row, lv_pct(100), LV_SIZE_CONTENT);
   lv_obj_set_flex_align(row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
@@ -353,6 +352,21 @@ static inline lv_obj_t *ui_create_form_row(lv_obj_t *parent, const char *label_t
   lv_obj_set_width(label, label_width);
 
   return row;
+}
+
+/**
+ * @brief Cree un slider
+ */
+static inline lv_obj_t *ui_create_slider(lv_obj_t *parent, int32_t w, int32_t h, int32_t min, int32_t max) {
+  lv_obj_t *slider = lv_slider_create(parent);
+  lv_obj_set_size(slider, w, h);
+  lv_slider_set_range(slider, min, max);
+  lv_slider_set_value(slider, 5, LV_ANIM_OFF);
+  lv_obj_set_style_bg_color(slider, lv_color_hex(SLIDER_BG_COLOR), LV_PART_MAIN);
+  lv_obj_set_style_bg_color(slider, lv_color_hex(TITLE_COLOR), LV_PART_INDICATOR);
+  lv_obj_set_style_bg_color(slider, lv_color_hex(TITLE_COLOR), LV_PART_KNOB);
+  lv_obj_set_style_pad_all(slider, 5, LV_PART_KNOB);
+  return slider;
 }
 
 /**

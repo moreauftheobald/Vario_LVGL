@@ -29,6 +29,8 @@ GRAPHICS COLORS
 #define RESET_BTN_COLOR   0xff9500
 #define WIFI_BTN_COLOR    0x007aff
 #define VARIO_BTN_COLOR   0x4cd964
+#define SLIDER_BG_COLOR   0x2a3f5f
+#define AUDIO_CHART_BG    0x1a2035
 
 
 /*=========================================================================
@@ -42,6 +44,11 @@ GRAPHICS SIZES
 #define PRE_BTN_H          70
 #define STP_BTN_W         460
 #define STP_BTN_H          80
+#define TXT_AREA_H         50
+#define TXT_AREA_W        760
+#define VARIO_SLIDER_W    500
+#define VARIO_SLIDER_H     20
+#define AUDIO_CHART_H     320
 
 /*=========================================================================
 GRAPHICS REL POS

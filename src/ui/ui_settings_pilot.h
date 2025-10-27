@@ -112,26 +112,22 @@ void ui_settings_pilot_init(void) {
   static pilot_widgets_t widgets;
 
   // Nom
-  lv_obj_t *name_row = ui_create_form_row(main_left, txt->pilot_name,
-                                          200, lv_color_hex(0x00d4ff));
-  widgets.ta_name = ui_create_textarea(name_row, 700, 50, 32, true);
+  lv_obj_t *name_row = ui_create_form_row(main_left, txt->pilot_name, PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
+  widgets.ta_name = ui_create_textarea(name_row, TXT_AREA_W, TXT_AREA_H, 32, true);
   lv_obj_add_event_cb(widgets.ta_name, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
   // Prenom
-  lv_obj_t *firstname_row = ui_create_form_row(main_left, txt->pilot_firstname,
-                                               200, lv_color_hex(0x00d4ff));
-  widgets.ta_firstname = ui_create_textarea(firstname_row, 700, 50, 32, true);
+  lv_obj_t *firstname_row = ui_create_form_row(main_left, txt->pilot_firstname,PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
+  widgets.ta_firstname = ui_create_textarea(firstname_row, TXT_AREA_W, TXT_AREA_H, 32, true);
   lv_obj_add_event_cb(widgets.ta_firstname, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
 
   // Voile
-  lv_obj_t *wing_row = ui_create_form_row(main_left, txt->pilot_wing,
-                                          200, lv_color_hex(0x00d4ff));
-  widgets.ta_wing = ui_create_textarea(wing_row, 700, 50, 32, true);
+  lv_obj_t *wing_row = ui_create_form_row(main_left, txt->pilot_wing, PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
+  widgets.ta_wing = ui_create_textarea(wing_row, TXT_AREA_W, TXT_AREA_H, 32, true);
   lv_obj_add_event_cb(widgets.ta_wing, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
 
   // Telephone
-  lv_obj_t *phone_row = ui_create_form_row(main_left, txt->pilot_phone,
-                                           200, lv_color_hex(0x00d4ff));
-  widgets.ta_phone = ui_create_textarea(phone_row, 700, 50, 32, true);
+  lv_obj_t *phone_row = ui_create_form_row(main_left, txt->pilot_phone, PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
+  widgets.ta_phone = ui_create_textarea(phone_row, TXT_AREA_W, TXT_AREA_H, 32, true);
   lv_obj_add_event_cb(widgets.ta_phone, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
 
   // Clavier

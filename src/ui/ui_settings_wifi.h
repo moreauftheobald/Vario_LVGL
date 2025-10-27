@@ -179,30 +179,10 @@ void ui_settings_wifi_init(void) {
   current_priority = 0;
   
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
-  
-  // Titre
-  lv_obj_t *label_title = ui_create_label(main_frame, txt->wifi_settings,
-                                           &lv_font_montserrat_32, lv_color_hex(0x00d4ff));
-  lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, 0);
-  
-  // Container pour les champs
-  lv_obj_t *fields_container = lv_obj_create(main_frame);
-  lv_obj_set_size(fields_container, 980, 180);
-  lv_obj_align(fields_container, LV_ALIGN_TOP_MID, 0, 50);
-  lv_obj_set_style_bg_color(fields_container, lv_color_hex(0x1a2035), 0);
-  lv_obj_set_style_bg_opa(fields_container, LV_OPA_80, 0);
-  lv_obj_set_style_border_width(fields_container, 2, 0);
-  lv_obj_set_style_border_color(fields_container, lv_color_hex(0x6080a0), 0);
-  lv_obj_set_style_radius(fields_container, ROUND_FRANE_RADUIS_BIG, 0);
-  lv_obj_set_style_pad_all(fields_container, 20, 0);
-  lv_obj_set_flex_flow(fields_container, LV_FLEX_FLOW_COLUMN);
-  lv_obj_set_flex_align(fields_container, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-  lv_obj_set_style_pad_row(fields_container, 10, 0);
-  lv_obj_clear_flag(fields_container, LV_OBJ_FLAG_SCROLLABLE);
+  ui_create_main_frame(main_frame, false, txt->wifi_settings);
   
   // Ligne Priorite
-  lv_obj_t *priority_row = ui_create_form_row(fields_container, txt->wifi_priority, 
-                                                140, lv_color_hex(0xff9500));
+  lv_obj_t *priority_row = ui_create_form_row(main_left, txt->wifi_priority, 140, lv_color_hex(0xff9500));
   
   dropdown_priority = lv_dropdown_create(priority_row);
   lv_dropdown_set_options(dropdown_priority, "Priorite 1\nPriorite 2\nPriorite 3\nPriorite 4");
@@ -213,53 +193,31 @@ void ui_settings_wifi_init(void) {
   lv_obj_add_event_cb(dropdown_priority, dropdown_wifi_event_cb, LV_EVENT_ALL, NULL);
   
   // Ligne SSID
-  lv_obj_t *ssid_row = ui_create_form_row(fields_container, txt->wifi_ssid, 
-                                           140, lv_color_hex(0x00d4ff));
-  
-  ta_ssid = lv_textarea_create(ssid_row);
-  lv_obj_set_size(ta_ssid, 760, 50);
-  lv_textarea_set_one_line(ta_ssid, true);
-  lv_textarea_set_max_length(ta_ssid, 32);
-  lv_obj_set_style_bg_color(ta_ssid, lv_color_hex(0x0f1520), 0);
-  lv_obj_set_style_border_color(ta_ssid, lv_color_hex(0x4080a0), 0);
-  lv_obj_set_style_border_width(ta_ssid, 2, 0);
-  lv_obj_set_style_radius(ta_ssid, ROUND_FRANE_RADUIS_SMALL, 0);
-  lv_obj_set_style_text_color(ta_ssid, lv_color_white(), 0);
-  lv_obj_set_style_text_font(ta_ssid, &lv_font_montserrat_20, 0);
+  lv_obj_t *ssid_row = ui_create_form_row(main_left, txt->wifi_ssid, 140, lv_color_hex(0x00d4ff));
+  ta_ssid = ui_create_textarea(ssid_row, TXT_AREA_W, TXT_AREA_H, 32, true);
   lv_obj_add_event_cb(ta_ssid, ta_wifi_event_cb, LV_EVENT_FOCUSED, NULL);
   
   // Ligne Password
-  lv_obj_t *password_row = ui_create_form_row(fields_container, txt->wifi_password,
-                                               140, lv_color_hex(0x00d4ff));
-  
-  ta_password = lv_textarea_create(password_row);
-  lv_obj_set_size(ta_password, 760, 50);
-  lv_textarea_set_one_line(ta_password, true);
-  lv_textarea_set_max_length(ta_password, 64);
-  lv_textarea_set_password_mode(ta_password, true);
-  lv_obj_set_style_bg_color(ta_password, lv_color_hex(0x0f1520), 0);
-  lv_obj_set_style_border_color(ta_password, lv_color_hex(0x4080a0), 0);
-  lv_obj_set_style_border_width(ta_password, 2, 0);
-  lv_obj_set_style_radius(ta_password, ROUND_FRANE_RADUIS_SMALL, 0);
-  lv_obj_set_style_text_color(ta_password, lv_color_white(), 0);
-  lv_obj_set_style_text_font(ta_password, &lv_font_montserrat_20, 0);
+  lv_obj_t *password_row = ui_create_form_row(main_left, txt->wifi_password, 140, lv_color_hex(0x00d4ff));
+    ta_password = ui_create_textarea(password_row, TXT_AREA_W, TXT_AREA_H, 32, true);
   lv_obj_add_event_cb(ta_password, ta_wifi_event_cb, LV_EVENT_FOCUSED, NULL);
   
   // Clavier
   if (!keyboard) {
-    keyboard = lv_keyboard_create(main_frame);
-    lv_obj_set_size(keyboard, lv_pct(100), lv_pct(40));
-    lv_obj_align(keyboard, LV_ALIGN_BOTTOM_MID, 0, 0);
-    lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+    keyboard = ui_create_keyboard(main_frame);
     lv_obj_add_event_cb(keyboard, keyboard_wifi_event_cb, LV_EVENT_ALL, NULL);
   }
   
-  // Boutons
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel,
-                                                            nullptr, true, true, false,
-                                                            btn_save_wifi_cb, btn_cancel_wifi_cb, nullptr,
-                                                            NULL, NULL, NULL);
-  
+   // Bouton Save
+  lv_obj_t *btn_save_wifi = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(START_BTN_COLOR),
+                                              PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_save_wifi_cb,
+                                              NULL, (lv_align_t)0, NULL, NULL);
+
+  // Bouton Cancel
+  lv_obj_t *btn_cancel_wifi = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
+                                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_cancel_wifi_cb,
+                                                NULL, (lv_align_t)0, NULL, NULL);
+
   // Charger la priorite 0
   load_current_priority_to_fields();
   
