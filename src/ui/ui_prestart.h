@@ -88,21 +88,18 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
     snprintf(info_text, sizeof(info_text), "%s SD: %lluGB (%lluGB libre)",
              LV_SYMBOL_SD_CARD, total_gb, free_gb);
     lv_label_set_text(label_sd_status, info_text);
-    lv_obj_set_style_text_color(label_sd_status, lv_color_hex(0x00ff00), 0);
+    lv_obj_set_style_text_color(label_sd_status, lv_color_hex(OK_COLOR), 0);
   } else {
     snprintf(info_text, sizeof(info_text), "%s SD: ERROR",
              LV_SYMBOL_SD_CARD);
     lv_label_set_text(label_sd_status, info_text);
-    lv_obj_set_style_text_color(label_sd_status, lv_color_hex(0xff0000), 0);
+    lv_obj_set_style_text_color(label_sd_status, lv_color_hex(KO_COLOR), 0);
   }
 
   // BMP390
-  snprintf(info_text, sizeof(info_text), "%s BMP390: %s",
-           LV_SYMBOL_SETTINGS,
-           g_sensor_data.bmp390.valid ? "OK" : "ERROR");
+  snprintf(info_text, sizeof(info_text), "%s BMP390: %s", LV_SYMBOL_SETTINGS, g_sensor_data.bmp390.valid ? "OK" : "ERROR");
   lv_label_set_text(label_bmp_status, info_text);
-  lv_obj_set_style_text_color(label_bmp_status,
-                              g_sensor_data.bmp390.valid ? lv_color_hex(0x00ff00) : lv_color_hex(0xff0000), 0);
+  lv_obj_set_style_text_color(label_bmp_status, g_sensor_data.bmp390.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
 
   // BNO080
   snprintf(info_text, sizeof(info_text), "%s BNO080: %s",
@@ -110,7 +107,7 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
            g_sensor_data.bno080.valid ? "OK" : "ERROR");
   lv_label_set_text(label_bno_status, info_text);
   lv_obj_set_style_text_color(label_bno_status,
-                              g_sensor_data.bno080.valid ? lv_color_hex(0x00ff00) : lv_color_hex(0xff0000), 0);
+                              g_sensor_data.bno080.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
 
   // GPS
   if (g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
@@ -118,18 +115,18 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
              LV_SYMBOL_GPS,
              g_sensor_data.gps.satellites);
     lv_label_set_text(label_gps_status, info_text);
-    lv_obj_set_style_text_color(label_gps_status, lv_color_hex(0x00ff00), 0);
+    lv_obj_set_style_text_color(label_gps_status, lv_color_hex(OK_COLOR), 0);
   } else if (g_sensor_data.gps.valid) {
     snprintf(info_text, sizeof(info_text), "%s GPS: NO FIX (%d sats)",
              LV_SYMBOL_GPS,
              g_sensor_data.gps.satellites);
     lv_label_set_text(label_gps_status, info_text);
-    lv_obj_set_style_text_color(label_gps_status, lv_color_hex(0xffaa00), 0);
+    lv_obj_set_style_text_color(label_gps_status, lv_color_hex(WG_COLOR), 0);
   } else {
     snprintf(info_text, sizeof(info_text), "%s GPS: ERROR",
              LV_SYMBOL_GPS);
     lv_label_set_text(label_gps_status, info_text);
-    lv_obj_set_style_text_color(label_gps_status, lv_color_hex(0xff0000), 0);
+    lv_obj_set_style_text_color(label_gps_status, lv_color_hex(KO_COLOR), 0);
   }
 
   // WiFi
@@ -138,7 +135,7 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
              LV_SYMBOL_WIFI,
              wifi_get_current_ssid());
     lv_label_set_text(label_wifi_status, info_text);
-    lv_obj_set_style_text_color(label_wifi_status, lv_color_hex(0x00ff00), 0);
+    lv_obj_set_style_text_color(label_wifi_status, lv_color_hex(OK_COLOR), 0);
     
     // Lancer recuperation METAR si WiFi OK
     static bool metar_fetched = false;
@@ -166,7 +163,7 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
     snprintf(info_text, sizeof(info_text), "%s WiFi: Connexion...",
              LV_SYMBOL_WIFI);
     lv_label_set_text(label_wifi_status, info_text);
-    lv_obj_set_style_text_color(label_wifi_status, lv_color_hex(0xffaa00), 0);
+    lv_obj_set_style_text_color(label_wifi_status, lv_color_hex(WG_COLOR), 0);
   }
 
   // QNH METAR
@@ -176,12 +173,12 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
     snprintf(info_text, sizeof(info_text), "QNH: %.1f hPa (%s)",
              qnh, metar.station);
     lv_label_set_text(label_qnh_status, info_text);
-    lv_obj_set_style_text_color(label_qnh_status, lv_color_hex(0x00ff00), 0);
+    lv_obj_set_style_text_color(label_qnh_status, lv_color_hex(OK_COLOR), 0);
   } else {
     snprintf(info_text, sizeof(info_text), "QNH: %.1f hPa (Standard)",
              qnh);
     lv_label_set_text(label_qnh_status, info_text);
-    lv_obj_set_style_text_color(label_qnh_status, lv_color_hex(0xaabbcc), 0);
+    lv_obj_set_style_text_color(label_qnh_status, lv_color_hex(WG_COLOR), 0);
   }
 
   // Kalman
@@ -192,7 +189,7 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
            kdata.valid ? "OK" : "INIT...");
   lv_label_set_text(label_kalman_status, info_text);
   lv_obj_set_style_text_color(label_kalman_status,
-                              kdata.valid ? lv_color_hex(0x00ff00) : lv_color_hex(0xffaa00), 0);
+                              kdata.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
 
   // Activer/desactiver bouton Start
   if (btn_start) {
@@ -264,52 +261,18 @@ void ui_prestart_init(void) {
 
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
 
-  // Titre
-  lv_obj_t *label_title = lv_label_create(main_frame);
-  lv_label_set_text(label_title, VARIO_NAME);
-  lv_obj_set_style_text_font(label_title, &lv_font_montserrat_28, 0);
-  lv_obj_set_style_text_color(label_title, lv_color_hex(0x00d4ff), 0);
-  lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, 5);
+  ui_create_main_frame(main_frame, true, VARIO_NAME);
 
-  // Version
-  lv_obj_t *label_version = lv_label_create(main_frame);
-  lv_label_set_text(label_version, VARIO_VERSION);
-  lv_obj_set_style_text_font(label_version, &lv_font_montserrat_16, 0);
-  lv_obj_set_style_text_color(label_version, lv_color_hex(0x8e8e93), 0);
-  lv_obj_align(label_version, LV_ALIGN_TOP_MID, 0, 40);
-
-  // Container principal 2 colonnes
-  lv_obj_t *main_container = lv_obj_create(main_frame);
-  lv_obj_set_size(main_container, 980, 385);
-  lv_obj_align(main_container, LV_ALIGN_TOP_MID, 0, 80);
-  lv_obj_set_flex_flow(main_container, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(main_container, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-  lv_obj_set_style_pad_all(main_container, 0, 0);
-  lv_obj_set_style_pad_column(main_container, 10, 0);
-  lv_obj_set_style_bg_opa(main_container, LV_OPA_0, 0);
-  lv_obj_set_style_border_width(main_container, 0, 0);
-  lv_obj_clear_flag(main_container, LV_OBJ_FLAG_SCROLLABLE);
-
-  // ========== COLONNE GAUCHE: STATUS CAPTEURS ==========
-  lv_obj_t *col_left = lv_obj_create(main_container);
-  lv_obj_set_size(col_left, 485, 385);
-  lv_obj_set_flex_flow(col_left, LV_FLEX_FLOW_COLUMN);
-  lv_obj_set_flex_align(col_left, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-  lv_obj_set_style_pad_all(col_left, 12, 0);
-  lv_obj_set_style_pad_row(col_left, 12, 0);
-  lv_obj_set_style_bg_color(col_left, lv_color_hex(0x1c1c1e), 0);
-  lv_obj_set_style_border_width(col_left, 0, 0);
-  lv_obj_set_style_radius(col_left, ROUND_FRANE_RADUIS_SMALL, 0);
-  lv_obj_clear_flag(col_left, LV_OBJ_FLAG_SCROLLABLE);
-
-  lv_obj_t *captors_title = ui_create_label(col_left, "Info Systeme",
-                                          &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
-  lv_obj_set_width(captors_title, lv_pct(100));
+  //Left Col Content
+  lv_obj_t *captors_title = ui_create_label(main_left, "Info Systeme", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
 
   // Separateur
-  ui_create_separator(col_left);
-
+  ui_create_separator(main_left);
+  
   char info_text[128];
+  snprintf(info_text, sizeof(info_text), "Version Systeme: %s",VARIO_VERSION);
+
+  lv_obj_t *label_version = ui_create_label(main_left, info_text, INFO_FONT_S, lv_color_hex(TITLE_COLOR));
 
   // SD Card
   if (sd_is_ready()) {
@@ -318,219 +281,118 @@ void ui_prestart_init(void) {
     uint64_t total_gb = total_kb / (1024 * 1024);
     uint64_t free_gb = free_kb / (1024 * 1024);
     
-    snprintf(info_text, sizeof(info_text), "%s SD: %lluGB (%lluGB libre)",
-             LV_SYMBOL_SD_CARD, total_gb, free_gb);
-    label_sd_status = ui_create_label(col_left, info_text,
-                                      &lv_font_montserrat_18, lv_color_hex(0x00ff00));
+    snprintf(info_text, sizeof(info_text), "%s SD: %lluGB (%lluGB libre)", LV_SYMBOL_SD_CARD, total_gb, free_gb);
+    label_sd_status = ui_create_label(main_left, info_text, INFO_FONT_S, lv_color_hex(OK_COLOR));
   } else {
-    snprintf(info_text, sizeof(info_text), "%s SD: ERROR",
-             LV_SYMBOL_SD_CARD);
-    label_sd_status = ui_create_label(col_left, info_text,
-                                      &lv_font_montserrat_18, lv_color_hex(0xff0000));
+    snprintf(info_text, sizeof(info_text), "%s SD: ERROR", LV_SYMBOL_SD_CARD);
+    label_sd_status = ui_create_label(main_left, info_text, INFO_FONT_S, lv_color_hex(KO_COLOR));
   }
-  lv_obj_set_width(label_sd_status, lv_pct(100));
 
   // BMP390
-  snprintf(info_text, sizeof(info_text), "%s BMP390: %s",
-           LV_SYMBOL_SETTINGS,
-           g_sensor_data.bmp390.valid ? "OK" : "ERROR");
-  label_bmp_status = ui_create_label(col_left, info_text,
-                                     &lv_font_montserrat_18,
-                                     g_sensor_data.bmp390.valid ? lv_color_hex(0x00ff00) : lv_color_hex(0xff0000));
-  lv_obj_set_width(label_bmp_status, lv_pct(100));
+  snprintf(info_text, sizeof(info_text), "%s BMP390: %s", LV_SYMBOL_SETTINGS, g_sensor_data.bmp390.valid ? "OK" : "ERROR");
+  label_bmp_status = ui_create_label(main_left, info_text, INFO_FONT_S, g_sensor_data.bmp390.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR));
 
   // BNO080
-  snprintf(info_text, sizeof(info_text), "%s BNO080: %s",
-           LV_SYMBOL_GPS,
-           g_sensor_data.bno080.valid ? "OK" : "ERROR");
-  label_bno_status = ui_create_label(col_left, info_text,
-                                     &lv_font_montserrat_18,
-                                     g_sensor_data.bno080.valid ? lv_color_hex(0x00ff00) : lv_color_hex(0xff0000));
-  lv_obj_set_width(label_bno_status, lv_pct(100));
+  snprintf(info_text, sizeof(info_text), "%s BNO080: %s", LV_SYMBOL_GPS, g_sensor_data.bno080.valid ? "OK" : "ERROR");
+  label_bno_status = ui_create_label(main_left, info_text, INFO_FONT_S,  g_sensor_data.bno080.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR));
 
   // GPS
   if (g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
-    snprintf(info_text, sizeof(info_text), "%s GPS: FIX (%d sats)",
-             LV_SYMBOL_GPS,
-             g_sensor_data.gps.satellites);
-    label_gps_status = ui_create_label(col_left, info_text,
-                                       &lv_font_montserrat_18, lv_color_hex(0x00ff00));
+    snprintf(info_text, sizeof(info_text), "%s GPS: FIX (%d sats)", LV_SYMBOL_GPS, g_sensor_data.gps.satellites);
+    label_gps_status = ui_create_label(main_left, info_text, INFO_FONT_S, lv_color_hex(OK_COLOR));
   } else if (g_sensor_data.gps.valid) {
-    snprintf(info_text, sizeof(info_text), "%s GPS: NO FIX (%d sats)",
-             LV_SYMBOL_GPS,
-             g_sensor_data.gps.satellites);
-    label_gps_status = ui_create_label(col_left, info_text,
-                                       &lv_font_montserrat_18, lv_color_hex(0xffaa00));
+    snprintf(info_text, sizeof(info_text), "%s GPS: NO FIX (%d sats)", LV_SYMBOL_GPS, g_sensor_data.gps.satellites);
+    label_gps_status = ui_create_label(main_left, info_text, INFO_FONT_S, lv_color_hex(WG_COLOR));
   } else {
-    snprintf(info_text, sizeof(info_text), "%s GPS: ERROR",
-             LV_SYMBOL_GPS);
-    label_gps_status = ui_create_label(col_left, info_text,
-                                       &lv_font_montserrat_18, lv_color_hex(0xff0000));
+    snprintf(info_text, sizeof(info_text), "%s GPS: ERROR", LV_SYMBOL_GPS);
+    label_gps_status = ui_create_label(main_left, info_text, INFO_FONT_S, lv_color_hex(KO_COLOR));
   }
-  lv_obj_set_width(label_gps_status, lv_pct(100));
+
 
   // WiFi
-  snprintf(info_text, sizeof(info_text), "%s WiFi: Connexion...",
-           LV_SYMBOL_WIFI);
-  label_wifi_status = ui_create_label(col_left, info_text,
-                                      &lv_font_montserrat_18, lv_color_hex(0xffaa00));
-  lv_obj_set_width(label_wifi_status, lv_pct(100));
+  snprintf(info_text, sizeof(info_text), "%s WiFi: Connexion...", LV_SYMBOL_WIFI);
+  label_wifi_status = ui_create_label(main_left, info_text, INFO_FONT_S, lv_color_hex(WG_COLOR));
 
   // QNH
   snprintf(info_text, sizeof(info_text), "QNH: 1013.25 hPa (Standard)");
-  label_qnh_status = ui_create_label(col_left, info_text,
-                                     &lv_font_montserrat_18, lv_color_hex(0xaabbcc));
-  lv_obj_set_width(label_qnh_status, lv_pct(100));
+  label_qnh_status = ui_create_label(main_left, info_text, INFO_FONT_S, lv_color_hex(WG_COLOR));
 
   // Kalman
-  snprintf(info_text, sizeof(info_text), "%s Kalman: INIT...",
-           LV_SYMBOL_SETTINGS);
-  label_kalman_status = ui_create_label(col_left, info_text,
-                                        &lv_font_montserrat_18, lv_color_hex(0xffaa00));
-  lv_obj_set_width(label_kalman_status, lv_pct(100));
+  snprintf(info_text, sizeof(info_text), "%s Kalman: INIT...", LV_SYMBOL_SETTINGS);
+  label_kalman_status = ui_create_label(main_left, info_text, INFO_FONT_S, lv_color_hex(WG_COLOR));
+
 
   // Avertissements modes speciaux
 #if defined(DEBUG_MODE) || defined(TEST_MODE) || defined(FLIGHT_TEST_MODE)
-  lv_obj_t *warning_panel = lv_obj_create(col_left);
+  lv_obj_t *warning_panel = lv_obj_create(main_left);
   lv_obj_set_size(warning_panel, lv_pct(100), LV_SIZE_CONTENT);
   lv_obj_set_flex_flow(warning_panel, LV_FLEX_FLOW_COLUMN);
   lv_obj_set_flex_align(warning_panel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
   lv_obj_set_style_pad_row(warning_panel, 5, 0);
   lv_obj_set_style_pad_all(warning_panel, 10, 0);
-  lv_obj_set_style_bg_color(warning_panel, lv_color_hex(0xff9500), 0);
+  lv_obj_set_style_bg_color(warning_panel, lv_color_hex(WG_COLOR), 0);
   lv_obj_set_style_border_width(warning_panel, 2, 0);
-  lv_obj_set_style_border_color(warning_panel, lv_color_hex(0xff6600), 0);
+  lv_obj_set_style_border_color(warning_panel, lv_color_hex(KO_COLOR), 0);
   lv_obj_set_style_radius(warning_panel, ROUND_FRANE_RADUIS_SMALL, 0);
 
   char warning_text[128];
 #ifdef DEBUG_MODE
   snprintf(warning_text, sizeof(warning_text), "%s DEBUG MODE ACTIVE", LV_SYMBOL_WARNING);
-  lv_obj_t *label_debug = ui_create_label(warning_panel, warning_text,
-                                          &lv_font_montserrat_16, lv_color_hex(0x000000));
-  lv_obj_set_width(label_debug, lv_pct(100));
+  lv_obj_t *label_debug = ui_create_label(warning_panel, warning_text, INFO_FONT_S, lv_color_hex(0x000000));
 #endif
 
 #ifdef TEST_MODE
   snprintf(warning_text, sizeof(warning_text), "%s TEST MODE ACTIVE", LV_SYMBOL_WARNING);
-  lv_obj_t *label_test = ui_create_label(warning_panel, warning_text,
-                                         &lv_font_montserrat_16, lv_color_hex(0x000000));
-  lv_obj_set_width(label_test, lv_pct(100));
+  lv_obj_t *label_test = ui_create_label(warning_panel, warning_text, INFO_FONT_S, lv_color_hex(0x000000));
 #endif
 
 #ifdef FLIGHT_TEST_MODE
   snprintf(warning_text, sizeof(warning_text), "%s FLIGHT TEST MODE ACTIVE", LV_SYMBOL_WARNING);
-  lv_obj_t *label_flight = ui_create_label(warning_panel, warning_text,
-                                           &lv_font_montserrat_16, lv_color_hex(0x000000));
-  lv_obj_set_width(label_flight, lv_pct(100));
+  lv_obj_t *label_flight = ui_create_label(warning_panel, warning_text, INFO_FONT_S, lv_color_hex(0x000000));
 #endif
 #endif
 
-  // ========== COLONNE DROITE: INFOS PILOTE ==========
-  lv_obj_t *col_right = lv_obj_create(main_container);
-  lv_obj_set_size(col_right, 485, 385);
-  lv_obj_set_flex_flow(col_right, LV_FLEX_FLOW_COLUMN);
-  lv_obj_set_flex_align(col_right, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-  lv_obj_set_style_pad_all(col_right, 12, 0);
-  lv_obj_set_style_pad_row(col_right, 12, 0);
-  lv_obj_set_style_bg_color(col_right, lv_color_hex(0x1c1c1e), 0);
-  lv_obj_set_style_border_width(col_right, 0, 0);
-  lv_obj_set_style_radius(col_right, ROUND_FRANE_RADUIS_SMALL, 0);
-  lv_obj_clear_flag(col_right, LV_OBJ_FLAG_SCROLLABLE);
-
+  //Right Col Content
   // Titre panneau pilote
-  lv_obj_t *pilot_title = ui_create_label(col_right, txt->pilot,
-                                          &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
-  lv_obj_set_width(pilot_title, lv_pct(100));
+  lv_obj_t *pilot_title = ui_create_label(main_right, txt->pilot, INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
 
   // Separateur
-  ui_create_separator(col_right);
+  ui_create_separator(main_right);
 
   // Nom (libelle et valeur sur meme ligne)
-  lv_obj_t *name_row = lv_obj_create(col_right);
-  lv_obj_set_size(name_row, lv_pct(100), LV_SIZE_CONTENT);
-  lv_obj_set_flex_flow(name_row, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(name_row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_all(name_row, 0, 0);
-  lv_obj_set_style_bg_opa(name_row, LV_OPA_0, 0);
-  lv_obj_set_style_border_width(name_row, 0, 0);
-
-  lv_obj_t *label_name_title = ui_create_label(name_row, txt->pilot_name,
-                                                &lv_font_montserrat_18, lv_color_hex(0x8e8e93));
-  lv_obj_set_width(label_name_title, 150);
-  
-  lv_obj_t *label_name_sep = ui_create_label(name_row, ":",
-                                             &lv_font_montserrat_18, lv_color_hex(0x8e8e93));
-  
+  lv_obj_t *name_row = ui_create_inline_container(main_right);
+  lv_obj_t *label_name_title = ui_create_label(name_row, txt->pilot_name, INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
+  lv_obj_set_width(label_name_title, PRE_LINE_HEADER_W);
+  lv_obj_t *label_name_sep = ui_create_label(name_row, ":", INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   const char* name_str = psram_str_get(params.pilot_name);
-  lv_obj_t *label_name_value = ui_create_label(name_row, 
-                                                (name_str && strlen(name_str) > 0) ? name_str : "---",
-                                                &lv_font_montserrat_18, lv_color_hex(0xffffff));
+  lv_obj_t *label_name_value = ui_create_label(name_row, (name_str && strlen(name_str) > 0) ? name_str : "---", INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Prenom (libelle et valeur sur meme ligne)
-  lv_obj_t *firstname_row = lv_obj_create(col_right);
-  lv_obj_set_size(firstname_row, lv_pct(100), LV_SIZE_CONTENT);
-  lv_obj_set_flex_flow(firstname_row, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(firstname_row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_all(firstname_row, 0, 0);
-  lv_obj_set_style_bg_opa(firstname_row, LV_OPA_0, 0);
-  lv_obj_set_style_border_width(firstname_row, 0, 0);
-
-  lv_obj_t *label_firstname_title = ui_create_label(firstname_row, txt->pilot_firstname,
-                                                     &lv_font_montserrat_18, lv_color_hex(0x8e8e93));
-  lv_obj_set_width(label_firstname_title, 150);
-  
-  lv_obj_t *label_firstname_sep = ui_create_label(firstname_row, ":",
-                                                  &lv_font_montserrat_18, lv_color_hex(0x8e8e93));
-  
+  lv_obj_t *firstname_row = ui_create_inline_container(main_right);
+  lv_obj_t *label_firstname_title = ui_create_label(firstname_row, txt->pilot_firstname, INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
+  lv_obj_set_width(label_firstname_title, PRE_LINE_HEADER_W);
+  lv_obj_t *label_firstname_sep = ui_create_label(firstname_row, ":", INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   const char* firstname_str = psram_str_get(params.pilot_firstname);
-  lv_obj_t *label_firstname_value = ui_create_label(firstname_row,
-                                                     (firstname_str && strlen(firstname_str) > 0) ? firstname_str : "---",
-                                                     &lv_font_montserrat_18, lv_color_hex(0xffffff));
+  lv_obj_t *label_firstname_value = ui_create_label(firstname_row, (firstname_str && strlen(firstname_str) > 0) ? firstname_str : "---", INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Telephone (libelle et valeur sur meme ligne)
-  lv_obj_t *phone_row = lv_obj_create(col_right);
-  lv_obj_set_size(phone_row, lv_pct(100), LV_SIZE_CONTENT);
-  lv_obj_set_flex_flow(phone_row, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(phone_row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_all(phone_row, 0, 0);
-  lv_obj_set_style_bg_opa(phone_row, LV_OPA_0, 0);
-  lv_obj_set_style_border_width(phone_row, 0, 0);
-
-  lv_obj_t *label_phone_title = ui_create_label(phone_row, txt->pilot_phone,
-                                                 &lv_font_montserrat_18, lv_color_hex(0x8e8e93));
-  lv_obj_set_width(label_phone_title, 150);
-  
-  lv_obj_t *label_phone_sep = ui_create_label(phone_row, ":",
-                                              &lv_font_montserrat_18, lv_color_hex(0x8e8e93));
-  
+  lv_obj_t *phone_row = ui_create_inline_container(main_right);
+  lv_obj_t *label_phone_title = ui_create_label(phone_row, txt->pilot_phone, INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
+  lv_obj_set_width(label_phone_title, PRE_LINE_HEADER_W);
+  lv_obj_t *label_phone_sep = ui_create_label(phone_row, ":", INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   const char* phone_str = psram_str_get(params.pilot_phone);
-  lv_obj_t *label_phone_value = ui_create_label(phone_row,
-                                                 (phone_str && strlen(phone_str) > 0) ? phone_str : "---",
-                                                 &lv_font_montserrat_18, lv_color_hex(0xffffff));
+  lv_obj_t *label_phone_value = ui_create_label(phone_row, (phone_str && strlen(phone_str) > 0) ? phone_str : "---", INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Modele d'aile (libelle et valeur sur meme ligne)
-  lv_obj_t *wing_row = lv_obj_create(col_right);
-  lv_obj_set_size(wing_row, lv_pct(100), LV_SIZE_CONTENT);
-  lv_obj_set_flex_flow(wing_row, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(wing_row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_all(wing_row, 0, 0);
-  lv_obj_set_style_bg_opa(wing_row, LV_OPA_0, 0);
-  lv_obj_set_style_border_width(wing_row, 0, 0);
-
-  lv_obj_t *label_wing_title = ui_create_label(wing_row, txt->pilot_wing,
-                                                &lv_font_montserrat_18, lv_color_hex(0x8e8e93));
-  lv_obj_set_width(label_wing_title, 150);
-  
-  lv_obj_t *label_wing_sep = ui_create_label(wing_row, ":",
-                                             &lv_font_montserrat_18, lv_color_hex(0x8e8e93));
-  
+  lv_obj_t *wing_row = ui_create_inline_container(main_right);
+  lv_obj_t *label_wing_title = ui_create_label(wing_row, txt->pilot_wing, INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
+  lv_obj_set_width(label_wing_title, PRE_LINE_HEADER_W);
+  lv_obj_t *label_wing_sep = ui_create_label(wing_row, ":", INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   const char* wing_str = psram_str_get(params.pilot_wing);
-  lv_obj_t *label_wing_value = ui_create_label(wing_row,
-                                                (wing_str && strlen(wing_str) > 0) ? wing_str : "---",
-                                                &lv_font_montserrat_18, lv_color_hex(0xffffff));
+  lv_obj_t *label_wing_value = ui_create_label(wing_row, (wing_str && strlen(wing_str) > 0) ? wing_str : "---", INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Separateur avant I.C.E.
-  lv_obj_t *ice_separator = lv_obj_create(col_right);
+  lv_obj_t *ice_separator = lv_obj_create(main_right);
   lv_obj_set_size(ice_separator, lv_pct(100), 2);
   lv_obj_set_style_bg_color(ice_separator, lv_color_hex(0x000000), 0);
   lv_obj_set_style_bg_opa(ice_separator, LV_OPA_COVER, 0);
@@ -538,105 +400,40 @@ void ui_prestart_init(void) {
   lv_obj_set_style_pad_all(ice_separator, 0, 0);
 
   // Section I.C.E. (In Case of Emergency)
-  lv_obj_t *ice_title = ui_create_label(col_right, "I.C.E.",
-                                        &lv_font_montserrat_20, lv_color_hex(0xff3b30));
+  lv_obj_t *ice_title = ui_create_label(main_right, "I.C.E.", INFO_FONT_BIG, lv_color_hex(INFO_LED_L_COLOR));
   lv_obj_set_width(ice_title, lv_pct(100));
 
-  ui_create_separator(col_right);
+  ui_create_separator(main_right);
 
   // Nom ICE (meme format que les autres)
-  lv_obj_t *ice_name_row = lv_obj_create(col_right);
-  lv_obj_set_size(ice_name_row, lv_pct(100), LV_SIZE_CONTENT);
-  lv_obj_set_flex_flow(ice_name_row, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(ice_name_row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_all(ice_name_row, 0, 0);
-  lv_obj_set_style_bg_opa(ice_name_row, LV_OPA_0, 0);
-  lv_obj_set_style_border_width(ice_name_row, 0, 0);
-
-  lv_obj_t *label_ice_name_title = ui_create_label(ice_name_row, txt->pilot_name,
-                                                    &lv_font_montserrat_16, lv_color_hex(0x8e8e93));
-  lv_obj_set_width(label_ice_name_title, 150);
-  
-  lv_obj_t *label_ice_name_sep = ui_create_label(ice_name_row, ":",
-                                                  &lv_font_montserrat_16, lv_color_hex(0x8e8e93));
-  
-  lv_obj_t *label_ice_name_value = ui_create_label(ice_name_row, "---",
-                                                    &lv_font_montserrat_16, lv_color_hex(0xffffff));
+  lv_obj_t *ice_name_row = ui_create_inline_container(main_right);
+  lv_obj_t *label_ice_name_title = ui_create_label(ice_name_row, txt->pilot_name, INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
+  lv_obj_set_width(label_ice_name_title, PRE_LINE_HEADER_W);
+  lv_obj_t *label_ice_name_sep = ui_create_label(ice_name_row, ":", INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
+  lv_obj_t *label_ice_name_value = ui_create_label(ice_name_row, "---", INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Telephone ICE
-  lv_obj_t *ice_phone_row = lv_obj_create(col_right);
-  lv_obj_set_size(ice_phone_row, lv_pct(100), LV_SIZE_CONTENT);
-  lv_obj_set_flex_flow(ice_phone_row, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(ice_phone_row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_all(ice_phone_row, 0, 0);
-  lv_obj_set_style_bg_opa(ice_phone_row, LV_OPA_0, 0);
-  lv_obj_set_style_border_width(ice_phone_row, 0, 0);
+  lv_obj_t *ice_phone_row = ui_create_inline_container(main_right);
+  lv_obj_t *label_ice_phone_title = ui_create_label(ice_phone_row, txt->pilot_phone, INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
+  lv_obj_set_width(label_ice_phone_title, PRE_LINE_HEADER_W);
+  lv_obj_t *label_ice_phone_sep = ui_create_label(ice_phone_row, ":", INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
+  lv_obj_t *label_ice_phone_value = ui_create_label(ice_phone_row, "---", INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
-  lv_obj_t *label_ice_phone_title = ui_create_label(ice_phone_row, txt->pilot_phone,
-                                                     &lv_font_montserrat_16, lv_color_hex(0x8e8e93));
-  lv_obj_set_width(label_ice_phone_title, 150);
-  
-  lv_obj_t *label_ice_phone_sep = ui_create_label(ice_phone_row, ":",
-                                                   &lv_font_montserrat_16, lv_color_hex(0x8e8e93));
-  
-  lv_obj_t *label_ice_phone_value = ui_create_label(ice_phone_row, "---",
-                                                     &lv_font_montserrat_16, lv_color_hex(0xffffff));
-
-  // ========== BOUTONS BAS D'ECRAN ==========
-  lv_obj_t *buttons_container = lv_obj_create(main_frame);
-  lv_obj_set_size(buttons_container, lv_pct(95), LV_SIZE_CONTENT);
-  lv_obj_align(buttons_container, LV_ALIGN_BOTTOM_MID, 0, 0);
-  lv_obj_set_flex_flow(buttons_container, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(buttons_container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_column(buttons_container, 15, 0);
-  lv_obj_set_style_bg_opa(buttons_container, LV_OPA_0, 0);
-  lv_obj_set_style_border_width(buttons_container, 0, 0);
-  lv_obj_set_style_pad_all(buttons_container, 0, 0);
-
+  //Right Col Content
   // Bouton Transfer
-  lv_obj_t *btn_transfer = ui_create_button(buttons_container,
-                                            txt->file_transfer,
-                                            LV_SYMBOL_UPLOAD,
-                                            lv_color_hex(0x007aff),
-                                            280,
-                                            70,
-                                            &lv_font_montserrat_16,
-                                            &lv_font_montserrat_20,
-                                            btn_file_transfer_cb,
-                                            NULL,
-                                            (lv_align_t)0,
-                                            NULL,
-                                            NULL);
+  lv_obj_t *btn_transfer = ui_create_button(btn_container, txt->file_transfer, LV_SYMBOL_UPLOAD, lv_color_hex(FILES_BTN_COLOR), 
+                                            PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_file_transfer_cb,
+                                            NULL, (lv_align_t)0, NULL, NULL);
 
   // Bouton Settings
-  lv_obj_t *btn_settings_obj = ui_create_button(buttons_container,
-                                                 txt->settings,
-                                                 LV_SYMBOL_SETTINGS,
-                                                 lv_color_hex(0x8e8e93),
-                                                 280,
-                                                 70,
-                                                 &lv_font_montserrat_16,
-                                                 &lv_font_montserrat_20,
-                                                 btn_settings_cb,
-                                                 NULL,
-                                                 (lv_align_t)0,
-                                                 NULL,
-                                                 NULL);
+  lv_obj_t *btn_settings_obj = ui_create_button(btn_container, txt->settings, LV_SYMBOL_SETTINGS, lv_color_hex(SETUP_BTN_COLOR),
+                                                 PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_settings_cb,
+                                                 NULL, (lv_align_t)0, NULL, NULL);
 
   // Bouton Start (desactive au debut)
-  btn_start = ui_create_button(buttons_container,
-                                txt->start,
-                                LV_SYMBOL_PLAY,
-                                lv_color_hex(0x34c759),
-                                280,
-                                70,
-                                &lv_font_montserrat_16,
-                                &lv_font_montserrat_20,
-                                btn_start_cb,
-                                NULL,
-                                (lv_align_t)0,
-                                NULL,
-                                NULL);
+  btn_start = ui_create_button(btn_container, txt->start, LV_SYMBOL_PLAY, lv_color_hex(START_BTN_COLOR), 
+                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_start_cb,
+                                NULL, (lv_align_t)0, NULL, NULL);
 
 #ifdef FLIGHT_TEST_MODE
   // Mode Test Flight: Start immediatement disponible

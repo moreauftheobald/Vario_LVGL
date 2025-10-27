@@ -76,117 +76,38 @@ void ui_settings_init(void) {
 
   // Ecran et frame
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &screen_settings);
-
-  // Titre
-  ui_create_title(main_frame, txt->settings);
-
-  // Container pour les boutons (2 colonnes)
-  lv_obj_t *buttons_container = ui_create_flex_container(main_frame, LV_FLEX_FLOW_ROW_WRAP);
-  lv_obj_set_size(buttons_container, 940, 450);
-  lv_obj_align(buttons_container, LV_ALIGN_CENTER, 0, 15);
-  lv_obj_set_flex_align(buttons_container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_column(buttons_container, 20, 0);
-  lv_obj_set_style_pad_row(buttons_container, 15, 0);
+  
+  ui_create_main_frame(main_frame, true, txt->settings);
 
   // Boutons de parametres
-  lv_obj_t *btn_pilot = ui_create_button(buttons_container,
-                                         txt->pilot_settings,
-                                         LV_SYMBOL_HOME,
-                                         lv_color_hex(0x5856d6),
-                                         460,
-                                         80,
-                                         &lv_font_montserrat_20,
-                                         &lv_font_montserrat_24,
-                                         btn_pilot_cb,
-                                         NULL,
-                                         (lv_align_t)0,
-                                         NULL,
-                                         NULL);
+  lv_obj_t *btn_pilot = ui_create_button(main_left, txt->pilot_settings, LV_SYMBOL_HOME, lv_color_hex(FILES_BTN_COLOR),
+                                         STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_pilot_cb,
+                                         NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_wifi = ui_create_button(buttons_container,
-                                        txt->wifi_settings,
-                                        LV_SYMBOL_WIFI,
-                                        lv_color_hex(0x007aff),
-                                        460,
-                                        80,
-                                        &lv_font_montserrat_20,
-                                        &lv_font_montserrat_24,
-                                        btn_wifi_cb,
-                                        NULL,
-                                        (lv_align_t)0,
-                                        NULL,
-                                        NULL);
+  lv_obj_t *btn_screen = ui_create_button(main_left, txt->screen_calibration, LV_SYMBOL_SETTINGS, lv_color_hex(RESET_BTN_COLOR),
+                                          STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_screen_cb,
+                                          NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_screen = ui_create_button(buttons_container,
-                                          txt->screen_calibration,
-                                          LV_SYMBOL_SETTINGS,
-                                          lv_color_hex(0xff9500),
-                                          460,
-                                          80,
-                                          &lv_font_montserrat_20,
-                                          &lv_font_montserrat_24,
-                                          btn_screen_cb,
-                                          NULL,
-                                          (lv_align_t)0,
-                                          NULL,
-                                          NULL);
+  lv_obj_t *btn_map = ui_create_button(main_left, txt->map_settings, LV_SYMBOL_GPS, lv_color_hex(START_BTN_COLOR),
+                                       STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_map_cb,
+                                       NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_vario = ui_create_button(buttons_container,
-                                         txt->vario_settings,
-                                         LV_SYMBOL_UP,
-                                         lv_color_hex(0x4cd964),
-                                         460,
-                                         80,
-                                         &lv_font_montserrat_20,
-                                         &lv_font_montserrat_24,
-                                         btn_vario_cb,
-                                         NULL,
-                                         (lv_align_t)0,
-                                         NULL,
-                                         NULL);
+  lv_obj_t *btn_wifi = ui_create_button(main_right, txt->wifi_settings, LV_SYMBOL_WIFI, lv_color_hex(WIFI_BTN_COLOR),
+                                        STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_wifi_cb,
+                                        NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_map = ui_create_button(buttons_container,
-                                       txt->map_settings,
-                                       LV_SYMBOL_GPS,
-                                       lv_color_hex(0x34c759),
-                                       460,
-                                       80,
-                                       &lv_font_montserrat_20,
-                                       &lv_font_montserrat_24,
-                                       btn_map_cb,
-                                       NULL,
-                                       (lv_align_t)0,
-                                       NULL,
-                                       NULL);
+  lv_obj_t *btn_vario = ui_create_button(main_right, txt->vario_settings, LV_SYMBOL_UP, lv_color_hex(VARIO_BTN_COLOR),
+                                         STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_vario_cb,
+                                         NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_system = ui_create_button(buttons_container,
-                                          txt->system_settings,
-                                          LV_SYMBOL_LIST,
-                                          lv_color_hex(0x8e8e93),
-                                          460,
-                                          80,
-                                          &lv_font_montserrat_20,
-                                          &lv_font_montserrat_24,
-                                          btn_system_cb,
-                                          NULL,
-                                          (lv_align_t)0,
-                                          NULL,
-                                          NULL);
+  lv_obj_t *btn_system = ui_create_button(main_right, txt->system_settings, LV_SYMBOL_LIST, lv_color_hex(SETUP_BTN_COLOR),
+                                          STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_system_cb,
+                                          NULL, (lv_align_t)0, NULL, NULL);
 
   // Bouton retour
-  lv_obj_t *btn_back = ui_create_button(main_frame,
-                                        txt->back,
-                                        NULL,
-                                        lv_color_hex(0xff3b30),
-                                        300,
-                                        70,
-                                        &lv_font_montserrat_20,
-                                        &lv_font_montserrat_24,
-                                        btn_back_cb,
-                                        NULL,
-                                        LV_ALIGN_BOTTOM_MID,
-                                        0,
-                                        -15);
+  lv_obj_t *btn_back = ui_create_button(btn_container, txt->back, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR), 
+                                        PRE_BTN_W, PRE_BTN_H, INFO_FONT_BIG, INFO_FONT_BIG, btn_back_cb,
+                                        NULL, LV_ALIGN_BOTTOM_MID, NULL, NULL);
 
 #ifdef DEBUG_MODE
   Serial.println("Settings screen initialized");

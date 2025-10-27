@@ -4,6 +4,7 @@
 #include "lvgl.h"
 #include "constants.h"
 #include "lang.h"
+#include "graphical.h"
 
 // ============================================================================
 // VARIABLES GLOBALES BARRE DE STATUT
@@ -57,6 +58,80 @@ static inline lv_obj_t *ui_create_black_screen_with_frame(uint16_t border_width,
 
   return frame;
 }
+
+/**
+ * @brief Cree une paginaton standard dans l'ecran principal sur 1 ou 2 colonnes
+ * @param parent Parent object
+ * @param dual draw 2 colomn if tue
+ * @param title title of screen
+ * @return Lla pagination principale
+ */
+static void ui_create_main_frame(lv_obj_t *parent, bool dual, const char *title) {
+  // Titre
+  label_title_main = lv_label_create(parent);
+  lv_label_set_text(label_title_main, title);
+  lv_obj_set_style_text_font(label_title_main, TITLE_FONT, 0);
+  lv_obj_set_style_text_color(label_title_main, lv_color_hex(TITLE_COLOR), 0);
+  lv_obj_align(label_title_main, LV_ALIGN_TOP_MID, 0, 0);
+
+  // Container principal 2 colonnes
+  central_container = lv_obj_create(parent);
+  lv_obj_set_size(central_container, MAIN_CONTAINER_W, MAIN_CONTAINER_H);
+  lv_obj_align(central_container, LV_ALIGN_TOP_MID, MAIN_CONTAINER_POS_X, MAIN_CONTAINER_POS_Y);
+  lv_obj_set_flex_flow(central_container, LV_FLEX_FLOW_ROW);
+  lv_obj_set_flex_align(central_container, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+  lv_obj_set_style_pad_all(central_container, MAIN_CONTAINER_PAD_ALL, 0);
+  lv_obj_set_style_pad_column(central_container, MAIN_CONTAINER_PAD_COL, 0);
+  lv_obj_set_style_bg_opa(central_container, MAIN_CONTAINER_BG_OPA, 0);
+  lv_obj_set_style_border_width(central_container, MAIN_FRAME_BORDER_TICK, 0);
+  lv_obj_clear_flag(central_container, LV_OBJ_FLAG_SCROLLABLE);
+
+  if (dual) {
+    main_left = lv_obj_create(central_container);
+    lv_obj_set_size(main_left, LEFT_COL_DUAL_W, MAIN_CONTAINER_H);
+    lv_obj_set_flex_flow(main_left, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(main_left, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_set_style_pad_all(main_left, LEFT_COL_PAD_ALL, 0);
+    lv_obj_set_style_pad_row(main_left, LEFT_COL_PAD_ROW, 0);
+    lv_obj_set_style_bg_color(main_left, lv_color_hex(LEFT_COL_BG), 0);
+    lv_obj_set_style_border_width(main_left, MAIN_FRAME_BORDER_TICK, 0);
+    lv_obj_set_style_radius(main_left, ROUND_FRANE_RADUIS_SMALL, 0);
+    lv_obj_clear_flag(main_left, LV_OBJ_FLAG_SCROLLABLE);
+
+    main_right = lv_obj_create(central_container);
+    lv_obj_set_size(main_right, LEFT_COL_DUAL_W, MAIN_CONTAINER_H);
+    lv_obj_set_flex_flow(main_right, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(main_right, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_set_style_pad_all(main_right, LEFT_COL_PAD_ALL, 0);
+    lv_obj_set_style_pad_row(main_right, LEFT_COL_PAD_ROW, 0);
+    lv_obj_set_style_bg_color(main_right, lv_color_hex(LEFT_COL_BG), 0);
+    lv_obj_set_style_border_width(main_right, MAIN_FRAME_BORDER_TICK, 0);
+    lv_obj_set_style_radius(main_right, ROUND_FRANE_RADUIS_SMALL, 0);
+    lv_obj_clear_flag(main_right, LV_OBJ_FLAG_SCROLLABLE);
+  } else {
+    main_left = lv_obj_create(central_container);
+    lv_obj_set_size(main_left, MAIN_CONTAINER_W, MAIN_CONTAINER_H);
+    lv_obj_set_flex_flow(main_left, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(main_left, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_set_style_pad_all(main_left, LEFT_COL_PAD_ALL, 0);
+    lv_obj_set_style_pad_row(main_left, LEFT_COL_PAD_ROW, 0);
+    lv_obj_set_style_bg_color(main_left, lv_color_hex(LEFT_COL_BG), 0);
+    lv_obj_set_style_border_width(main_left, MAIN_FRAME_BORDER_TICK, 0);
+    lv_obj_set_style_radius(main_left, ROUND_FRANE_RADUIS_SMALL, 0);
+    lv_obj_clear_flag(main_left, LV_OBJ_FLAG_SCROLLABLE);
+  }
+
+  btn_container = lv_obj_create(parent);
+  lv_obj_set_size(btn_container, lv_pct(100), LV_SIZE_CONTENT);
+  lv_obj_align(btn_container, LV_ALIGN_BOTTOM_MID, 0, BTNS_CONTAINER_POS_Y);
+  lv_obj_set_flex_flow(btn_container, LV_FLEX_FLOW_ROW);
+  lv_obj_set_flex_align(btn_container, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+  lv_obj_set_style_pad_column(btn_container, BTNS_CONTAINER_PAD_COL, 0);
+  lv_obj_set_style_bg_opa(btn_container, BTNS_CONTAINER_BG_OPA, 0);
+  lv_obj_set_style_border_width(btn_container, MAIN_FRAME_BORDER_TICK, 0);
+  lv_obj_set_style_pad_all(btn_container, BTNS_CONTAINER_PAD_ALL, 0);
+}
+
 
 /**
  * @brief Cree un ecran avec gradient background standard
@@ -145,6 +220,22 @@ static inline lv_obj_t *ui_create_button(lv_obj_t *parent, const char *text, con
 /**
  * @brief Cree un conteneur flex transparent
  */
+static inline lv_obj_t *ui_create_inline_container(lv_obj_t *parent) {
+  lv_obj_t *row = lv_obj_create(parent);
+  lv_obj_set_size(row, lv_pct(100), LV_SIZE_CONTENT);
+  lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+  lv_obj_set_flex_align(row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+  lv_obj_set_style_pad_all(row, 0, 0);
+  lv_obj_set_style_bg_opa(row, LV_OPA_0, 0);
+  lv_obj_set_style_border_width(row, 0, 0);
+
+  return row;
+}
+
+
+/**
+ * @brief Cree un conteneur flex transparent
+ */
 static inline lv_obj_t *ui_create_flex_container(lv_obj_t *parent, lv_flex_flow_t flow) {
   lv_obj_t *container = lv_obj_create(parent);
   lv_obj_set_size(container, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
@@ -165,6 +256,7 @@ static inline lv_obj_t *ui_create_label(lv_obj_t *parent, const char *text,
   lv_label_set_text(label, text);
   lv_obj_set_style_text_font(label, font, 0);
   lv_obj_set_style_text_color(label, color, 0);
+  lv_obj_set_width(label, lv_pct(100));
   return label;
 }
 
@@ -182,27 +274,26 @@ static inline lv_obj_t *ui_create_separator(lv_obj_t *parent) {
 /**
  * @brief Cree un champ de saisie texte
  */
-static inline lv_obj_t *ui_create_textarea(lv_obj_t *parent, const char *placeholder,
-                                           int max_length, bool one_line) {
+static inline lv_obj_t *ui_create_textarea(lv_obj_t *parent, int32_t w, int32_t h, int max_length, bool one_line) {
   lv_obj_t *ta = lv_textarea_create(parent);
-  lv_obj_set_size(ta, lv_pct(100), one_line ? 50 : 150);
+  lv_obj_set_size(ta, w, h);
   lv_textarea_set_one_line(ta, one_line);
   lv_textarea_set_max_length(ta, max_length);
-  lv_textarea_set_placeholder_text(ta, placeholder);
   lv_obj_set_style_bg_color(ta, lv_color_hex(0x0f1520), 0);
   lv_obj_set_style_border_color(ta, lv_color_hex(0x4080a0), 0);
   lv_obj_set_style_border_width(ta, 2, 0);
   lv_obj_set_style_radius(ta, ROUND_FRANE_RADUIS_SMALL, 0);
+  lv_obj_set_style_text_color(ta, lv_color_white(), 0);
+  lv_obj_set_style_text_font(ta, &lv_font_montserrat_20, 0);
   return ta;
 }
 
 /**
  * @brief Cree un clavier
  */
-static inline lv_obj_t *ui_create_keyboard(lv_obj_t *parent, lv_keyboard_mode_t mode) {
+static inline lv_obj_t *ui_create_keyboard(lv_obj_t *parent) {
   lv_obj_t *kb = lv_keyboard_create(parent);
-  lv_keyboard_set_mode(kb, mode);
-  lv_obj_set_size(kb, lv_pct(100), lv_pct(40));
+  lv_obj_set_size(kb, lv_pct(100), 260);
   lv_obj_align(kb, LV_ALIGN_BOTTOM_MID, 0, 0);
   lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
   return kb;
@@ -293,19 +384,19 @@ typedef struct {
   lv_obj_t *reset;
 } ui_button_pair_t;
 
-static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent, 
-                                                              const char *save_text,
-                                                              const char *cancel_text,
-                                                              const char *reset_text,
-                                                              bool save, bool cancel, bool reset,
-                                                              lv_event_cb_t save_cb,
-                                                              lv_event_cb_t cancel_cb,
-                                                              lv_event_cb_t reset_cb,
-                                                              void *save_user_data,
-                                                              void *cancel_user_data,
-                                                              void *reset_user_data) {
-  ui_button_pair_t buttons = {NULL, NULL, NULL};
-  
+static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent,
+                                                             const char *save_text,
+                                                             const char *cancel_text,
+                                                             const char *reset_text,
+                                                             bool save, bool cancel, bool reset,
+                                                             lv_event_cb_t save_cb,
+                                                             lv_event_cb_t cancel_cb,
+                                                             lv_event_cb_t reset_cb,
+                                                             void *save_user_data,
+                                                             void *cancel_user_data,
+                                                             void *reset_user_data) {
+  ui_button_pair_t buttons = { NULL, NULL, NULL };
+
   lv_obj_t *container = ui_create_flex_container(parent, LV_FLEX_FLOW_ROW);
   lv_obj_set_size(container, lv_pct(100), LV_SIZE_CONTENT);
   lv_obj_align(container, LV_ALIGN_BOTTOM_MID, 0, -5);
@@ -316,13 +407,13 @@ static inline ui_button_pair_t ui_create_save_cancel_buttons(lv_obj_t *parent,
                                     220, 50, &lv_font_montserrat_20, &lv_font_montserrat_24,
                                     save_cb, save_user_data, (lv_align_t)0, 0, 0);
   }
-  
+
   if (cancel) {
     buttons.cancel = ui_create_button(container, cancel_text, NULL, lv_color_hex(0xff3b30),
                                       220, 50, &lv_font_montserrat_20, &lv_font_montserrat_24,
                                       cancel_cb, cancel_user_data, (lv_align_t)0, 0, 0);
   }
-  
+
   if (reset) {
     buttons.reset = ui_create_button(container, reset_text, NULL, lv_color_hex(0xff9500),
                                      220, 50, &lv_font_montserrat_20, &lv_font_montserrat_24,

@@ -154,10 +154,6 @@ LVGL AND GRAPHICS CONSTANTS
 #define COLOR_WARNING lv_palette_main(LV_PALETTE_ORANGE)
 #define COLOR_TEXT lv_color_white()
 
-//Graphical Constants
-#define ROUND_FRANE_RADUIS_SMALL  9
-#define ROUND_FRANE_RADUIS_BIG   15
-
 //LVGL PORT CONSTANTS
 #define LVGL_PORT_H_RES (LCD_H_RES)
 #define LVGL_PORT_V_RES (LCD_V_RES)

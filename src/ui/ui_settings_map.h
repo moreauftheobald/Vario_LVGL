@@ -266,55 +266,25 @@ void ui_settings_map_init(void) {
 
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
 
-  // Titre
-  lv_obj_t *label_title = ui_create_label(main_frame, txt->map_settings,
-                                          &lv_font_montserrat_32, lv_color_hex(0x00d4ff));
-  lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, 0);
+  ui_create_main_frame(main_frame, true, txt->map_settings);
 
   // Widgets structure pour les callbacks
   static map_widgets_t widgets;
 
-  // Container principal (2 colonnes)
-  lv_obj_t *main_container = lv_obj_create(main_frame);
-  lv_obj_set_size(main_container, lv_pct(100), 420);
-  lv_obj_align(main_container, LV_ALIGN_TOP_MID, 0, 45);
-  lv_obj_set_style_bg_opa(main_container, LV_OPA_TRANSP, 0);
-  lv_obj_set_style_border_width(main_container, 0, 0);
-  lv_obj_set_style_pad_all(main_container, 0, 0);
-  lv_obj_set_flex_flow(main_container, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(main_container, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-  lv_obj_clear_flag(main_container, LV_OBJ_FLAG_SCROLLABLE);
-
-  // ========== COLONNE GAUCHE (PARAMETRES) ==========
-  lv_obj_t *col_left = lv_obj_create(main_container);
-  lv_obj_set_size(col_left, 480, 420);
-  lv_obj_set_style_bg_color(col_left, lv_color_hex(0x1a2035), 0);
-  lv_obj_set_style_bg_opa(col_left, LV_OPA_80, 0);
-  lv_obj_set_style_border_width(col_left, 2, 0);
-  lv_obj_set_style_border_color(col_left, lv_color_hex(0x6080a0), 0);
-  lv_obj_set_style_radius(col_left, ROUND_FRANE_RADUIS_SMALL, 0);
-  lv_obj_set_style_pad_all(col_left, 15, 0);
-  lv_obj_set_flex_flow(col_left, LV_FLEX_FLOW_COLUMN);
-  lv_obj_set_flex_align(col_left, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-  lv_obj_clear_flag(col_left, LV_OBJ_FLAG_SCROLLABLE);
-
   // 1. Niveau de zoom
-  lv_obj_t *label_zoom = ui_create_label(col_left, "Niveau de zoom",
-                                         &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
+  lv_obj_t *label_zoom = ui_create_label(main_left, "Niveau de zoom", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
 
-  widgets.slider_zoom = lv_slider_create(col_left);
+  widgets.slider_zoom = lv_slider_create(main_left);
   lv_slider_set_range(widgets.slider_zoom, MAP_ZOOM_MIN, MAP_ZOOM_MAX);
   lv_obj_set_width(widgets.slider_zoom, lv_pct(90));
 
-  lv_obj_t *label_zoom_value = ui_create_label(col_left, "13",
-                                               &lv_font_montserrat_20, lv_color_hex(0x808080));
+  lv_obj_t *label_zoom_value = ui_create_label(main_left, "13", INFO_FONT_BIG, lv_color_hex(INFO_DATAS_COLOR));
   lv_obj_add_event_cb(widgets.slider_zoom, slider_zoom_event_cb, LV_EVENT_VALUE_CHANGED, label_zoom_value);
 
   // 2. Serveur de tuiles
-  lv_obj_t *label_server = ui_create_label(col_left, "Serveur de tuiles",
-                                           &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
+  lv_obj_t *label_server = ui_create_label(main_left, "Serveur de tuiles", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
 
-  widgets.dropdown_tile_server = lv_dropdown_create(col_left);
+  widgets.dropdown_tile_server = lv_dropdown_create(main_left);
   lv_obj_set_width(widgets.dropdown_tile_server, lv_pct(90));
 
   // Construire la liste des serveurs depuis PROGMEM
@@ -326,32 +296,29 @@ void ui_settings_map_init(void) {
     strcat(names_buffer, temp_name);
   }
   lv_dropdown_set_options(widgets.dropdown_tile_server, names_buffer);
-  lv_obj_set_style_bg_color(widgets.dropdown_tile_server, lv_color_hex(0x0f1520), 0);
+  lv_obj_set_style_bg_color(widgets.dropdown_tile_server, lv_color_hex(CTL_BG_COLOR), 0);
   lv_obj_set_style_text_color(widgets.dropdown_tile_server, lv_color_white(), 0);
-  lv_obj_set_style_text_font(widgets.dropdown_tile_server, &lv_font_montserrat_20, 0);
+  lv_obj_set_style_text_font(widgets.dropdown_tile_server, INFO_FONT_BIG, 0);
   lv_obj_add_event_cb(widgets.dropdown_tile_server, dropdown_map_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
   // 3. Points de trace
-  lv_obj_t *label_track = ui_create_label(col_left, "Points de trace",
-                                          &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
+  lv_obj_t *label_track = ui_create_label(main_left, "Points de trace", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
 
-  widgets.slider_track_points = lv_slider_create(col_left);
+  widgets.slider_track_points = lv_slider_create(main_left);
   lv_slider_set_range(widgets.slider_track_points, 50, 500);
   lv_obj_set_width(widgets.slider_track_points, lv_pct(90));
 
-  lv_obj_t *label_track_value = ui_create_label(col_left, "200",
-                                                &lv_font_montserrat_20, lv_color_hex(0x808080));
+  lv_obj_t *label_track_value = ui_create_label(main_left, "200", INFO_FONT_BIG, lv_color_hex(INFO_DATAS_COLOR));
   lv_obj_add_event_cb(widgets.slider_track_points, slider_track_event_cb, LV_EVENT_VALUE_CHANGED, label_track_value);
 
   // 4. Switch couleurs vario
-  lv_obj_t *label_vario = ui_create_label(col_left, "Couleurs vario sur trace",
-                                          &lv_font_montserrat_20, lv_color_hex(0x00d4ff));
+  lv_obj_t *label_vario = ui_create_label(main_left, "Couleurs vario sur trace", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
 
-  widgets.switch_vario_colors = lv_obj_create(col_left);
+  widgets.switch_vario_colors = lv_obj_create(main_left);
   lv_obj_set_size(widgets.switch_vario_colors, 60, 30);
   lv_obj_set_style_radius(widgets.switch_vario_colors, ROUND_FRANE_RADUIS_BIG, 0);
-  lv_obj_set_style_bg_color(widgets.switch_vario_colors, lv_color_hex(0x34c759), LV_STATE_CHECKED);
-  lv_obj_set_style_bg_color(widgets.switch_vario_colors, lv_color_hex(0x444444), 0);
+  lv_obj_set_style_bg_color(widgets.switch_vario_colors, lv_color_hex(SW_ON), LV_STATE_CHECKED);
+  lv_obj_set_style_bg_color(widgets.switch_vario_colors, lv_color_hex(SW_OFF), 0);
   lv_obj_add_flag(widgets.switch_vario_colors, LV_OBJ_FLAG_CHECKABLE);
   lv_obj_add_flag(widgets.switch_vario_colors, LV_OBJ_FLAG_CLICKABLE);
   lv_obj_clear_flag(widgets.switch_vario_colors, LV_OBJ_FLAG_SCROLLABLE);
@@ -367,29 +334,17 @@ void ui_settings_map_init(void) {
 
   lv_obj_add_event_cb(widgets.switch_vario_colors, switch_vario_event_cb, LV_EVENT_VALUE_CHANGED, switch_indicator);
 
-  // ========== COLONNE DROITE (APERCU CARTE) ==========
-  lv_obj_t *col_right = lv_obj_create(main_container);
-  lv_obj_set_size(col_right, 480, 420);
-  lv_obj_set_style_bg_color(col_right, lv_color_hex(0x1a2035), 0);
-  lv_obj_set_style_bg_opa(col_right, LV_OPA_80, 0);
-  lv_obj_set_style_border_width(col_right, 2, 0);
-  lv_obj_set_style_border_color(col_right, lv_color_hex(0x6080a0), 0);
-  lv_obj_set_style_radius(col_right, ROUND_FRANE_RADUIS_SMALL, 0);
-  lv_obj_set_style_pad_all(col_right, 15, 0);
-  lv_obj_clear_flag(col_right, LV_OBJ_FLAG_SCROLLABLE);
-
   // Titre aperçu
-  lv_obj_t *label_preview = ui_create_label(col_right, "Apercu carte",
-                                            &lv_font_montserrat_24, lv_color_hex(0x00d4ff));
+  lv_obj_t *label_preview = ui_create_label(main_right, "Apercu carte", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
   lv_obj_align(label_preview, LV_ALIGN_TOP_MID, 0, 0);
 
   // Conteneur pour la carte (agrandi pour occuper tout l'espace)
-  map_container_preview = lv_obj_create(col_right);
+  map_container_preview = lv_obj_create(main_right);
   lv_obj_set_size(map_container_preview, 450, 360);
   lv_obj_align(map_container_preview, LV_ALIGN_CENTER, 0, 20);
-  lv_obj_set_style_bg_color(map_container_preview, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_color(map_container_preview, lv_color_hex(0x1c1c1e), 0);
   lv_obj_set_style_border_width(map_container_preview, 2, 0);
-  lv_obj_set_style_border_color(map_container_preview, lv_color_hex(0x00d4ff), 0);
+  lv_obj_set_style_border_color(map_container_preview, lv_color_hex(TITLE_COLOR), 0);
   lv_obj_set_style_pad_all(map_container_preview, 5, 0);
   lv_obj_clear_flag(map_container_preview, LV_OBJ_FLAG_SCROLLABLE);
 
@@ -410,17 +365,20 @@ void ui_settings_map_init(void) {
     lv_obj_set_size(marker, 16, 16);
     lv_obj_center(marker);
     lv_obj_set_style_radius(marker, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(marker, lv_color_hex(0xff0000), 0);
+    lv_obj_set_style_bg_color(marker, lv_color_hex(KO_COLOR), 0);
     lv_obj_set_style_border_width(marker, 3, 0);
-    lv_obj_set_style_border_color(marker, lv_color_hex(0xffffff), 0);
+    lv_obj_set_style_border_color(marker, lv_color_hex(BORDERS_COLOR), 0);
   }
 
-  // ========== BOUTONS SAVE/CANCEL ==========
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(
-    main_frame, txt->save, txt->cancel, txt->back,
-    true, true, true,
-    btn_save_map_cb, btn_cancel_map_cb, btn_cancel_map_cb,
-    &widgets, NULL, NULL);
+// Bouton Save
+  lv_obj_t *btn_save_map = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(START_BTN_COLOR), 
+                                            PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_save_map_cb,
+                                            &widgets, (lv_align_t)0, NULL, NULL);
+
+  // Bouton Cancel
+  lv_obj_t *btn_cancel_map = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
+                                                 PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_cancel_map_cb,
+                                                 &widgets, (lv_align_t)0, NULL, NULL);
 
   // Charger valeurs actuelles
   load_map_settings(widgets.slider_zoom, label_zoom_value,
