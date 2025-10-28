@@ -295,6 +295,10 @@ void metar_stop(void) {
 }
 
 bool metar_get_data(metar_data_t* out) {
+  if (!metar_mutex) {
+    return false;
+  }
+  
   if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(10))) {
     memcpy(out, &metar_data, sizeof(metar_data_t));
     xSemaphoreGive(metar_mutex);
@@ -304,6 +308,11 @@ bool metar_get_data(metar_data_t* out) {
 }
 
 float metar_get_qnh(void) {
+  // Protection si mutex pas encore cree
+  if (!metar_mutex) {
+    return 1013.25f;
+  }
+  
   if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
     float qnh = metar_data.valid ? metar_data.qnh : 1013.25f;
     xSemaphoreGive(metar_mutex);

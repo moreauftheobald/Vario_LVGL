@@ -105,7 +105,7 @@ static void btn_cancel_pilot_cb(lv_event_t *e) {
 void ui_settings_pilot_init(void) {
   const TextStrings *txt = get_text();
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
   ui_create_main_frame(main_frame, false, txt->pilot_settings);
 
   // Widgets statiques
@@ -148,27 +148,31 @@ void ui_settings_pilot_init(void) {
 
   // Charger les donnees
   load_pilot_data(&widgets);
-  if (lvgl_port_lock(-1)) {
-    lv_screen_load(main_screen);
-    lvgl_port_unlock();
-  }
-  
+
 #ifdef DEBUG_MODE
   Serial.println("Pilot settings screen initialized");
 #endif
 }
 
 void ui_settings_pilot_show(void) {
-  // Sauvegarder ancien écran
   lv_obj_t *old_screen = lv_scr_act();
 
-  ui_settings_pilot_init();
+  if (lvgl_port_lock(-1)) {
+    // Créer nouvel écran
+    current_screen = lv_obj_create(NULL);
 
-  // Détruire l'ancien écran SI ce n'est pas le même
-  if (old_screen != main_screen && old_screen != NULL) {
+    ui_settings_pilot_init();
+
+    lv_screen_load(current_screen);
+    force_full_refresh();
+    lvgl_port_unlock();
+  }
+
+  // Détruire ancien écran
+  if (old_screen != current_screen && old_screen != NULL) {
     lv_obj_del(old_screen);
 #ifdef DEBUG_MODE
-    Serial.println("[PRESTART] Old screen deleted");
+    Serial.println("[UI] Old screen deleted");
 #endif
   }
 }

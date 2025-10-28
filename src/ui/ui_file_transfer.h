@@ -80,7 +80,7 @@ void ui_file_transfer_init(void) {
 #endif
 #endif
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
 
   // Titre
   lv_obj_t *label_title = ui_create_label(main_frame, txt->file_transfer,
@@ -140,10 +140,6 @@ void ui_file_transfer_init(void) {
     false, true, false,
     nullptr, btn_exit_cb, nullptr,
     NULL, NULL, NULL);
-  if (lvgl_port_lock(-1)) {
-    lv_screen_load(main_screen);
-    lvgl_port_unlock();
-  }
 
   // Demarrer WiFi et serveur de fichiers
   wifi_task_start();
@@ -163,17 +159,24 @@ void ui_file_transfer_init(void) {
 void ui_file_transfer_show(void) {
   lv_obj_t *old_screen = lv_scr_act();
 
-  ui_file_transfer_init();
+  if (lvgl_port_lock(-1)) {
+    // Créer nouvel écran
+    current_screen = lv_obj_create(NULL);
 
-  if (old_screen != main_screen && old_screen != NULL) {
+    ui_file_transfer_init();
+
+    lv_screen_load(current_screen);
+    force_full_refresh();
+    lvgl_port_unlock();
+  }
+
+  // Détruire ancien écran
+  if (old_screen != current_screen && old_screen != NULL) {
     lv_obj_del(old_screen);
 #ifdef DEBUG_MODE
-    Serial.println("[PRESTART] Old screen deleted");
+    Serial.println("[UI] Old screen deleted");
 #endif
   }
-#ifdef DEBUG_MODE
-  Serial.println("File transfer screen shown");
-#endif
 }
 
 #endif

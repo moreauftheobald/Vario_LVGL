@@ -92,21 +92,21 @@ static void swipe_event_handler(lv_event_t *e) {
 // Initialisation ecran gauche
 void ui_screen_left_init(void) {
   // Nettoyer l'ecran s'il existe
-  if (main_screen != NULL) {
-    lv_obj_clean(main_screen);
+  if (current_screen != NULL) {
+    lv_obj_clean(current_screen);
   } else {
-    main_screen = lv_obj_create(NULL);
+    current_screen = lv_obj_create(NULL);
   }
 
-  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x000000), 0);
-  //lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
-  //lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
-  lv_obj_clear_flag(main_screen, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_style_bg_color(current_screen, lv_color_hex(0x000000), 0);
+  //lv_obj_set_style_bg_grad_color(current_screen, lv_color_hex(0x1a1f3a), 0);
+  //lv_obj_set_style_bg_grad_dir(current_screen, LV_GRAD_DIR_VER, 0);
+  lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
 
   // Barre de statut
-  ui_create_status_bar(main_screen);
+  ui_create_status_bar(current_screen);
 
-  lv_obj_t *frame = lv_obj_create(main_screen);
+  lv_obj_t *frame = lv_obj_create(current_screen);
   lv_obj_set_size(frame, LCD_H_RES, LCD_V_RES - 60);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
   lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
@@ -126,10 +126,10 @@ void ui_screen_left_init(void) {
   lv_obj_center(label);
 
   // Ajouter handler swipe sur l'ecran complet
-  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);
-  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_RELEASED, NULL);
+  lv_obj_add_event_cb(current_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);
+  lv_obj_add_event_cb(current_screen, swipe_event_handler, LV_EVENT_RELEASED, NULL);
   if (lvgl_port_lock(-1)) {
-    lv_screen_load(main_screen);
+    lv_screen_load(current_screen);
     lvgl_port_unlock();
   }
 
@@ -141,21 +141,21 @@ void ui_screen_left_init(void) {
 // Initialisation ecran central
 void ui_screen_center_init(void) {
   // Nettoyer l'ecran s'il existe
-  if (main_screen != NULL) {
-    lv_obj_clean(main_screen);
+  if (current_screen != NULL) {
+    lv_obj_clean(current_screen);
   } else {
-    main_screen = lv_obj_create(NULL);
+    current_screen = lv_obj_create(NULL);
   }
 
-  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x000000), 0);
-  //lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
-  //lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
-  lv_obj_clear_flag(main_screen, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_style_bg_color(current_screen, lv_color_hex(0x000000), 0);
+  //lv_obj_set_style_bg_grad_color(current_screen, lv_color_hex(0x1a1f3a), 0);
+  //lv_obj_set_style_bg_grad_dir(current_screen, LV_GRAD_DIR_VER, 0);
+  lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
 
   // Barre de statut
-  ui_create_status_bar(main_screen);
+  ui_create_status_bar(current_screen);
 
-  lv_obj_t *frame = lv_obj_create(main_screen);
+  lv_obj_t *frame = lv_obj_create(current_screen);
   lv_obj_set_size(frame, LCD_H_RES, LCD_V_RES - 55);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 55);
   lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
@@ -210,11 +210,11 @@ void ui_screen_center_init(void) {
   lv_obj_center(label_center);
 
   // Ajouter handler swipe sur l'ecran complet
-  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);
-  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_RELEASED, NULL);
+  lv_obj_add_event_cb(current_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);
+  lv_obj_add_event_cb(current_screen, swipe_event_handler, LV_EVENT_RELEASED, NULL);
 
   if (lvgl_port_lock(-1)) {
-    lv_screen_load(main_screen);
+    lv_screen_load(current_screen);
     lvgl_port_unlock();
   }
 #ifdef DEBUG_MODE
@@ -225,21 +225,21 @@ void ui_screen_center_init(void) {
 // Initialisation ecran droite
 void ui_screen_right_init(void) {
   // Nettoyer l'ecran s'il existe
-  if (main_screen != NULL) {
-    lv_obj_clean(main_screen);
+  if (current_screen != NULL) {
+    lv_obj_clean(current_screen);
   } else {
-    main_screen = lv_obj_create(NULL);
+    current_screen = lv_obj_create(NULL);
   }
 
-  lv_obj_set_style_bg_color(main_screen, lv_color_hex(0x000000), 0);
-  //lv_obj_set_style_bg_grad_color(main_screen, lv_color_hex(0x1a1f3a), 0);
-  //lv_obj_set_style_bg_grad_dir(main_screen, LV_GRAD_DIR_VER, 0);
-  lv_obj_clear_flag(main_screen, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_style_bg_color(current_screen, lv_color_hex(0x000000), 0);
+  //lv_obj_set_style_bg_grad_color(current_screen, lv_color_hex(0x1a1f3a), 0);
+  //lv_obj_set_style_bg_grad_dir(current_screen, LV_GRAD_DIR_VER, 0);
+  lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
 
   // Barre de statut
-  ui_create_status_bar(main_screen);
+  ui_create_status_bar(current_screen);
 
-  lv_obj_t *frame = lv_obj_create(main_screen);
+  lv_obj_t *frame = lv_obj_create(current_screen);
   lv_obj_set_size(frame, LCD_H_RES, LCD_V_RES - 60);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
   lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
@@ -259,11 +259,11 @@ void ui_screen_right_init(void) {
   lv_obj_center(label);
 
   // Ajouter handler swipe sur l'ecran complet
-  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);
-  lv_obj_add_event_cb(main_screen, swipe_event_handler, LV_EVENT_RELEASED, NULL);
+  lv_obj_add_event_cb(current_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);
+  lv_obj_add_event_cb(current_screen, swipe_event_handler, LV_EVENT_RELEASED, NULL);
 
   if (lvgl_port_lock(-1)) {
-    lv_screen_load(main_screen);
+    lv_screen_load(current_screen);
     lvgl_port_unlock();
   }
 #ifdef DEBUG_MODE
@@ -310,7 +310,7 @@ void ui_main_screens_show(void) {
   // Activer flag pour test logger
   mainscreen_active = true;
   // Détruire l'ancien écran SI ce n'est pas le même
-  if (old_screen != main_screen && old_screen != NULL) {
+  if (old_screen != current_screen && old_screen != NULL) {
     lv_obj_del(old_screen);
 #ifdef DEBUG_MODE
     Serial.println("[PRESTART] Old screen deleted");

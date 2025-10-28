@@ -15,7 +15,7 @@
 #include "src/ui/ui_settings_map.h"
 #include "src/ui/ui_settings_system.h"
 #include "src/ui/ui_settings.h"
-#include "src/ui/ui_file_transfer_loader.h"
+#include "src/ui/ui_file_transfer.h"
 #include "src/ui/ui_main_screens.h"
 #include "src/ui/ui_prestart.h"
 #include "src/ui/ui_splash.h"
@@ -59,6 +59,8 @@ void setup() {
 
   // 4. Kalman
   kalman_start();
+
+  metar_start();
 
   // 5. Ecran + Touch
   esp_lcd_touch_handle_t tp_handle = touch_gt911_init();

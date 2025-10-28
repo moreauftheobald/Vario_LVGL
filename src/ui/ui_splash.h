@@ -11,7 +11,6 @@ void ui_prestart_show(void);
 // Declare the logo data
 LV_IMG_DECLARE(logo_bipbiphourra);
 
-static lv_obj_t *screen_splash = NULL;
 static lv_timer_t *splash_timer = NULL;
 
 // Callback pour fermer le splash screen
@@ -20,10 +19,10 @@ static void splash_timer_cb(lv_timer_t *timer) {
   Serial.println("[SPLASH] Timer callback - closing splash");
 #endif
 
-  if (screen_splash) {
+  if (current_screen) {
     // Nettoyer le splash
-    lv_obj_del(screen_splash);
-    screen_splash = NULL;
+    lv_obj_del(current_screen);
+    current_screen = NULL;
     
     // Appeler DIRECTEMENT init (pas show) car on est déjà dans un contexte LVGL locké
     ui_prestart_init();
@@ -48,17 +47,16 @@ void ui_splash_init(void) {
     return;
   }
 
-  screen_splash = lv_obj_create(NULL);
-  lv_obj_set_style_bg_color(screen_splash, lv_color_hex(0xFFF7E6), 0);
+  lv_obj_set_style_bg_color(current_screen, lv_color_hex(0xFFF7E6), 0);
 
   // Logo image
-  lv_obj_t *logo = lv_image_create(screen_splash);
+  lv_obj_t *logo = lv_image_create(current_screen);
   lv_image_set_src(logo, &logo_bipbiphourra);
   lv_obj_center(logo);
 
   // Charger l'ecran
   
-  lv_screen_load(screen_splash);
+  lv_screen_load(current_screen);
 
   lvgl_port_unlock();
 
@@ -71,12 +69,12 @@ void ui_splash_init(void) {
 }
 
 void ui_splash_show(void) {
-  if (screen_splash == NULL) {
+  if (current_screen == NULL) {
     ui_splash_init();
   } else {
     // Si deja initialise, juste afficher
     if (lvgl_port_lock(-1)) {
-      lv_screen_load(screen_splash);
+      lv_screen_load(current_screen);
       lvgl_port_unlock();
     }
   }

@@ -9,7 +9,7 @@
 #include <Preferences.h>
 
 extern Preferences prefs;
-extern lv_obj_t *main_screen;
+
 extern void force_full_refresh(void);
 
 void ui_settings_show(void);
@@ -173,7 +173,7 @@ static void save_vario_settings(void) {
 void ui_settings_vario_init(void) {
   const TextStrings *txt = get_text();
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
   ui_create_main_frame(main_frame, false, txt->vario_settings);
 
   // 1. Periode d'integration du vario
@@ -273,15 +273,6 @@ void ui_settings_vario_init(void) {
   load_vario_settings();
 
 #ifdef DEBUG_MODE
-  Serial.println("OK LA");
-#endif
-
-  if (lvgl_port_lock(-1)) {
-    lv_screen_load(main_screen);
-    lvgl_port_unlock();
-  }
-
-#ifdef DEBUG_MODE
   Serial.println("Vario settings screen initialized");
 #endif
 }
@@ -290,19 +281,23 @@ void ui_settings_vario_show(void) {
   // Sauvegarder ancien écran
   lv_obj_t *old_screen = lv_scr_act();
 
-  ui_settings_vario_init();
+  if (lvgl_port_lock(-1)) {
+    // Créer nouvel écran
+    current_screen = lv_obj_create(NULL);
+    ui_settings_vario_init();
 
-  // Détruire l'ancien écran SI ce n'est pas le même
-  if (old_screen != main_screen && old_screen != NULL) {
-    lv_obj_del(old_screen);
-#ifdef DEBUG_MODE
-    Serial.println("[PRESTART] Old screen deleted");
-#endif
+    lv_screen_load(current_screen);
+    force_full_refresh();
+    lvgl_port_unlock();
   }
 
+  // Détruire ancien écran
+  if (old_screen != current_screen && old_screen != NULL) {
+    lv_obj_del(old_screen);
 #ifdef DEBUG_MODE
-  Serial.println("Vario settings screen displayed");
+    Serial.println("[UI] Old screen deleted");
 #endif
+  }
 }
 
 #endif

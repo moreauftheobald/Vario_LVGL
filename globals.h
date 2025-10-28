@@ -79,12 +79,13 @@ typedef struct {
 Preferences prefs;
 lv_obj_t *ta_active = NULL;
 lv_obj_t *keyboard = NULL;
-lv_obj_t *main_screen = NULL;
 lv_obj_t *label_title_main = NULL;
 lv_obj_t *central_container = NULL;
 lv_obj_t *main_left = NULL;
 lv_obj_t *main_right = NULL;
 lv_obj_t *btn_container = NULL;
+// Ecran actif global
+lv_obj_t *current_screen = NULL;
 
 
 // Instance globale

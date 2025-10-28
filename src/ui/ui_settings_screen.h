@@ -12,7 +12,6 @@
 void ui_settings_show(void);
 
 // Variables statiques necessaires pour l'etat de calibration
-static lv_obj_t *screen_settings_screen = NULL;
 static lv_obj_t *instruction_label = NULL;
 static lv_obj_t *target_obj = NULL;
 static lv_obj_t *test_point = NULL;
@@ -175,7 +174,7 @@ static void screen_touch_cb(lv_event_t *e) {
         lv_obj_add_flag(target_obj, LV_OBJ_FLAG_HIDDEN);
         lv_label_set_text(instruction_label, "Calibration terminee!");
 
-        lv_obj_t *btn_test = lv_btn_create(screen_settings_screen);
+        lv_obj_t *btn_test = lv_btn_create(current_screen);
         lv_obj_set_size(btn_test, 120, 40);
         lv_obj_align(btn_test, LV_ALIGN_CENTER, 0, 20);
         lv_obj_t *label_test = lv_label_create(btn_test);
@@ -195,7 +194,7 @@ static void btn_test_calib_cb(lv_event_t *e) {
   test_mode = true;
 
   if (test_point == NULL) {
-    test_point = lv_obj_create(screen_settings_screen);
+    test_point = lv_obj_create(current_screen);
     lv_obj_set_size(test_point, 20, 20);
     lv_obj_set_style_radius(test_point, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_bg_color(test_point, lv_color_hex(0x00FF00), 0);
@@ -242,12 +241,12 @@ void ui_settings_screen_init(void) {
 
   load_calibration();
 
-  screen_settings_screen = ui_create_screen();
-  lv_obj_clear_flag(screen_settings_screen, LV_OBJ_FLAG_SCROLLABLE);  // IMPORTANT: désactiver scroll
-  lv_obj_add_event_cb(screen_settings_screen, screen_touch_cb, LV_EVENT_PRESSED, NULL);
+  current_screen = ui_create_screen();
+  lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);  // IMPORTANT: désactiver scroll
+  lv_obj_add_event_cb(current_screen, screen_touch_cb, LV_EVENT_PRESSED, NULL);
 
   // Instructions (directement sur l'écran principal)
-  instruction_label = lv_label_create(screen_settings_screen);
+  instruction_label = lv_label_create(current_screen);
   lv_label_set_text(instruction_label, "Point 1/2 - Touchez la cible");
   lv_obj_set_style_text_font(instruction_label, &lv_font_montserrat_24, 0);
   lv_obj_set_style_text_color(instruction_label, lv_color_hex(0xFFFFFF), 0);
@@ -256,7 +255,7 @@ void ui_settings_screen_init(void) {
   lv_obj_clear_flag(instruction_label, LV_OBJ_FLAG_CLICKABLE);
 
   // Cible (cercle + point central)
-  target_obj = lv_obj_create(screen_settings_screen);
+  target_obj = lv_obj_create(current_screen);
   lv_obj_set_size(target_obj, 100, 100);
   lv_obj_set_style_bg_opa(target_obj, LV_OPA_TRANSP, 0);
   lv_obj_set_style_border_width(target_obj, 0, 0);
@@ -287,7 +286,7 @@ void ui_settings_screen_init(void) {
 
   update_target_position();
 
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(screen_settings_screen, txt->save, txt->cancel, nullptr, true, true, false, btn_save_calib_cb, btn_cancel_calib_cb, nullptr, NULL, NULL, NULL);
+  ui_button_pair_t buttons = ui_create_save_cancel_buttons(current_screen, txt->save, txt->cancel, nullptr, true, true, false, btn_save_calib_cb, btn_cancel_calib_cb, nullptr, NULL, NULL, NULL);
 
 #ifdef DEBUG_MODE
   Serial.println("Screen calibration initialized");
@@ -307,26 +306,22 @@ void ui_settings_screen_show(void) {
   // Sauvegarder ancien écran
   lv_obj_t *old_screen = lv_scr_act();
 
-  if (screen_settings_screen == NULL) {
-    ui_settings_screen_init();
-  }
-  
   if (lvgl_port_lock(-1)) {
-    lv_screen_load(screen_settings_screen);
+    // Créer nouvel écran
+    current_screen = lv_obj_create(NULL);
+    ui_settings_screen_init();
+    lv_screen_load(current_screen);
+    force_full_refresh();
     lvgl_port_unlock();
   }
 
-  // Détruire l'ancien écran SI ce n'est pas le même
-  if (old_screen != main_screen && old_screen != NULL) {
+  // Détruire ancien écran
+  if (old_screen != current_screen && old_screen != NULL) {
     lv_obj_del(old_screen);
 #ifdef DEBUG_MODE
-    Serial.println("[PRESTART] Old screen deleted");
+    Serial.println("[UI] Old screen deleted");
 #endif
   }
-
-#ifdef DEBUG_MODE
-  Serial.println("Screen calibration shown");
-#endif
 }
 
 #endif

@@ -91,7 +91,7 @@ static void btn_cancel_system_cb(lv_event_t *e) {
 void ui_settings_system_init(void) {
   const TextStrings *txt = get_text();
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
 
   // Titre
   lv_obj_t *label_title = ui_create_label(main_frame, txt->system_settings,
@@ -159,11 +159,6 @@ void ui_settings_system_init(void) {
   // Charger les valeurs sauvegardees
   load_system_settings();
 
-  if (lvgl_port_lock(-1)) {
-    lv_screen_load(main_screen);
-    lvgl_port_unlock();
-  }
-  
 #ifdef DEBUG_MODE
   Serial.println("System settings screen initialized");
 #endif
@@ -174,21 +169,21 @@ void ui_settings_system_show(void) {
   lv_obj_t *old_screen = lv_scr_act();
 
   if (lvgl_port_lock(-1)) {
+    // Créer nouvel écran
+    current_screen = lv_obj_create(NULL);
     ui_settings_system_init();
+    lv_screen_load(current_screen);
+    force_full_refresh();
     lvgl_port_unlock();
   }
 
-  // Détruire l'ancien écran SI ce n'est pas le même
-  if (old_screen != main_screen && old_screen != NULL) {
+  // Détruire ancien écran
+  if (old_screen != current_screen && old_screen != NULL) {
     lv_obj_del(old_screen);
 #ifdef DEBUG_MODE
-    Serial.println("[PRESTART] Old screen deleted");
+    Serial.println("[UI] Old screen deleted");
 #endif
   }
-
-#ifdef DEBUG_MODE
-  Serial.println("System settings screen displayed");
-#endif
 }
 
 #endif

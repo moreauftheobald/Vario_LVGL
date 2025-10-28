@@ -178,7 +178,7 @@ void ui_settings_wifi_init(void) {
   load_all_wifi_data();
   current_priority = 0;
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
   ui_create_main_frame(main_frame, false, txt->wifi_settings);
 
   // Ligne Priorite
@@ -221,11 +221,6 @@ void ui_settings_wifi_init(void) {
   // Charger la priorite 0
   load_current_priority_to_fields();
 
-  if (lvgl_port_lock(-1)) {
-    lv_screen_load(main_screen);
-    lvgl_port_unlock();
-  }
-
 #ifdef DEBUG_MODE
   Serial.println("WiFi settings screen initialized");
 #endif
@@ -235,13 +230,21 @@ void ui_settings_wifi_show(void) {
   // Sauvegarder ancien écran
   lv_obj_t *old_screen = lv_scr_act();
 
-  ui_settings_wifi_init();
+  if (lvgl_port_lock(-1)) {
+    // Créer nouvel écran
+    current_screen = lv_obj_create(NULL);
 
-  // Détruire l'ancien écran SI ce n'est pas le même
-  if (old_screen != main_screen && old_screen != NULL) {
+    ui_settings_wifi_init();
+    lv_screen_load(current_screen);
+    force_full_refresh();
+    lvgl_port_unlock();
+  }
+
+  // Détruire ancien écran
+  if (old_screen != current_screen && old_screen != NULL) {
     lv_obj_del(old_screen);
 #ifdef DEBUG_MODE
-    Serial.println("[PRESTART] Old screen deleted");
+    Serial.println("[UI] Old screen deleted");
 #endif
   }
 }

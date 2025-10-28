@@ -264,7 +264,7 @@ static void btn_cancel_map_cb(lv_event_t *e) {
 void ui_settings_map_init(void) {
   const TextStrings *txt = get_text();
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
 
   ui_create_main_frame(main_frame, true, txt->map_settings);
 
@@ -385,10 +385,6 @@ void ui_settings_map_init(void) {
                     widgets.dropdown_tile_server, widgets.slider_track_points,
                     label_track_value, widgets.switch_vario_colors, NULL);
 
-  if (lvgl_port_lock(-1)) {
-    lv_screen_load(main_screen);
-    lvgl_port_unlock();
-  }
 
 #ifdef DEBUG_MODE
   Serial.println("Map settings screen initialized with map preview");
@@ -399,19 +395,23 @@ void ui_settings_map_show(void) {
   // Sauvegarder ancien écran
   lv_obj_t *old_screen = lv_scr_act();
 
-  ui_settings_map_init();
+  if (lvgl_port_lock(-1)) {
+    // Créer nouvel écran
+    current_screen = lv_obj_create(NULL);
+    ui_settings_map_init();
 
-  // Détruire l'ancien écran SI ce n'est pas le même
-  if (old_screen != main_screen && old_screen != NULL) {
-    lv_obj_del(old_screen);
-#ifdef DEBUG_MODE
-    Serial.println("[PRESTART] Old screen deleted");
-#endif
+    lv_screen_load(current_screen);
+    force_full_refresh();
+    lvgl_port_unlock();
   }
 
+  // Détruire ancien écran
+  if (old_screen != current_screen && old_screen != NULL) {
+    lv_obj_del(old_screen);
 #ifdef DEBUG_MODE
-  Serial.println("Map settings screen shown");
+    Serial.println("[UI] Old screen deleted");
 #endif
+  }
 }
 
 #endif

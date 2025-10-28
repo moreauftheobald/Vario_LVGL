@@ -9,7 +9,7 @@
 #include "src/params/params.h"
 #include "src/ui/ui_main_screens.h"
 #include "src/sd_card.h"
-#include "src/ui/ui_file_transfer_loader.h"
+#include "src/ui/ui_file_transfer.h"
 #include "src/wifi_task.h"
 #include "src/metar_task.h"
 
@@ -255,7 +255,7 @@ void ui_prestart_init(void) {
 
   const TextStrings *txt = get_text();
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &main_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
 
   ui_create_main_frame(main_frame, true, VARIO_NAME);
 
@@ -442,10 +442,6 @@ void ui_prestart_init(void) {
 
   // Timer de mise a jour (1Hz)
   sensor_status_timer = lv_timer_create(sensor_status_update_cb, 1000, NULL);
-  if (lvgl_port_lock(-1)) {
-    lv_screen_load(main_screen);
-    lvgl_port_unlock();
-  }
 
 #ifdef DEBUG_MODE
   Serial.println("[PRESTART] Screen loaded");
@@ -472,13 +468,21 @@ void ui_prestart_show(void) {
   // Sauvegarder ancien écran
   lv_obj_t *old_screen = lv_scr_act();
 
-  ui_prestart_init();
+  if (lvgl_port_lock(-1)) {
+    // Créer nouvel écran
+    current_screen = lv_obj_create(NULL);
+    ui_prestart_init();
 
-   Détruire l'ancien écran SI ce n'est pas le même
-  if (old_screen != main_screen && old_screen != NULL) {
+    lv_screen_load(current_screen);
+    force_full_refresh();
+    lvgl_port_unlock();
+  }
+
+  // Détruire ancien écran
+  if (old_screen != current_screen && old_screen != NULL) {
     lv_obj_del(old_screen);
 #ifdef DEBUG_MODE
-    Serial.println("[PRESTART] Old screen deleted");
+    Serial.println("[UI] Old screen deleted");
 #endif
   }
 
