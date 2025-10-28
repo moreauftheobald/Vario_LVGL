@@ -485,11 +485,8 @@ void ui_prestart_show(void) {
     Serial.println("[UI] Old screen deleted");
 #endif
   }
-
-  // Demarrer WiFi et METAR
   wifi_task_start();
   metar_start();
-
 #ifdef DEBUG_MODE
   Serial.println("[PRESTART] WiFi/METAR started");
 #endif

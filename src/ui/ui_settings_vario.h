@@ -149,7 +149,7 @@ static void load_vario_settings(void) {
     }
   }
 
-  lv_chart_refresh(chart_audio);
+  //lv_chart_refresh(chart_audio);
 
 #ifdef DEBUG_MODE
   Serial.println("Vario settings loaded from params");
@@ -178,7 +178,7 @@ void ui_settings_vario_init(void) {
 
   // 1. Periode d'integration du vario
   lv_obj_t *integration_row = ui_create_form_row(main_left, "Periode d'integration", PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
-  slider_integration = ui_create_slider(integration_row, VARIO_SLIDER_W, VARIO_SLIDER_W, INT_MIN_PER, INT_MAX_PER);
+  slider_integration = ui_create_slider(integration_row, VARIO_SLIDER_W, VARIO_SLIDER_H, INT_MIN_PER, INT_MAX_PER);
   lv_obj_add_event_cb(slider_integration, slider_integration_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
   label_integration_value = ui_create_label(integration_row, "5 s", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
@@ -278,17 +278,14 @@ void ui_settings_vario_init(void) {
 }
 
 void ui_settings_vario_show(void) {
-  // Sauvegarder ancien écran
   lv_obj_t *old_screen = lv_scr_act();
 
   if (lvgl_port_lock(-1)) {
-    // Créer nouvel écran
     current_screen = lv_obj_create(NULL);
     ui_settings_vario_init();
-
     lv_screen_load(current_screen);
-    force_full_refresh();
-    lvgl_port_unlock();
+    force_full_refresh(); 
+    lvgl_port_unlock(); 
   }
 
   // Détruire ancien écran
@@ -298,6 +295,10 @@ void ui_settings_vario_show(void) {
     Serial.println("[UI] Old screen deleted");
 #endif
   }
+
+#ifdef DEBUG_MODE
+  Serial.println("[VARIO] show() complete");
+#endif
 }
 
 #endif

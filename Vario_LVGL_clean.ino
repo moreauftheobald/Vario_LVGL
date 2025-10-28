@@ -59,7 +59,7 @@ void setup() {
 
   // 4. Kalman
   kalman_start();
-
+  
   metar_start();
 
   // 5. Ecran + Touch

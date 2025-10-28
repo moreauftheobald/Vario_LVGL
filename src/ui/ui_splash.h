@@ -19,20 +19,14 @@ static void splash_timer_cb(lv_timer_t *timer) {
   Serial.println("[SPLASH] Timer callback - closing splash");
 #endif
 
-  if (current_screen) {
-    // Nettoyer le splash
-    lv_obj_del(current_screen);
-    current_screen = NULL;
-    
-    // Appeler DIRECTEMENT init (pas show) car on est déjà dans un contexte LVGL locké
-    ui_prestart_init();
-  }
-  
-  // Supprimer le timer
+  // Supprimer le timer d'abord
   if (splash_timer) {
     lv_timer_del(splash_timer);
     splash_timer = NULL;
   }
+
+  // Appeler show() qui gère tout proprement
+  ui_prestart_show();
 }
 
 void ui_splash_init(void) {
@@ -47,6 +41,8 @@ void ui_splash_init(void) {
     return;
   }
 
+  // CRÉER l'écran AVANT de l'utiliser
+  current_screen = lv_obj_create(NULL);
   lv_obj_set_style_bg_color(current_screen, lv_color_hex(0xFFF7E6), 0);
 
   // Logo image
@@ -55,13 +51,12 @@ void ui_splash_init(void) {
   lv_obj_center(logo);
 
   // Charger l'ecran
-  
   lv_screen_load(current_screen);
 
   lvgl_port_unlock();
 
   splash_timer = lv_timer_create(splash_timer_cb, 3000, NULL);
-  lv_timer_set_repeat_count(splash_timer, 1);  // S'exécute une seule fois
+  lv_timer_set_repeat_count(splash_timer, 1);
 
 #ifdef DEBUG_MODE
   Serial.println("[SPLASH] Screen loaded, timer started");

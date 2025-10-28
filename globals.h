@@ -9,47 +9,47 @@ extern bool mainscreen_active;
 
 // Structure pour donnees brutes BMP390
 typedef struct {
-  float temperature;      // Celsius
-  float pressure;         // Pascals
-  uint32_t timestamp;     // millis()
+  float temperature;   // Celsius
+  float pressure;      // Pascals
+  uint32_t timestamp;  // millis()
   bool valid;
 } bmp390_data_t;
 
 
 // Structure pour donnees brutes BNO080
 typedef struct {
-  float quat_i;           // Quaternion i
-  float quat_j;           // Quaternion j
-  float quat_k;           // Quaternion k
-  float quat_real;        // Quaternion real
-  float accel_x;          // Acceleration X (m/s²)
-  float accel_y;          // Acceleration Y (m/s²)
-  float accel_z;          // Acceleration Z (m/s²)
-  float gyro_x;           // Gyroscope X (rad/s)
-  float gyro_y;           // Gyroscope Y (rad/s)
-  float gyro_z;           // Gyroscope Z (rad/s)
-  uint32_t timestamp;     // millis()
+  float quat_i;        // Quaternion i
+  float quat_j;        // Quaternion j
+  float quat_k;        // Quaternion k
+  float quat_real;     // Quaternion real
+  float accel_x;       // Acceleration X (m/s²)
+  float accel_y;       // Acceleration Y (m/s²)
+  float accel_z;       // Acceleration Z (m/s²)
+  float gyro_x;        // Gyroscope X (rad/s)
+  float gyro_y;        // Gyroscope Y (rad/s)
+  float gyro_z;        // Gyroscope Z (rad/s)
+  uint32_t timestamp;  // millis()
   bool valid;
 } bno080_data_t;
 
 // Structure pour donnees brutes GPS
 typedef struct {
-  char lastline[120];      // Derniere trame NMEA complete
-  bool fix;                // Fix GPS valide
-  uint8_t fixquality;      // Qualite du fix (0-2)
-  uint8_t satellites;      // Nombre de satellites
-  float latitude;          // Latitude degres decimaux
-  float longitude;         // Longitude degres decimaux
-  float altitude;          // Altitude metres
-  float speed;             // Vitesse noeuds
-  float angle;             // Cap degres
-  uint8_t hour;            // Heure UTC
-  uint8_t minute;          // Minute UTC
-  uint8_t seconds;         // Seconde UTC
-  uint8_t year;            // Annee
-  uint8_t month;           // Mois
-  uint8_t day;             // Jour
-  uint32_t timestamp;      // millis()
+  char lastline[120];  // Derniere trame NMEA complete
+  bool fix;            // Fix GPS valide
+  uint8_t fixquality;  // Qualite du fix (0-2)
+  uint8_t satellites;  // Nombre de satellites
+  float latitude;      // Latitude degres decimaux
+  float longitude;     // Longitude degres decimaux
+  float altitude;      // Altitude metres
+  float speed;         // Vitesse noeuds
+  float angle;         // Cap degres
+  uint8_t hour;        // Heure UTC
+  uint8_t minute;      // Minute UTC
+  uint8_t seconds;     // Seconde UTC
+  uint8_t year;        // Annee
+  uint8_t month;       // Mois
+  uint8_t day;         // Jour
+  uint32_t timestamp;  // millis()
   bool valid;
 } gps_data_t;
 
@@ -58,7 +58,7 @@ typedef struct {
   bmp390_data_t bmp390;
   bno080_data_t bno080;
   gps_data_t gps;
-  float qnh_metar;      // QNH du METAR en hPa (default: 1013.25)
+  float qnh_metar;  // QNH du METAR en hPa (default: 1013.25)
 } sensor_raw_data_t;
 
 // Structure donnees METAR
@@ -91,16 +91,28 @@ lv_obj_t *current_screen = NULL;
 // Instance globale
 // Et initialiser dans la déclaration de g_sensor_data :
 sensor_raw_data_t g_sensor_data = {
-  .bmp390 = {0},
-  .bno080 = {0},
-  .gps = {0},
+  .bmp390 = { 0 },
+  .bno080 = { 0 },
+  .gps = { 0 },
   .qnh_metar = 1013.25f  // Valeur standard par défaut
 };
 
 void force_full_refresh(void) {
+#ifdef DEBUG_MODE
+  Serial.println("Vario settings screen debug 6");
+#endif
   lv_obj_invalidate(lv_screen_active());
+#ifdef DEBUG_MODE
+  Serial.println("Vario settings screen debug 7");
+#endif
   lv_refr_now(NULL);
+#ifdef DEBUG_MODE
+  Serial.println("Vario settings screen debug 8");
+#endif
   vTaskDelay(pdMS_TO_TICKS(10));
+#ifdef DEBUG_MODE
+  Serial.println("Vario settings screen debug 9");
+#endif
 }
 
 #ifdef DEBUG_MODE
