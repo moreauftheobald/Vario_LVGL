@@ -92,23 +92,14 @@ void ui_settings_system_init(void) {
   const TextStrings *txt = get_text();
 
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
-
-  // Titre
-  lv_obj_t *label_title = ui_create_label(main_frame, txt->system_settings,
-                                          &lv_font_montserrat_32, lv_color_hex(0x00d4ff));
-  lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, 0);
-
-  // Container principal
-  lv_obj_t *main_container = ui_create_form_column(main_frame, 980);
-  lv_obj_set_height(main_container, 320);
-  lv_obj_align(main_container, LV_ALIGN_TOP_MID, 0, 50);
+  ui_create_main_frame(main_frame, false, txt->system_settings);
 
   // === LUMINOSITE ===
-  lv_obj_t *label_brightness = ui_create_label(main_container, "Luminosite ecran",
+  lv_obj_t *label_brightness = ui_create_label(main_left, "Luminosite ecran",
                                                &lv_font_montserrat_24, lv_color_hex(0x00d4ff));
 
   // Container pour slider + valeur
-  lv_obj_t *brightness_row = ui_create_flex_container(main_container, LV_FLEX_FLOW_ROW);
+  lv_obj_t *brightness_row = ui_create_flex_container(main_left, LV_FLEX_FLOW_ROW);
   lv_obj_set_size(brightness_row, lv_pct(100), LV_SIZE_CONTENT);
   lv_obj_set_flex_align(brightness_row, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
@@ -126,13 +117,13 @@ void ui_settings_system_init(void) {
   lv_obj_set_style_text_align(label_brightness_value, LV_TEXT_ALIGN_RIGHT, 0);
 
   // Separateur
-  ui_create_separator(main_container);
+  ui_create_separator(main_left);
 
   // === LANGUE ===
-  lv_obj_t *label_language = ui_create_label(main_container, "Langue / Language",
+  lv_obj_t *label_language = ui_create_label(main_left, "Langue / Language",
                                              &lv_font_montserrat_24, lv_color_hex(0x00d4ff));
 
-  dropdown_language = lv_dropdown_create(main_container);
+  dropdown_language = lv_dropdown_create(main_left);
   lv_dropdown_set_options(dropdown_language, "Francais\nEnglish");
   lv_obj_set_size(dropdown_language, lv_pct(100), 50);
   lv_obj_set_style_bg_color(dropdown_language, lv_color_hex(0x0f1520), 0);
@@ -143,18 +134,24 @@ void ui_settings_system_init(void) {
   lv_obj_add_event_cb(dropdown_language, dropdown_language_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
   // Separateur
-  ui_create_separator(main_container);
+  ui_create_separator(main_left);
 
   // Note d'information
-  lv_obj_t *note = ui_create_label(main_container,
+  lv_obj_t *note = ui_create_label(main_left,
                                    "Note: Le changement de langue\nprend effet au redemarrage",
                                    &lv_font_montserrat_16, lv_color_hex(0x808080));
   lv_obj_set_style_text_align(note, LV_TEXT_ALIGN_CENTER, 0);
 
-  // Boutons Save/Cancel
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(main_frame, txt->save, txt->cancel,
-                                                           nullptr, true, true, false,
-                                                           btn_save_system_cb, btn_cancel_system_cb, nullptr, NULL, NULL, NULL);
+  // Bouton Save
+  lv_obj_t *btn_save_pilot = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(START_BTN_COLOR),
+                                              PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_save_system_cb,
+                                              NULL, (lv_align_t)0, NULL, NULL);
+
+  // Bouton Cancel
+  lv_obj_t *btn_cancel_pilot = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
+                                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_cancel_system_cb,
+                                                NULL, (lv_align_t)0, NULL, NULL);
+
 
   // Charger les valeurs sauvegardees
   load_system_settings();
