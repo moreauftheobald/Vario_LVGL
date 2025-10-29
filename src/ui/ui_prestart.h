@@ -252,6 +252,9 @@ void ui_prestart_init(void) {
 #ifdef DEBUG_MODE
   Serial.println("[PRESTART] Init");
 #endif
+#ifdef FLIGHT_TEST_MODE
+  start_tile_cache_task(params.map_zoom, TEST_LAT, TEST_LON);
+#endif
 
   const TextStrings *txt = get_text();
 

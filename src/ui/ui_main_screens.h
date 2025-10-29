@@ -17,6 +17,12 @@ void ui_screen_right_init(void);
 // Variables pour gestion du swipe
 static lv_point_t touch_start_point;
 static bool touch_started = false;
+static int current_map_zoom = 0;
+static lv_obj_t *map_canvas = NULL;
+static lv_obj_t *map_container = NULL;
+static lv_obj_t *btn_zoom_in = NULL;
+static lv_obj_t *btn_zoom_out = NULL;
+static lv_obj_t *position_marker = NULL;
 
 // Fonction pour changer d'ecran
 static void switch_to_screen(uint8_t index) {
@@ -89,6 +95,128 @@ static void swipe_event_handler(lv_event_t *e) {
   }
 }
 
+// Fonction pour mettre a jour l'etat des boutons zoom
+static void update_zoom_buttons_state(void) {
+  if (btn_zoom_in) {
+    if (current_map_zoom >= MAP_ZOOM_MAX + 1) {
+      lv_obj_add_state(btn_zoom_in, LV_STATE_DISABLED);
+      lv_obj_set_style_bg_color(btn_zoom_in, lv_color_hex(0x808080), LV_STATE_DISABLED);
+    } else {
+      lv_obj_clear_state(btn_zoom_in, LV_STATE_DISABLED);
+      lv_obj_set_style_bg_color(btn_zoom_in, lv_color_hex(0x2196F3), 0);
+    }
+  }
+
+  if (btn_zoom_out) {
+    if (current_map_zoom <= MAP_ZOOM_MIN) {
+      lv_obj_add_state(btn_zoom_out, LV_STATE_DISABLED);
+      lv_obj_set_style_bg_color(btn_zoom_out, lv_color_hex(0x808080), LV_STATE_DISABLED);
+    } else {
+      lv_obj_clear_state(btn_zoom_out, LV_STATE_DISABLED);
+      lv_obj_set_style_bg_color(btn_zoom_out, lv_color_hex(0x2196F3), 0);
+    }
+  }
+}
+
+// Callbacks pour boutons zoom
+static void btn_zoom_in_cb(lv_event_t *e) {
+  if(current_map_zoom < MAP_ZOOM_MAX + 1) {  // +1 pour super zoom
+    current_map_zoom++;
+    
+    // Supprimer ancien canvas
+    if(map_canvas) {
+      lv_obj_del(map_canvas);
+      map_canvas = NULL;
+    }
+    
+    // Recreer carte avec nouveau zoom
+#ifdef FLIGHT_TEST_MODE
+    map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON, 
+                                 current_map_zoom, 520, 520);
+#else
+    double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
+    double display_lon = g_sensor_data.gps.valid ? g_sensor_data.gps.longitude : TEST_LON;
+    map_canvas = create_map_view(map_container, display_lat, display_lon,
+                                 current_map_zoom, 520, 520);
+#endif
+    if(map_canvas) {
+      lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
+    }
+    
+    // Remonter les boutons au premier plan
+    if(btn_zoom_in) lv_obj_move_foreground(btn_zoom_in);
+    if(btn_zoom_out) lv_obj_move_foreground(btn_zoom_out);
+    
+    // Recreer le marqueur position
+    if(position_marker) {
+      lv_obj_del(position_marker);
+    }
+    position_marker = lv_label_create(map_container);
+    lv_label_set_text(position_marker, LV_SYMBOL_EJECT);
+    lv_obj_set_style_text_font(position_marker, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_color(position_marker, lv_color_hex(0x003366), 0);
+    lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
+    lv_obj_center(position_marker);
+    lv_obj_move_foreground(position_marker);
+    
+    // Mettre a jour l'etat des boutons
+    update_zoom_buttons_state();
+    
+#ifdef DEBUG_MODE
+    Serial.printf("Zoom IN: %d\n", current_map_zoom);
+#endif
+  }
+}
+
+static void btn_zoom_out_cb(lv_event_t *e) {
+  if(current_map_zoom > MAP_ZOOM_MIN) {
+    current_map_zoom--;
+    
+    // Supprimer ancien canvas
+    if(map_canvas) {
+      lv_obj_del(map_canvas);
+      map_canvas = NULL;
+    }
+    
+    // Recreer carte avec nouveau zoom
+#ifdef FLIGHT_TEST_MODE
+    map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON, 
+                                 current_map_zoom, 520, 520);
+#else
+    double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
+    double display_lon = g_sensor_data.gps.valid ? g_sensor_data.gps.longitude : TEST_LON;
+    map_canvas = create_map_view(map_container, display_lat, display_lon,
+                                 current_map_zoom, 520, 520);
+#endif
+    if(map_canvas) {
+      lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
+    }
+    
+    // Remonter les boutons au premier plan
+    if(btn_zoom_in) lv_obj_move_foreground(btn_zoom_in);
+    if(btn_zoom_out) lv_obj_move_foreground(btn_zoom_out);
+    
+    // Recreer le marqueur position
+    if(position_marker) {
+      lv_obj_del(position_marker);
+    }
+    position_marker = lv_label_create(map_container);
+    lv_label_set_text(position_marker, LV_SYMBOL_EJECT);
+    lv_obj_set_style_text_font(position_marker, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_color(position_marker, lv_color_hex(0x003366), 0);
+    lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
+    lv_obj_center(position_marker);
+    lv_obj_move_foreground(position_marker);
+    
+    // Mettre a jour l'etat des boutons
+    update_zoom_buttons_state();
+    
+#ifdef DEBUG_MODE
+    Serial.printf("Zoom OUT: %d\n", current_map_zoom);
+#endif
+  }
+}
+
 // Initialisation ecran gauche
 void ui_screen_left_init(void) {
   // Nettoyer l'ecran s'il existe
@@ -99,8 +227,6 @@ void ui_screen_left_init(void) {
   }
 
   lv_obj_set_style_bg_color(current_screen, lv_color_hex(0x000000), 0);
-  //lv_obj_set_style_bg_grad_color(current_screen, lv_color_hex(0x1a1f3a), 0);
-  //lv_obj_set_style_bg_grad_dir(current_screen, LV_GRAD_DIR_VER, 0);
   lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
 
   // Barre de statut
@@ -148,8 +274,6 @@ void ui_screen_center_init(void) {
   }
 
   lv_obj_set_style_bg_color(current_screen, lv_color_hex(0x000000), 0);
-  //lv_obj_set_style_bg_grad_color(current_screen, lv_color_hex(0x1a1f3a), 0);
-  //lv_obj_set_style_bg_grad_dir(current_screen, LV_GRAD_DIR_VER, 0);
   lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
 
   // Barre de statut
@@ -190,24 +314,75 @@ void ui_screen_center_init(void) {
   lv_obj_set_style_text_color(label_left, lv_color_hex(0x00d4ff), 0);
   lv_obj_center(label_left);
 
-  // Colonne centrale (carte)
-  lv_obj_t *col_center = lv_obj_create(frame);
-  lv_obj_set_size(col_center, col_center_width, col_height);
-  lv_obj_set_pos(col_center, col_side_width + 5, 5);
-  lv_obj_set_style_bg_color(col_center, lv_color_hex(0x000000), 0);
-  lv_obj_set_style_bg_opa(col_center, LV_OPA_80, 0);
-  lv_obj_set_style_border_width(col_center, 2, 0);
-  lv_obj_set_style_border_color(col_center, lv_color_hex(0xFFFFFF), 0);
-  lv_obj_set_style_radius(col_center, ROUND_FRANE_RADUIS_SMALL, 0);
-  lv_obj_set_style_pad_all(col_center, 10, 0);
-  lv_obj_clear_flag(col_center, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_clear_flag(col_center, LV_OBJ_FLAG_CLICKABLE);
 
-  lv_obj_t *label_center = lv_label_create(col_center);
-  lv_label_set_text(label_center, "Carte");
-  lv_obj_set_style_text_font(label_center, &lv_font_montserrat_20, 0);
-  lv_obj_set_style_text_color(label_center, lv_color_hex(0x00d4ff), 0);
-  lv_obj_center(label_center);
+  // Colonne centrale (carte)
+  map_container = lv_obj_create(frame);
+  lv_obj_set_size(map_container, col_center_width, col_height);
+  lv_obj_set_pos(map_container, col_side_width + 5, 5);
+  lv_obj_set_style_bg_color(map_container, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_opa(map_container, LV_OPA_COVER, 0);
+  lv_obj_set_style_border_width(map_container, 2, 0);
+  lv_obj_set_style_border_color(map_container, lv_color_hex(0xFFFFFF), 0);
+  lv_obj_set_style_radius(map_container, ROUND_FRANE_RADUIS_SMALL, 0);
+  lv_obj_set_style_pad_all(map_container, 10, 0);
+  lv_obj_clear_flag(map_container, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_clear_flag(map_container, LV_OBJ_FLAG_CLICKABLE);
+
+  // Initialiser zoom depuis parametres
+  current_map_zoom = params.map_zoom;
+
+// Affichage carte OSM initial
+#ifdef FLIGHT_TEST_MODE
+  map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON,
+                               current_map_zoom, 533, 533);
+#else
+  double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
+  double display_lon = g_sensor_data.gps.valid ? g_sensor_data.gps.longitude : TEST_LON;
+  map_canvas = create_map_view(map_container, display_lat, display_lon,
+                               current_map_zoom, 533, 533);
+#endif
+
+  if (map_canvas) {
+    lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
+  }
+
+  // Boutons zoom (haut droite)
+  btn_zoom_in = lv_btn_create(map_container);
+  lv_obj_set_size(btn_zoom_in, 50, 50);
+  lv_obj_align(btn_zoom_in, LV_ALIGN_TOP_RIGHT, -5, 5);
+  lv_obj_set_style_bg_color(btn_zoom_in, lv_color_hex(0x2196F3), 0);
+  lv_obj_set_style_radius(btn_zoom_in, 8, 0);
+  lv_obj_add_event_cb(btn_zoom_in, btn_zoom_in_cb, LV_EVENT_CLICKED, NULL);
+
+  lv_obj_t *label_plus = lv_label_create(btn_zoom_in);
+  lv_label_set_text(label_plus, "+");
+  lv_obj_set_style_text_font(label_plus, &lv_font_montserrat_32, 0);
+  lv_obj_center(label_plus);
+
+  btn_zoom_out = lv_btn_create(map_container);
+  lv_obj_set_size(btn_zoom_out, 50, 50);
+  lv_obj_align(btn_zoom_out, LV_ALIGN_TOP_RIGHT, -5, 60);
+  lv_obj_set_style_bg_color(btn_zoom_out, lv_color_hex(0x2196F3), 0);
+  lv_obj_set_style_radius(btn_zoom_out, 8, 0);
+  lv_obj_add_event_cb(btn_zoom_out, btn_zoom_out_cb, LV_EVENT_CLICKED, NULL);
+
+  lv_obj_t *label_minus = lv_label_create(btn_zoom_out);
+  lv_label_set_text(label_minus, "-");
+  lv_obj_set_style_text_font(label_minus, &lv_font_montserrat_32, 0);
+  lv_obj_center(label_minus);
+
+  // Mettre a jour l'etat initial des boutons
+  update_zoom_buttons_state();
+
+
+  // Marqueur position parapente (centre carte)
+  position_marker = lv_label_create(map_container);
+  lv_label_set_text(position_marker, LV_SYMBOL_EJECT);
+  lv_obj_set_style_text_font(position_marker, &lv_font_montserrat_24, 0);
+  lv_obj_set_style_text_color(position_marker, lv_color_hex(0x003366), 0);  // Bleu fonce
+  lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
+  lv_obj_center(position_marker);
+  lv_obj_move_foreground(position_marker);
 
   // Ajouter handler swipe sur l'ecran complet
   lv_obj_add_event_cb(current_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);
