@@ -59,7 +59,7 @@ void setup() {
 
   // 4. Kalman
   kalman_start();
-  
+
   metar_start();
 
   // 5. Ecran + Touch
@@ -125,6 +125,9 @@ void loop() {
     if (largest < 5000) {
       Serial.println("WARNING: Severe heap fragmentation!");
     }
+    Serial.println("=== After UI Init ===");
+    Serial.printf("SRAM Free: %u\n", ESP.getFreeHeap());
+    Serial.printf("PSRAM Free: %u\n", ESP.getFreePsram());
 
     last_print = millis();
   }

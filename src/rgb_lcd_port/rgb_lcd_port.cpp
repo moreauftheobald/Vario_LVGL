@@ -117,7 +117,7 @@ void wavesahre_rgb_lcd_display_window(int16_t Xstart, int16_t Ystart, int16_t Xe
   int crop_width = Xend - Xstart;
   int crop_height = Yend - Ystart;
 
-  uint8_t *dst_data = (uint8_t *)malloc(crop_width * crop_height * 2);
+  uint8_t *dst_data = (uint8_t *)heap_caps_malloc(crop_width * crop_height * 2, MALLOC_CAP_SPIRAM);
   if (!dst_data) {
 #ifdef DEBUG_MODE
     printf("Error: Failed to allocate memory for cropped bitmap.\n");

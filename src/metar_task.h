@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <math.h>
@@ -16,6 +17,18 @@ static metar_data_t metar_data = { 0 };
 static SemaphoreHandle_t metar_mutex = NULL;
 static TaskHandle_t metar_task_handle = NULL;
 static EventGroupHandle_t metar_event_group = NULL;
+
+struct SpiRamAllocator : ArduinoJson::Allocator {
+  void* allocate(size_t size) override {
+    return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
+  }
+  void deallocate(void* pointer) override {
+    heap_caps_free(pointer);
+  }
+  void* reallocate(void* ptr, size_t new_size) override {
+    return heap_caps_realloc(ptr, new_size, MALLOC_CAP_SPIRAM);
+  }
+};
 
 static float haversine_km(float lat1, float lon1, float lat2, float lon2) {
   const float R = 6371.0f;
@@ -35,6 +48,9 @@ static bool fetch_metar_by_bbox(float lat, float lon) {
   float max_lat = lat + METAR_BBOX_RADIUS;
   float max_lon = lon + METAR_BBOX_RADIUS;
 
+  WiFiClientSecure client;
+  client.setInsecure();
+
   HTTPClient http;
   char bbox_params[128];
   snprintf(bbox_params, sizeof(bbox_params),
@@ -53,15 +69,22 @@ static bool fetch_metar_by_bbox(float lat, float lon) {
 
   if (httpCode != HTTP_CODE_OK) {
     http.end();
+    client.stop();
     return false;
   }
 
   String payload = http.getString();
   http.end();
+  client.stop();
 
   // --- Parser JSON ---
-  JsonDocument doc;
+  SpiRamAllocator allocator;
+  JsonDocument doc(&allocator);
   DeserializationError err = deserializeJson(doc, payload);
+
+  payload.clear();     // Libérer le String immédiatement
+  payload = String();  // Force liberation
+
   if (err) {
 #ifdef DEBUG_MODE
     Serial.printf("[METAR] JSON parse error: %s\n", err.c_str());
@@ -298,7 +321,7 @@ bool metar_get_data(metar_data_t* out) {
   if (!metar_mutex) {
     return false;
   }
-  
+
   if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(10))) {
     memcpy(out, &metar_data, sizeof(metar_data_t));
     xSemaphoreGive(metar_mutex);
@@ -312,7 +335,7 @@ float metar_get_qnh(void) {
   if (!metar_mutex) {
     return 1013.25f;
   }
-  
+
   if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
     float qnh = metar_data.valid ? metar_data.qnh : 1013.25f;
     xSemaphoreGive(metar_mutex);

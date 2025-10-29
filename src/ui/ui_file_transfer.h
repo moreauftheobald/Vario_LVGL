@@ -81,50 +81,37 @@ void ui_file_transfer_init(void) {
 #endif
 
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
+  ui_create_main_frame(main_frame, false, txt->file_transfer);
 
-  // Titre
-  lv_obj_t *label_title = ui_create_label(main_frame, txt->file_transfer,
-                                          &lv_font_montserrat_32, lv_color_hex(0x00d4ff));
-  lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, 0);
-
-  // Info panel
-  lv_obj_t *info_panel = lv_obj_create(main_frame);
-  lv_obj_set_size(info_panel, 900, 400);
-  lv_obj_align(info_panel, LV_ALIGN_CENTER, 0, 10);
-  lv_obj_set_style_bg_color(info_panel, lv_color_hex(0x1a2035), 0);
-  lv_obj_set_style_bg_opa(info_panel, LV_OPA_80, 0);
-  lv_obj_set_style_border_width(info_panel, 2, 0);
-  lv_obj_set_style_border_color(info_panel, lv_color_hex(0x6080a0), 0);
-  lv_obj_set_style_radius(info_panel, ROUND_FRANE_RADUIS_BIG, 0);
-  lv_obj_set_style_pad_all(info_panel, 20, 0);
-  lv_obj_set_flex_flow(info_panel, LV_FLEX_FLOW_COLUMN);
-  lv_obj_set_flex_align(info_panel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER,
-                        LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_row(info_panel, 20, 0);
-  lv_obj_clear_flag(info_panel, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_align(main_left, LV_ALIGN_CENTER, 0, 10);
+  
 
   // WiFi status
-  label_status = ui_create_label(info_panel, LV_SYMBOL_WIFI " Starting...",
+  label_status = ui_create_label(main_left, LV_SYMBOL_WIFI " Starting...",
                                  &lv_font_montserrat_32, lv_color_hex(0xff9500));
+  lv_obj_set_style_text_align(label_status, LV_TEXT_ALIGN_CENTER, 0);
+  lv_obj_set_width(label_status, lv_pct(100));
 
   // SSID
-  label_ssid = ui_create_label(info_panel, "Initializing WiFi...",
+  label_ssid = ui_create_label(main_left, "Initializing WiFi...",
                                &lv_font_montserrat_24, lv_color_hex(0xaabbcc));
   lv_obj_set_style_text_align(label_ssid, LV_TEXT_ALIGN_CENTER, 0);
+  lv_obj_set_width(label_ssid, lv_pct(100));
 
   // IP
-  label_ip = ui_create_label(info_panel, "",
+  label_ip = ui_create_label(main_left, "",
                              &lv_font_montserrat_24, lv_color_hex(0xaabbcc));
   lv_obj_set_style_text_align(label_ip, LV_TEXT_ALIGN_CENTER, 0);
+  lv_obj_set_width(label_ip, lv_pct(100));
 
   // Separator
-  lv_obj_t *sep = lv_obj_create(info_panel);
+  lv_obj_t *sep = lv_obj_create(main_left);
   lv_obj_set_size(sep, lv_pct(100), 1);
   lv_obj_set_style_bg_color(sep, lv_color_hex(0x2a3f5f), 0);
   lv_obj_set_style_border_width(sep, 0, 0);
 
   // Instructions
-  lv_obj_t *instructions = ui_create_label(info_panel,
+  lv_obj_t *instructions = ui_create_label(main_left,
                                            "1. Wait for WiFi connection\n"
                                            "2. Open your web browser\n"
                                            "3. Go to the IP address shown above",
@@ -132,14 +119,12 @@ void ui_file_transfer_init(void) {
                                            lv_color_hex(0xaabbcc));
   lv_obj_set_style_text_align(instructions, LV_TEXT_ALIGN_CENTER, 0);
   lv_label_set_long_mode(instructions, LV_LABEL_LONG_WRAP);
-  lv_obj_set_width(instructions, lv_pct(90));
+  lv_obj_set_width(instructions, lv_pct(100));
 
   // Bouton exit
-  ui_button_pair_t buttons = ui_create_save_cancel_buttons(
-    main_frame, nullptr, txt->exit, nullptr,
-    false, true, false,
-    nullptr, btn_exit_cb, nullptr,
-    NULL, NULL, NULL);
+  lv_obj_t *btn_cancel_pilot = ui_create_button(btn_container, txt->exit, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
+                                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_exit_cb,
+                                                NULL, (lv_align_t)0, NULL, NULL);
 
   // Demarrer WiFi et serveur de fichiers
   wifi_task_start();
