@@ -132,12 +132,12 @@ static void btn_zoom_in_cb(lv_event_t *e) {
     // Recreer carte avec nouveau zoom
 #ifdef FLIGHT_TEST_MODE
     map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON, 
-                                 current_map_zoom, 520, 520);
+                                 current_map_zoom, 527, 527);
 #else
     double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
     double display_lon = g_sensor_data.gps.valid ? g_sensor_data.gps.longitude : TEST_LON;
     map_canvas = create_map_view(map_container, display_lat, display_lon,
-                                 current_map_zoom, 520, 520);
+                                 current_map_zoom, 527, 527);
 #endif
     if(map_canvas) {
       lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
@@ -181,12 +181,12 @@ static void btn_zoom_out_cb(lv_event_t *e) {
     // Recreer carte avec nouveau zoom
 #ifdef FLIGHT_TEST_MODE
     map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON, 
-                                 current_map_zoom, 520, 520);
+                                 current_map_zoom, 527, 527);
 #else
     double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
     double display_lon = g_sensor_data.gps.valid ? g_sensor_data.gps.longitude : TEST_LON;
     map_canvas = create_map_view(map_container, display_lat, display_lon,
-                                 current_map_zoom, 520, 520);
+                                 current_map_zoom, 527, 527);
 #endif
     if(map_canvas) {
       lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
@@ -334,12 +334,12 @@ void ui_screen_center_init(void) {
 // Affichage carte OSM initial
 #ifdef FLIGHT_TEST_MODE
   map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON,
-                               current_map_zoom, 533, 533);
+                               current_map_zoom, 527, 527);
 #else
   double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
   double display_lon = g_sensor_data.gps.valid ? g_sensor_data.gps.longitude : TEST_LON;
   map_canvas = create_map_view(map_container, display_lat, display_lon,
-                               current_map_zoom, 533, 533);
+                               current_map_zoom, 527, 527);
 #endif
 
   if (map_canvas) {

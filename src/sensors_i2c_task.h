@@ -34,10 +34,10 @@ static void sensors_i2c_task(void *pvParameters) {
       // Utiliser QNH METAR si disponible, sinon standard
       float qnh_ref = g_sensor_data.qnh_metar;
 
-#ifdef DEBUG_MODE
+/*#ifdef DEBUG_MODE
       Serial.printf("[BMP390] Using QNH: %.1f hPa altitude: %.1f\n",
-                    qnh_ref,alti);
-#endif
+                    qnh_ref, alti);
+#endif*/
     } else {
       g_sensor_data.bmp390.valid = false;
 #ifdef DEBUG_MODE
@@ -55,25 +55,25 @@ static void sensors_i2c_task(void *pvParameters) {
           g_sensor_data.bno080.quat_real = sensorValue.un.rotationVector.real;
           g_sensor_data.bno080.timestamp = millis();
           g_sensor_data.bno080.valid = true;
-          #ifdef DEBUG_MODE
+/*#ifdef DEBUG_MODE
           Serial.printf("[BNO080] Quat: %.3f %.3f %.3f %.3f\n",
                         g_sensor_data.bno080.quat_real,
                         g_sensor_data.bno080.quat_i,
                         g_sensor_data.bno080.quat_j,
                         g_sensor_data.bno080.quat_k);
-#endif
+#endif*/
           break;
 
         case SH2_LINEAR_ACCELERATION:
           g_sensor_data.bno080.accel_x = sensorValue.un.linearAcceleration.x;
           g_sensor_data.bno080.accel_y = sensorValue.un.linearAcceleration.y;
           g_sensor_data.bno080.accel_z = sensorValue.un.linearAcceleration.z;
-          #ifdef DEBUG_MODE
+/*#ifdef DEBUG_MODE
           Serial.printf("[BNO080] Accel: %.2f %.2f %.2f m/s²\n",
                         g_sensor_data.bno080.accel_x,
                         g_sensor_data.bno080.accel_y,
                         g_sensor_data.bno080.accel_z);
-#endif
+#endif*/
           break;
 
         case SH2_GYROSCOPE_CALIBRATED:
@@ -116,13 +116,13 @@ static void sensors_i2c_task(void *pvParameters) {
           g_sensor_data.gps.valid = true;
 
 #ifdef DEBUG_MODE
-          Serial.printf("[GPS] Fix:%d Sat:%d Lat:%.6f Lon:%.6f Alt:%.1fm\n",
+          /*Serial.printf("[GPS] Fix:%d Sat:%d Lat:%.6f Lon:%.6f Alt:%.1fm\n",
                         g_sensor_data.gps.fix,
                         g_sensor_data.gps.satellites,
                         g_sensor_data.gps.latitude,
                         g_sensor_data.gps.longitude,
                         g_sensor_data.gps.altitude);
-          Serial.printf("[GPS] Raw: %s\n", g_sensor_data.gps.lastline);
+          Serial.printf("[GPS] Raw: %s\n", g_sensor_data.gps.lastline);*/
 #endif
         }
       }
@@ -177,12 +177,12 @@ static bool sensors_i2c_init() {
 
 #ifdef DEBUG_MODE
   Serial.println("[SENSORS] BNO080 init OK");
-  Serial.printf("[SENSORS] Part: %d, Ver: %d.%d.%d, Build: %d\n",
+  /*Serial.printf("[SENSORS] Part: %d, Ver: %d.%d.%d, Build: %d\n",
                 bno080.prodIds.entry[0].swPartNumber,
                 bno080.prodIds.entry[0].swVersionMajor,
                 bno080.prodIds.entry[0].swVersionMinor,
                 bno080.prodIds.entry[0].swVersionPatch,
-                bno080.prodIds.entry[0].swBuildNumber);
+                bno080.prodIds.entry[0].swBuildNumber);*/
 #endif
 
   // Initialiser GPS

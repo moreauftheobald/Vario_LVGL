@@ -30,16 +30,61 @@ static KalmanFilter_t kf;
 static kalman_data_t kalman_data;
 static SemaphoreHandle_t kalman_mutex = NULL;
 static float qnh_setting = 1013.25f;  // hPa
-static float qfe_offset = 0.0f;       // m
+static float qfe_offset = 0.0f;  
+static float last_qnh = 1013.25f;     // hPa (correction: c'était marqué "m")
+static bool qnh_ready = false;           // QNH récupéré ou timeout
+static uint32_t startup_time = 0;        // Timestamp démarrage
+static const uint32_t SENSOR_STABILIZATION_TIME = 3000;  // 3 secondes
 
 // Buffer init
 static float init_buffer[INIT_SAMPLES];
 static int init_count = 0;
 
+// Fonction à appeler depuis metar_task quand QNH est récupéré
+void kalman_set_qnh_ready(float qnh_hpa) {
+  qnh_setting = qnh_hpa;
+  qnh_ready = true;
+  last_qnh = qnh_hpa;
+  
+#ifdef DEBUG_MODE
+  Serial.printf("[KALMAN] QNH ready: %.2f hPa\n", qnh_hpa);
+#endif
+}
+
+// Fonction pour forcer le démarrage avec QNH standard si timeout
+void kalman_force_start_standard_qnh() {
+  qnh_setting = 1013.25f;
+  qnh_ready = true;
+  last_qnh = 1013.25f;
+  
+#ifdef DEBUG_MODE
+  Serial.println("[KALMAN] Forced start with standard QNH (1013.25 hPa)");
+#endif
+}
+
 // Conversion pression -> altitude
 static float pressure_to_altitude(float pressure_pa, float qnh_hpa) {
   float pressure_hpa = pressure_pa / 100.0f;
   return 44330.0f * (1.0f - pow(pressure_hpa / qnh_hpa, 0.1903f));
+}
+
+// Réinitialisation Kalman lors changement QNH
+void kalman_reset_on_qnh_change(float new_altitude, float current_qnh) {
+    if (fabs(current_qnh - last_qnh) > 0.5) {  // QNH a changé de > 0.5 hPa
+#ifdef DEBUG_MODE
+        Serial.printf("[KALMAN] QNH changed: %.2f -> %.2f hPa, reinitializing state\n", 
+                      last_qnh, current_qnh);
+#endif
+        // Réinitialiser l'état avec la nouvelle altitude
+        kf.x[0] = new_altitude;  // Position (correction: kf.x au lieu de state)
+        kf.x[1] = 0.0;           // Vitesse remise à 0
+        
+        // Augmenter temporairement l'incertitude
+        kf.P[0][0] = 100.0;  // Grande incertitude sur position (correction: kf.P au lieu de P)
+        kf.P[1][1] = 10.0;   // Grande incertitude sur vitesse
+        
+        last_qnh = current_qnh;
+    }
 }
 
 // Init filtre
@@ -85,12 +130,47 @@ static void kalman_init() {
 
 // Initialisation avec moyenne
 static bool kalman_try_init() {
-  if (!g_sensor_data.bmp390.valid) return false;
+  // Vérifier que QNH est prêt
+  if (!qnh_ready) {
+#ifdef DEBUG_MODE
+    static uint32_t last_qnh_msg = 0;
+    if (millis() - last_qnh_msg > 1000) {
+      Serial.println("[KALMAN] Waiting for QNH...");
+      last_qnh_msg = millis();
+    }
+#endif
+    return false;
+  }
+  
+  // Attendre stabilisation capteurs (3 secondes après démarrage)
+  if (millis() - startup_time < SENSOR_STABILIZATION_TIME) {
+#ifdef DEBUG_MODE
+    static uint32_t last_stab_msg = 0;
+    if (millis() - last_stab_msg > 1000) {
+      uint32_t remaining = SENSOR_STABILIZATION_TIME - (millis() - startup_time);
+      Serial.printf("[KALMAN] Sensor stabilization... %lums remaining\n", remaining);
+      last_stab_msg = millis();
+    }
+#endif
+    return false;
+  }
+  
+  if (!g_sensor_data.bmp390.valid) {
+#ifdef DEBUG_MODE
+    static uint32_t last_bmp_msg = 0;
+    if (millis() - last_bmp_msg > 1000) {
+      Serial.println("[KALMAN] Waiting for BMP390...");
+      last_bmp_msg = millis();
+    }
+#endif
+    return false;
+  }
 
   float alt = pressure_to_altitude(g_sensor_data.bmp390.pressure, qnh_setting);
 
 #ifdef DEBUG_MODE
-  Serial.printf("[KALMAN] Init sample %d: P=%.1fPa Alt=%.1fm\n", init_count, g_sensor_data.bmp390.pressure, alt);
+  Serial.printf("[KALMAN] Init sample %d: P=%.1fPa QNH=%.2fhPa Alt=%.1fm\n", 
+                init_count, g_sensor_data.bmp390.pressure, qnh_setting, alt);
 #endif
 
   init_buffer[init_count++] = alt;
@@ -109,7 +189,8 @@ static bool kalman_try_init() {
     kf.initialized = true;
 
 #ifdef DEBUG_MODE
-    Serial.printf("[KALMAN] Initialized with avg alt=%.1fm\n", alt_init);
+    Serial.printf("[KALMAN] Initialized with QNH=%.2f hPa, avg alt=%.1fm\n", 
+                  qnh_setting, alt_init);
 #endif
 
     return true;
@@ -230,15 +311,17 @@ void kalman_reset_qfe() {
 // Tache principale
 static void kalman_task(void* parameter) {
   kalman_init();
+  
+  startup_time = millis();  // Sauvegarder temps de démarrage
 
   TickType_t last_wake = xTaskGetTickCount();
-  const TickType_t period = pdMS_TO_TICKS(50);  // 20Hz pour init
+  const TickType_t period = pdMS_TO_TICKS(50);
 
   uint32_t last_baro_time = 0;
   uint32_t last_gps_time = 0;
 
 #ifdef DEBUG_MODE
-  Serial.println("[KALMAN] Task started");
+  Serial.println("[KALMAN] Task started - waiting for QNH and sensor stabilization");
 #endif
 
   while (1) {
@@ -250,7 +333,6 @@ static void kalman_task(void* parameter) {
     // Phase init
     if (!kf.initialized) {
       if (kalman_try_init()) {
-        // Init complete, passage a 50Hz
         last_wake = xTaskGetTickCount();
       }
       vTaskDelayUntil(&last_wake, period);
@@ -264,6 +346,7 @@ static void kalman_task(void* parameter) {
     if (g_sensor_data.bmp390.valid) {
       if (now - last_baro_time >= 20) {
         float alt_baro = pressure_to_altitude(g_sensor_data.bmp390.pressure, qnh_setting);
+        kalman_reset_on_qnh_change(alt_baro, qnh_setting);  // Correction: alt_baro et qnh_setting
         kalman_update(alt_baro, 0.25f, 0);
         last_baro_time = now;
       }
@@ -272,6 +355,7 @@ static void kalman_task(void* parameter) {
     // Update GPS
     if (g_sensor_data.gps.valid && g_sensor_data.gps.fix && g_sensor_data.gps.fixquality >= 1) {
       if (now - last_gps_time >= 500) {
+        // Pas besoin de reset QNH ici, l'altitude GPS ne dépend pas du QNH
         kalman_update(g_sensor_data.gps.altitude, 5.0f, 0);
         last_gps_time = now;
       }
@@ -281,10 +365,11 @@ static void kalman_task(void* parameter) {
     if (g_sensor_data.bno080.valid) {
       float az_world = get_accel_z_world(&g_sensor_data.bno080);
       if (fabs(az_world) < 0.05f) az_world = 0.0f;
+      // Pas de reset QNH pour l'accélération
       kalman_update(az_world, 1.0f, 2);
     }
 
-    // Maj donnees filtrées
+    // Maj donnees filtrees
     if (g_sensor_data.bmp390.valid) {
       if (xSemaphoreTake(kalman_mutex, pdMS_TO_TICKS(5))) {
         kalman_data.altitude = kf.x[0];
