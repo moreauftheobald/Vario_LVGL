@@ -1,4 +1,4 @@
-SET_LOOP_TASK_STACK_SIZE( 32*1024 );
+SET_LOOP_TASK_STACK_SIZE(32 * 1024);
 #include "constants.h"
 #include "globals.h"
 #include "src/params/params.h"
@@ -22,7 +22,6 @@ SET_LOOP_TASK_STACK_SIZE( 32*1024 );
 #include "src/ui/ui_splash.h"
 #include "src/test_logger_task.h"
 #include "src/kalman_task.h"
-#include "src/osm_tile_loader.h"
 
 bool mainscreen_active = false;
 
@@ -49,27 +48,6 @@ void setup() {
     Serial.println("SD Failed");
 #endif
   }
-  File f = SD_MMC.open("/osm_tiles/osm/14/8498/5650.jpg");
-if (f) {
-  Serial.println("Tile /osm_tiles/osm/14/8498/5650.jpg exists");
-  f.close();
-} else {
-  Serial.println("Tile /osm_tiles/osm/14/8498/5650.jpg NOT found");
-}
-uint16_t* test_tile = (uint16_t*)heap_caps_malloc(
-    OSM_TILE_SIZE * OSM_TILE_SIZE * sizeof(uint16_t),
-    MALLOC_CAP_8BIT
-);
-if (!test_tile) {
-    Serial.println("Allocation failed");
-    return;
-}
-
-bool ok = decode_jpeg_file_to_rgb565_from_sd("/osm_tiles/osm/14/8498/5650.jpg", test_tile);
-Serial.println(ok ? "Decode OK" : "Decode FAILED");
-
-heap_caps_free(test_tile);
-
 
 #ifdef DEBUG_MODE
   Serial.println("Starting Vario...");
