@@ -93,7 +93,7 @@ void setup() {
 }
 
 void loop() {
-#ifdef DEBUG_MODE
+#ifdef DEBUG_MODE_ALL
   static unsigned long last_print = 0;
 
   if (millis() - last_print > 5000) {
