@@ -113,26 +113,7 @@ void ui_settings_init(void) {
 }
 
 void ui_settings_show(void) {
-  lv_obj_t *old_screen = lv_scr_act();
-
-  if (lvgl_port_lock(-1)) {
-    // Créer nouvel écran
-    current_screen = lv_obj_create(NULL);
-
-    ui_settings_init();  // Construire l'UI sur current_screen
-
-    lv_screen_load(current_screen);
-    force_full_refresh();
-    lvgl_port_unlock();
-  }
-
-  // Détruire ancien écran
-  if (old_screen != current_screen && old_screen != NULL) {
-    lv_obj_del(old_screen);
-#ifdef DEBUG_MODE
-    Serial.println("[UI] Old screen deleted");
-#endif
-  }
+  ui_switch_screen(ui_settings_init);
 }
 
 #endif

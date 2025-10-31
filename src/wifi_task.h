@@ -18,7 +18,10 @@ static bool wifi_is_connected = false;
 static char* wifi_current_ssid = NULL;
 static char* wifi_current_ip = NULL;
 
-// Getters pour l'UI
+// ============================================================================
+// GETTERS POUR L'UI ET AUTRES TACHES
+// ============================================================================
+
 bool wifi_get_connected_status(void) {
   return wifi_is_connected;
 }
@@ -31,7 +34,45 @@ const char* wifi_get_current_ip(void) {
   return wifi_current_ip ? wifi_current_ip : "";
 }
 
-// Fonction de connexion WiFi avec priorite
+/**
+ * @brief Obtient le handle de l'event group WiFi pour attente externe
+ * @return Handle de l'event group WiFi (peut être NULL si pas initialisé)
+ */
+EventGroupHandle_t wifi_get_event_group(void) {
+  return wifi_event_group;
+}
+
+/**
+ * @brief Attend que le WiFi soit connecté (bloquant avec timeout)
+ * @param timeout_ms Timeout en millisecondes (0 = infini)
+ * @return true si connecté, false si timeout
+ */
+bool wifi_wait_connected(uint32_t timeout_ms) {
+  if (!wifi_event_group) {
+    return wifi_is_connected;
+  }
+  
+  if (wifi_is_connected) {
+    return true;
+  }
+  
+  TickType_t timeout_ticks = (timeout_ms == 0) ? portMAX_DELAY : pdMS_TO_TICKS(timeout_ms);
+  
+  EventBits_t bits = xEventGroupWaitBits(
+    wifi_event_group,
+    WIFI_CONNECTED_BIT,
+    pdFALSE,  // Ne pas effacer le bit
+    pdFALSE,  // Attendre un seul bit
+    timeout_ticks
+  );
+  
+  return (bits & WIFI_CONNECTED_BIT) != 0;
+}
+
+// ============================================================================
+// FONCTION DE CONNEXION WIFI
+// ============================================================================
+
 static bool wifi_connect_with_priority(void) {
 #ifdef DEBUG_MODE
   Serial.printf("Free PSRAM before WiFi init: %u bytes\n", ESP.getFreePsram());
@@ -56,7 +97,7 @@ static bool wifi_connect_with_priority(void) {
     vTaskDelay(pdMS_TO_TICKS(500));
     
     WiFi.mode(WIFI_STA);
-    WiFi.setAutoReconnect(false);  // Désactiver AutoReconnect
+    WiFi.setAutoReconnect(false);
     vTaskDelay(pdMS_TO_TICKS(100));
 
     WiFi.begin(ssid, password);
@@ -100,7 +141,10 @@ static bool wifi_connect_with_priority(void) {
   return false;
 }
 
-// Tache WiFi
+// ============================================================================
+// TACHE WIFI
+// ============================================================================
+
 static void wifi_task(void *pvParameters) {
 #ifdef DEBUG_MODE
   Serial.println("WiFi task started");
@@ -130,6 +174,7 @@ static void wifi_task(void *pvParameters) {
         
         // Deconnecte
         wifi_is_connected = false;
+        xEventGroupClearBits(wifi_event_group, WIFI_CONNECTED_BIT);
         xEventGroupSetBits(wifi_event_group, WIFI_DISCONNECTED_BIT);
         
 #ifdef DEBUG_MODE
@@ -145,6 +190,10 @@ static void wifi_task(void *pvParameters) {
       WiFi.disconnect(true);
       WiFi.mode(WIFI_OFF);
       wifi_is_connected = false;
+      
+      // Effacer bit connected, set bit disconnected
+      xEventGroupClearBits(wifi_event_group, WIFI_CONNECTED_BIT);
+      xEventGroupSetBits(wifi_event_group, WIFI_DISCONNECTED_BIT);
       
       // Liberer la memoire
       if (wifi_current_ssid) {
@@ -165,14 +214,17 @@ static void wifi_task(void *pvParameters) {
   }
 }
 
-// Demarrer la tache WiFi
+// ============================================================================
+// FONCTIONS PUBLIQUES
+// ============================================================================
+
 static void wifi_task_start(void) {
   // Vérifier si déjà démarré
   if (wifi_task_handle != NULL) {
 #ifdef DEBUG_MODE
     Serial.println("WiFi task already running");
 #endif
-    return;  // <-- NE PAS redémarrer
+    return;
   }
 
   if (wifi_event_group == NULL) {
@@ -196,7 +248,6 @@ static void wifi_task_start(void) {
 #endif
 }
 
-// Arreter la tache WiFi
 static void wifi_task_stop(void) {
   if (wifi_event_group) {
     xEventGroupSetBits(wifi_event_group, WIFI_STOP_BIT);

@@ -16,15 +16,13 @@ static File test_log_file;
 static bool test_logging_active = false;
 static SemaphoreHandle_t sd_mutex = NULL;
 
-// Buffer pour calcul vario brut baro
-#define VARIO_BUFFER_SIZE 5
-static float alt_buffer[VARIO_BUFFER_SIZE];
-static uint32_t time_buffer[VARIO_BUFFER_SIZE];
-static int buffer_idx = 0;
-static bool buffer_full = false;
+// Variables pour calcul vario brut simplifie (derivee simple)
+static float last_alt = 0.0f;
+static uint32_t last_time = 0;
+static bool first_sample = true;
 
-// Calcul accel Z monde
-static float calculate_bno_accel_z(const bno080_data_t* imu) {
+// Calcul accel Z monde (inline, formule mathematique simple)
+static inline float calculate_bno_accel_z_world(const bno080_data_t* imu) {
     float qw = imu->quat_real;
     float qx = imu->quat_i;
     float qy = imu->quat_j;
@@ -34,6 +32,7 @@ static float calculate_bno_accel_z(const bno080_data_t* imu) {
     float ay = imu->accel_y;
     float az = imu->accel_z;
     
+    // Rotation du vecteur acceleration par quaternion
     float az_world = ax * (2.0f * qx * qz - 2.0f * qw * qy) +
                      ay * (2.0f * qy * qz + 2.0f * qw * qx) +
                      az * (qw*qw - qx*qx - qy*qy + qz*qz);
@@ -41,32 +40,22 @@ static float calculate_bno_accel_z(const bno080_data_t* imu) {
     return az_world;
 }
 
-// Calcul vario brut baro
-static float calculate_raw_vario(float current_alt, uint32_t current_time) {
-    alt_buffer[buffer_idx] = current_alt;
-    time_buffer[buffer_idx] = current_time;
-    buffer_idx = (buffer_idx + 1) % VARIO_BUFFER_SIZE;
-    
-    if(!buffer_full && buffer_idx == 0) {
-        buffer_full = true;
+// Calcul vario brut simplifie (derivee discrete simple)
+static float calculate_raw_vario_simple(float current_alt, uint32_t current_time) {
+    if (first_sample) {
+        last_alt = current_alt;
+        last_time = current_time;
+        first_sample = false;
+        return 0.0f;
     }
     
-    if(!buffer_full) return 0.0f;
+    float dt = (current_time - last_time) / 1000.0f;
+    if (dt < 0.1f) return 0.0f; // Eviter division par zero
     
-    int oldest_idx = buffer_idx;
-    float sum_t = 0, sum_alt = 0, sum_t_alt = 0, sum_t2 = 0;
+    float vario = (current_alt - last_alt) / dt;
     
-    for(int i = 0; i < VARIO_BUFFER_SIZE; i++) {
-        float t = (time_buffer[i] - time_buffer[oldest_idx]) / 1000.0f;
-        float alt = alt_buffer[i];
-        sum_t += t;
-        sum_alt += alt;
-        sum_t_alt += t * alt;
-        sum_t2 += t * t;
-    }
-    
-    float vario = (VARIO_BUFFER_SIZE * sum_t_alt - sum_t * sum_alt) /
-                  (VARIO_BUFFER_SIZE * sum_t2 - sum_t * sum_t);
+    last_alt = current_alt;
+    last_time = current_time;
     
     return vario;
 }
@@ -99,15 +88,12 @@ static bool test_logger_create_file() {
                   sd_get_free_bytes() / (1024*1024));
     #endif
     
-    // Utiliser les fonctions sd_card.h qui gerent correctement les chemins
     const char* flights_dir = FLIGHTS_DIR;
     
     #ifdef DEBUG_MODE
     Serial.printf("[TEST_LOG] Checking dir: %s\n", flights_dir);
-    Serial.printf("[TEST_LOG] Dir exists: %d\n", SD_MMC.exists(flights_dir));
     #endif
     
-    // Le repertoire est normalement deja cree par sd_init()
     if(!SD_MMC.exists(flights_dir)) {
         #ifdef DEBUG_MODE
         Serial.println("[TEST_LOG] Creating flights dir...");
@@ -124,7 +110,6 @@ static bool test_logger_create_file() {
     char filename[80];
     
     if(g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
-        // CORRIGÉ: Construire le chemin en 2 étapes
         char file_only[60];
         snprintf(file_only, sizeof(file_only), 
                  "test_%04d%02d%02d_%02d%02d%02d.csv",
@@ -136,7 +121,6 @@ static bool test_logger_create_file() {
                  g_sensor_data.gps.seconds);
         snprintf(filename, sizeof(filename), "%s/%s", FLIGHTS_DIR, file_only);
     } else {
-        // CORRIGÉ: Construire le chemin en 2 étapes
         char file_only[40];
         snprintf(file_only, sizeof(file_only), "test_%lu.csv", millis());
         snprintf(filename, sizeof(filename), "%s/%s", FLIGHTS_DIR, file_only);
@@ -161,7 +145,7 @@ static bool test_logger_create_file() {
     test_log_file.print("BNO_Quat_W,BNO_Quat_X,BNO_Quat_Y,BNO_Quat_Z,");
     test_log_file.print("BNO_Accel_X_ms2,BNO_Accel_Y_ms2,BNO_Accel_Z_ms2,BNO_Accel_Z_World_ms2,");
     test_log_file.print("GPS_Longitude,GPS_Latitude,GPS_Alt_m,GPS_Speed_knots,GPS_Course_deg,GPS_Satellites,GPS_FixQuality,");
-    test_log_file.print("Kalman_Alt_m,Kalman_Vario_ms,Kalman_Accel_ms2,");
+    test_log_file.print("Kalman_Alt_m,Kalman_Vario_ms,Kalman_Alt_QNE_m,Kalman_Alt_QNH_m,Kalman_Alt_QFE_m,");
     test_log_file.print("Kalman_P00,Kalman_P11,Kalman_P22,");
     test_log_file.println("Valid_BMP,Valid_BNO,Valid_GPS");
     
@@ -197,7 +181,9 @@ static void test_logger_write_line() {
     float pressure_alt = pressure_hpa > 0 ? 
                          44330.0f * (1.0f - pow(pressure_hpa / 1013.25f, 0.1903f)) : 0.0f;
     float alt_qne = pressure_alt;
-    float vario_raw = calculate_raw_vario(pressure_alt, now);
+    
+    // Vario brut simplifie (derivee discrete)
+    float vario_raw = calculate_raw_vario_simple(pressure_alt, now);
     
     // BNO080
     float qw = g_sensor_data.bno080.valid ? g_sensor_data.bno080.quat_real : 0.0f;
@@ -208,7 +194,7 @@ static void test_logger_write_line() {
     float ay = g_sensor_data.bno080.valid ? g_sensor_data.bno080.accel_y : 0.0f;
     float az = g_sensor_data.bno080.valid ? g_sensor_data.bno080.accel_z : 0.0f;
     float az_world = g_sensor_data.bno080.valid ? 
-                     calculate_bno_accel_z(&g_sensor_data.bno080) : 0.0f;
+                     calculate_bno_accel_z_world(&g_sensor_data.bno080) : 0.0f;
     
     // GPS
     char date_str[16] = "00/00/0000";
@@ -247,7 +233,9 @@ static void test_logger_write_line() {
     test_log_file.printf("%.4f,%.4f,%.4f,%.4f,", ax, ay, az, az_world);
     test_log_file.printf("%.6f,%.6f,%.2f,%.2f,%.2f,%d,%d,",
                          gps_lon, gps_lat, gps_alt, gps_speed, gps_course, gps_sat, gps_fix);
-    test_log_file.printf("%.2f,%.3f,%.4f,", kdata.altitude, kdata.vario, kdata.altitude);
+    test_log_file.printf("%.2f,%.3f,%.2f,%.2f,%.2f,", 
+                         kdata.altitude, kdata.vario, kdata.altitude_qne, 
+                         kdata.altitude_qnh, kdata.altitude_qfe);
     test_log_file.printf("%.4f,%.4f,%.4f,", p00, p11, p22);
     test_log_file.printf("%d,%d,%d\n",
                          g_sensor_data.bmp390.valid ? 1 : 0,
@@ -335,6 +323,11 @@ static void test_logger_task(void* parameter) {
 
 // Demarrage
 static bool test_logger_start() {
+    // Reinitialiser variables
+    first_sample = true;
+    last_alt = 0.0f;
+    last_time = 0;
+    
     BaseType_t ret = xTaskCreatePinnedToCore(
         test_logger_task,
         "test_log",
@@ -355,7 +348,7 @@ static bool test_logger_start() {
     return true;
 }
 
-// Arret (améliore la fonction existante)
+// Arret
 static void test_logger_stop() {
     if(!test_logging_active) return;
     

@@ -165,9 +165,7 @@ static void screen_touch_cb(lv_event_t *e) {
 
       if (current_point < 2) {
         update_target_position();
-        char text[64];
-        snprintf(text, sizeof(text), "Point %d/2 - Touchez la cible", current_point + 1);
-        lv_label_set_text(instruction_label, text);
+        ui_label_set_formatted_text(instruction_label,  "Point %d/2 - Touchez la cible", current_point + 1);
       } else {
         calculate_calibration();
         calibration_done = true;
@@ -303,25 +301,7 @@ void get_touch_calibration(float *offset_x, float *offset_y, float *scale_x, flo
 }
 
 void ui_settings_screen_show(void) {
-  // Sauvegarder ancien écran
-  lv_obj_t *old_screen = lv_scr_act();
-
-  if (lvgl_port_lock(-1)) {
-    // Créer nouvel écran
-    current_screen = lv_obj_create(NULL);
-    ui_settings_screen_init();
-    lv_screen_load(current_screen);
-    force_full_refresh();
-    lvgl_port_unlock();
-  }
-
-  // Détruire ancien écran
-  if (old_screen != current_screen && old_screen != NULL) {
-    lv_obj_del(old_screen);
-#ifdef DEBUG_MODE
-    Serial.println("[UI] Old screen deleted");
-#endif
-  }
+  ui_switch_screen(ui_settings_screen_init);
 }
 
 #endif

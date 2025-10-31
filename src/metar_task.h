@@ -13,7 +13,7 @@
 // =============================
 // Données globales
 // =============================
-static metar_data_t metar_data = {0};
+static metar_data_t metar_data = { 0 };
 static SemaphoreHandle_t metar_mutex = NULL;
 static TaskHandle_t metar_task_handle = NULL;
 static EventGroupHandle_t metar_event_group = NULL;
@@ -24,53 +24,53 @@ static bool qnh_retrieved = false;
 // =============================
 #if QNH_ADJUST_METHOD == 1
 static void updateQNH_method1(float newQNH) {
-    float startQNH = metar_data.qnh;
-    
-    if (startQNH < 900.0f || startQNH > 1100.0f) {
-        startQNH = 1013.25f;
-    }
-    
-    float deltaQNH = newQNH - startQNH;
-    
-    if (fabs(deltaQNH) < 0.1f) {
-        if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
-            metar_data.qnh = newQNH;
-            g_sensor_data.qnh_metar = newQNH;
-            xSemaphoreGive(metar_mutex);
-        }
-        kalman_set_qnh_ready(newQNH);
-        return;
-    }
-    
-#ifdef DEBUG_MODE
-    Serial.printf("[QNH-M1] Smooth transition: %.1f -> %.1f hPa\n", startQNH, newQNH);
-#endif
-    
-    const int STEPS = 50;
-    const int DELAY_MS = 100;
-    
-    for (int i = 1; i <= STEPS; i++) {
-        float currentQNH = startQNH + (deltaQNH * i / STEPS);
-        
-        if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
-            metar_data.qnh = currentQNH;
-            g_sensor_data.qnh_metar = currentQNH;
-            xSemaphoreGive(metar_mutex);
-        }
-        
-        kalman_set_qnh_ready(currentQNH);
-        vTaskDelay(pdMS_TO_TICKS(DELAY_MS));
-    }
-    
+  float startQNH = metar_data.qnh;
+
+  if (startQNH < 900.0f || startQNH > 1100.0f) {
+    startQNH = 1013.25f;
+  }
+
+  float deltaQNH = newQNH - startQNH;
+
+  if (fabs(deltaQNH) < 0.1f) {
     if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
-        metar_data.qnh = newQNH;
-        g_sensor_data.qnh_metar = newQNH;
-        xSemaphoreGive(metar_mutex);
+      metar_data.qnh = newQNH;
+      g_sensor_data.qnh_metar = newQNH;
+      xSemaphoreGive(metar_mutex);
     }
     kalman_set_qnh_ready(newQNH);
-    
+    return;
+  }
+
 #ifdef DEBUG_MODE
-    Serial.printf("[QNH-M1] Transition completed: %.1f hPa\n", newQNH);
+  Serial.printf("[QNH-M1] Smooth transition: %.1f -> %.1f hPa\n", startQNH, newQNH);
+#endif
+
+  const int STEPS = 50;
+  const int DELAY_MS = 100;
+
+  for (int i = 1; i <= STEPS; i++) {
+    float currentQNH = startQNH + (deltaQNH * i / STEPS);
+
+    if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
+      metar_data.qnh = currentQNH;
+      g_sensor_data.qnh_metar = currentQNH;
+      xSemaphoreGive(metar_mutex);
+    }
+
+    kalman_set_qnh_ready(currentQNH);
+    vTaskDelay(pdMS_TO_TICKS(DELAY_MS));
+  }
+
+  if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
+    metar_data.qnh = newQNH;
+    g_sensor_data.qnh_metar = newQNH;
+    xSemaphoreGive(metar_mutex);
+  }
+  kalman_set_qnh_ready(newQNH);
+
+#ifdef DEBUG_MODE
+  Serial.printf("[QNH-M1] Transition completed: %.1f hPa\n", newQNH);
 #endif
 }
 #endif
@@ -80,61 +80,61 @@ static void updateQNH_method1(float newQNH) {
 // =============================
 #if QNH_ADJUST_METHOD == 2
 static void updateQNH_method2(float newQNH) {
-    float startQNH = metar_data.qnh;
-    
-    if (startQNH < 900.0f || startQNH > 1100.0f) {
-        startQNH = 1013.25f;
-    }
-    
-    float deltaQNH = newQNH - startQNH;
-    
-    if (fabs(deltaQNH) < 0.1f) {
-        if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
-            metar_data.qnh = newQNH;
-            g_sensor_data.qnh_metar = newQNH;
-            g_sensor_data.qnh_transition = false;
-            xSemaphoreGive(metar_mutex);
-        }
-        kalman_set_qnh_ready(newQNH);
-        return;
-    }
-    
-#ifdef DEBUG_MODE
-    Serial.printf("[QNH-M2] Smooth transition + IMU boost: %.1f -> %.1f hPa\n", startQNH, newQNH);
-#endif
-    
-    // Activer le flag de transition (pour kalman_task)
+  float startQNH = metar_data.qnh;
+
+  if (startQNH < 900.0f || startQNH > 1100.0f) {
+    startQNH = 1013.25f;
+  }
+
+  float deltaQNH = newQNH - startQNH;
+
+  if (fabs(deltaQNH) < 0.1f) {
     if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
-        g_sensor_data.qnh_transition = true;
-        xSemaphoreGive(metar_mutex);
-    }
-    
-    const int STEPS = 50;
-    const int DELAY_MS = 100;
-    
-    for (int i = 1; i <= STEPS; i++) {
-        float currentQNH = startQNH + (deltaQNH * i / STEPS);
-        
-        if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
-            metar_data.qnh = currentQNH;
-            g_sensor_data.qnh_metar = currentQNH;
-            xSemaphoreGive(metar_mutex);
-        }
-        
-        kalman_set_qnh_ready(currentQNH);
-        vTaskDelay(pdMS_TO_TICKS(DELAY_MS));
-    }
-    
-    if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
-        metar_data.qnh = newQNH;
-        g_sensor_data.qnh_metar = newQNH;
-        g_sensor_data.qnh_transition = false;
-        xSemaphoreGive(metar_mutex);
+      metar_data.qnh = newQNH;
+      g_sensor_data.qnh_metar = newQNH;
+      g_sensor_data.qnh_transition = false;
+      xSemaphoreGive(metar_mutex);
     }
     kalman_set_qnh_ready(newQNH);
-    
+    return;
+  }
+
 #ifdef DEBUG_MODE
-    Serial.printf("[QNH-M2] Transition completed: %.1f hPa\n", newQNH);
+  Serial.printf("[QNH-M2] Smooth transition + IMU boost: %.1f -> %.1f hPa\n", startQNH, newQNH);
+#endif
+
+  // Activer le flag de transition (pour kalman_task)
+  if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
+    g_sensor_data.qnh_transition = true;
+    xSemaphoreGive(metar_mutex);
+  }
+
+  const int STEPS = 50;
+  const int DELAY_MS = 100;
+
+  for (int i = 1; i <= STEPS; i++) {
+    float currentQNH = startQNH + (deltaQNH * i / STEPS);
+
+    if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
+      metar_data.qnh = currentQNH;
+      g_sensor_data.qnh_metar = currentQNH;
+      xSemaphoreGive(metar_mutex);
+    }
+
+    kalman_set_qnh_ready(currentQNH);
+    vTaskDelay(pdMS_TO_TICKS(DELAY_MS));
+  }
+
+  if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
+    metar_data.qnh = newQNH;
+    g_sensor_data.qnh_metar = newQNH;
+    g_sensor_data.qnh_transition = false;
+    xSemaphoreGive(metar_mutex);
+  }
+  kalman_set_qnh_ready(newQNH);
+
+#ifdef DEBUG_MODE
+  Serial.printf("[QNH-M2] Transition completed: %.1f hPa\n", newQNH);
 #endif
 }
 #endif
@@ -144,49 +144,49 @@ static void updateQNH_method2(float newQNH) {
 // =============================
 #if QNH_ADJUST_METHOD == 3
 static void updateQNH_method3(float newQNH) {
-    float startQNH = metar_data.qnh;
-    
-    if (startQNH < 900.0f || startQNH > 1100.0f) {
-        startQNH = 1013.25f;
-    }
-    
-    float deltaQNH = newQNH - startQNH;
-    
-    if (fabs(deltaQNH) < 0.1f) {
-        if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
-            metar_data.qnh = newQNH;
-            g_sensor_data.qnh_metar = newQNH;
-            xSemaphoreGive(metar_mutex);
-        }
-        kalman_set_qnh_ready(newQNH);
-        return;
-    }
-    
-#ifdef DEBUG_MODE
-    Serial.printf("[QNH-M3] Direct offset: %.1f -> %.1f hPa (delta: %.1f hPa)\n", 
-                  startQNH, newQNH, deltaQNH);
-#endif
-    
-    // Calculer offset d'altitude (approximation: ~8.3m par hPa à altitude moyenne)
-    float alt_offset = 8.3f * deltaQNH;
-    
-#ifdef DEBUG_MODE
-    Serial.printf("[QNH-M3] Applying altitude offset: %.1f m\n", alt_offset);
-#endif
-    
-    // Appliquer l'offset directement au Kalman
-    kalman_apply_altitude_offset(alt_offset);
-    
-    // Mettre à jour le QNH instantanément
+  float startQNH = metar_data.qnh;
+
+  if (startQNH < 900.0f || startQNH > 1100.0f) {
+    startQNH = 1013.25f;
+  }
+
+  float deltaQNH = newQNH - startQNH;
+
+  if (fabs(deltaQNH) < 0.1f) {
     if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
-        metar_data.qnh = newQNH;
-        g_sensor_data.qnh_metar = newQNH;
-        xSemaphoreGive(metar_mutex);
+      metar_data.qnh = newQNH;
+      g_sensor_data.qnh_metar = newQNH;
+      xSemaphoreGive(metar_mutex);
     }
     kalman_set_qnh_ready(newQNH);
-    
+    return;
+  }
+
 #ifdef DEBUG_MODE
-    Serial.printf("[QNH-M3] QNH updated instantly to %.1f hPa\n", newQNH);
+  Serial.printf("[QNH-M3] Direct offset: %.1f -> %.1f hPa (delta: %.1f hPa)\n",
+                startQNH, newQNH, deltaQNH);
+#endif
+
+  // Calculer offset d'altitude (approximation: ~8.3m par hPa à altitude moyenne)
+  float alt_offset = 8.3f * deltaQNH;
+
+#ifdef DEBUG_MODE
+  Serial.printf("[QNH-M3] Applying altitude offset: %.1f m\n", alt_offset);
+#endif
+
+  // Appliquer l'offset directement au Kalman
+  kalman_apply_altitude_offset(alt_offset);
+
+  // Mettre à jour le QNH instantanément
+  if (xSemaphoreTake(metar_mutex, pdMS_TO_TICKS(100))) {
+    metar_data.qnh = newQNH;
+    g_sensor_data.qnh_metar = newQNH;
+    xSemaphoreGive(metar_mutex);
+  }
+  kalman_set_qnh_ready(newQNH);
+
+#ifdef DEBUG_MODE
+  Serial.printf("[QNH-M3] QNH updated instantly to %.1f hPa\n", newQNH);
 #endif
 }
 #endif
@@ -196,13 +196,13 @@ static void updateQNH_method3(float newQNH) {
 // =============================
 static void updateQNH_smooth(float newQNH) {
 #if QNH_ADJUST_METHOD == 1
-    updateQNH_method1(newQNH);
+  updateQNH_method1(newQNH);
 #elif QNH_ADJUST_METHOD == 2
-    updateQNH_method2(newQNH);
+  updateQNH_method2(newQNH);
 #elif QNH_ADJUST_METHOD == 3
-    updateQNH_method3(newQNH);
+  updateQNH_method3(newQNH);
 #else
-    #error "QNH_ADJUST_METHOD must be 1, 2, or 3"
+#error "QNH_ADJUST_METHOD must be 1, 2, or 3"
 #endif
 }
 
@@ -270,7 +270,7 @@ static bool fetch_qnh_openmeteo(float lat, float lon) {
 
   // Appliquer la méthode d'ajustement sélectionnée
   updateQNH_smooth(qnh);
-  
+
   qnh_retrieved = true;
 
   return true;
@@ -278,17 +278,15 @@ static bool fetch_qnh_openmeteo(float lat, float lon) {
 
 // Fonction calcul distance (formule Haversine)
 static float calculate_distance(float lat1, float lon1, float lat2, float lon2) {
-    const float R = 6371.0;
-    
-    float dlat = (lat2 - lat1) * M_PI / 180.0;
-    float dlon = (lon2 - lon1) * M_PI / 180.0;
-    
-    float a = sin(dlat/2) * sin(dlat/2) +
-              cos(lat1 * M_PI / 180.0) * cos(lat2 * M_PI / 180.0) *
-              sin(dlon/2) * sin(dlon/2);
-    
-    float c = 2 * atan2(sqrt(a), sqrt(1-a));
-    return R * c;
+  const float R = 6371.0;
+
+  float dlat = (lat2 - lat1) * M_PI / 180.0;
+  float dlon = (lon2 - lon1) * M_PI / 180.0;
+
+  float a = sin(dlat / 2) * sin(dlat / 2) + cos(lat1 * M_PI / 180.0) * cos(lat2 * M_PI / 180.0) * sin(dlon / 2) * sin(dlon / 2);
+
+  float c = 2 * atan2(sqrt(a), sqrt(1 - a));
+  return R * c;
 }
 
 static void metar_task(void* parameter) {
@@ -299,11 +297,11 @@ static void metar_task(void* parameter) {
   const TickType_t fetch_interval = pdMS_TO_TICKS(3600000);
   const TickType_t qnh_timeout = pdMS_TO_TICKS(30000);
   const float distance_threshold = 30.0;
-  
+
   TickType_t last_fetch = 0;
   TickType_t start_time = xTaskGetTickCount();
   bool timeout_applied = false;
-  
+
   float last_qnh_lat = 0.0;
   float last_qnh_lon = 0.0;
   bool first_qnh_update = true;
@@ -321,7 +319,7 @@ static void metar_task(void* parameter) {
     }
 
     bool auto_update_needed = false;
-    
+
     if (qnh_retrieved && !first_qnh_update) {
       if ((xTaskGetTickCount() - last_fetch) > fetch_interval) {
         auto_update_needed = true;
@@ -329,15 +327,14 @@ static void metar_task(void* parameter) {
         Serial.println("[QNH] Auto-update: 1 hour elapsed");
 #endif
       }
-      
+
 #ifdef FLIGHT_TEST_MODE
 #else
       if (!auto_update_needed && g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
         float distance = calculate_distance(
           last_qnh_lat, last_qnh_lon,
-          g_sensor_data.gps.latitude, g_sensor_data.gps.longitude
-        );
-        
+          g_sensor_data.gps.latitude, g_sensor_data.gps.longitude);
+
         if (distance >= distance_threshold) {
           auto_update_needed = true;
 #ifdef DEBUG_MODE
@@ -353,26 +350,26 @@ static void metar_task(void* parameter) {
     }
 
     EventBits_t bits = xEventGroupWaitBits(
-        metar_event_group,
-        METAR_FETCH_BIT | METAR_STOP_BIT,
-        pdTRUE,
-        pdFALSE,
-        pdMS_TO_TICKS(60000));
+      metar_event_group,
+      METAR_FETCH_BIT | METAR_STOP_BIT,
+      pdTRUE,
+      pdFALSE,
+      pdMS_TO_TICKS(60000));
 
     if (bits & METAR_STOP_BIT) break;
 
     if (bits & METAR_FETCH_BIT) {
-      int retry = 0;
-      while (!wifi_get_connected_status() && retry++ < 30) {
-        vTaskDelay(pdMS_TO_TICKS(1000));
-      }
-
-      if (!wifi_get_connected_status()) {
+      // Attendre connexion WiFi avec timeout 30s (bloquant sans CPU)
+      if (!wifi_wait_connected(30000)) {
 #ifdef DEBUG_MODE
-        Serial.println("[QNH] WiFi not available");
+        Serial.println("[QNH] WiFi not available after 30s timeout");
 #endif
         continue;
       }
+
+#ifdef DEBUG_MODE
+      Serial.println("[QNH] WiFi connected, preparing to fetch...");
+#endif
 
 #ifdef FLIGHT_TEST_MODE
       float lat = TEST_LAT;
@@ -393,7 +390,7 @@ static void metar_task(void* parameter) {
         last_qnh_lat = lat;
         last_qnh_lon = lon;
         first_qnh_update = false;
-        
+
 #ifdef DEBUG_MODE
         Serial.printf("[QNH] Successfully fetched at position: %.6f, %.6f\n", lat, lon);
 #endif
@@ -413,13 +410,13 @@ void metar_start(void) {
 
   if (!metar_task_handle) {
     xTaskCreatePinnedToCore(
-        metar_task,
-        "metar_task",
-        4608,
-        NULL,
-        3,
-        &metar_task_handle,
-        0);
+      metar_task,
+      "metar_task",
+      4608,
+      NULL,
+      3,
+      &metar_task_handle,
+      0);
   }
 
 #ifdef DEBUG_MODE

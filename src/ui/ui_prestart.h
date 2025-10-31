@@ -51,9 +51,6 @@ static bool check_start_conditions() {
 // Callback timer pour mise a jour status
 static void sensor_status_update_cb(lv_timer_t *timer) {
   if (!label_bmp_status || !label_bno_status || !label_gps_status || !label_wifi_status || !label_qnh_status || !label_kalman_status || !label_sd_status) {
-#ifdef DEBUG_MODE
-    Serial.println("[PRESTART] Labels invalides, arret timer");
-#endif
     if (timer) {
       lv_timer_del(timer);
       sensor_status_timer = NULL;
@@ -62,9 +59,6 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
   }
 
   if (!lv_obj_is_valid(label_bmp_status) || !lv_obj_is_valid(label_bno_status) || !lv_obj_is_valid(label_gps_status) || !lv_obj_is_valid(label_wifi_status) || !lv_obj_is_valid(label_qnh_status) || !lv_obj_is_valid(label_kalman_status) || !lv_obj_is_valid(label_sd_status)) {
-#ifdef DEBUG_MODE
-    Serial.println("[PRESTART] Labels detruits, arret timer");
-#endif
     if (timer) {
       lv_timer_del(timer);
       sensor_status_timer = NULL;
@@ -81,56 +75,36 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
     uint64_t total_gb = total_kb / (1024 * 1024);
     uint64_t free_gb = free_kb / (1024 * 1024);
 
-    snprintf(info_text, sizeof(info_text), "%s SD: %lluGB (%lluGB libre)",
-             LV_SYMBOL_SD_CARD, total_gb, free_gb);
-    lv_label_set_text(label_sd_status, info_text);
+    ui_label_set_formatted_text(label_sd_status, "%s SD: %lluGB (%lluGB libre)", LV_SYMBOL_SD_CARD, total_gb, free_gb);
     lv_obj_set_style_text_color(label_sd_status, lv_color_hex(OK_COLOR), 0);
   } else {
-    snprintf(info_text, sizeof(info_text), "%s SD: ERROR",
-             LV_SYMBOL_SD_CARD);
-    lv_label_set_text(label_sd_status, info_text);
+    ui_label_set_formatted_text(label_sd_status, "%s SD: ERROR", LV_SYMBOL_SD_CARD);
     lv_obj_set_style_text_color(label_sd_status, lv_color_hex(KO_COLOR), 0);
   }
 
   // BMP390
-  snprintf(info_text, sizeof(info_text), "%s BMP390: %s", LV_SYMBOL_SETTINGS, g_sensor_data.bmp390.valid ? "OK" : "ERROR");
-  lv_label_set_text(label_bmp_status, info_text);
+  ui_label_set_formatted_text(label_bmp_status, "%s BMP390: %s", LV_SYMBOL_SETTINGS, g_sensor_data.bmp390.valid ? "OK" : "ERROR");
   lv_obj_set_style_text_color(label_bmp_status, g_sensor_data.bmp390.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
 
   // BNO080
-  snprintf(info_text, sizeof(info_text), "%s BNO080: %s",
-           LV_SYMBOL_GPS,
-           g_sensor_data.bno080.valid ? "OK" : "ERROR");
-  lv_label_set_text(label_bno_status, info_text);
-  lv_obj_set_style_text_color(label_bno_status,
-                              g_sensor_data.bno080.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
+  ui_label_set_formatted_text(label_bno_status, "%s BNO080: %s", LV_SYMBOL_GPS, g_sensor_data.bno080.valid ? "OK" : "ERROR");
+  lv_obj_set_style_text_color(label_bno_status, g_sensor_data.bno080.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
 
   // GPS
   if (g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
-    snprintf(info_text, sizeof(info_text), "%s GPS: FIX (%d sats)",
-             LV_SYMBOL_GPS,
-             g_sensor_data.gps.satellites);
-    lv_label_set_text(label_gps_status, info_text);
+    ui_label_set_formatted_text(label_gps_status, "%s GPS: FIX (%d sats)", LV_SYMBOL_GPS, g_sensor_data.gps.satellites);
     lv_obj_set_style_text_color(label_gps_status, lv_color_hex(OK_COLOR), 0);
   } else if (g_sensor_data.gps.valid) {
-    snprintf(info_text, sizeof(info_text), "%s GPS: NO FIX (%d sats)",
-             LV_SYMBOL_GPS,
-             g_sensor_data.gps.satellites);
-    lv_label_set_text(label_gps_status, info_text);
+    ui_label_set_formatted_text(label_gps_status, "%s GPS: NO FIX (%d sats)", LV_SYMBOL_GPS, g_sensor_data.gps.satellites);
     lv_obj_set_style_text_color(label_gps_status, lv_color_hex(WG_COLOR), 0);
   } else {
-    snprintf(info_text, sizeof(info_text), "%s GPS: ERROR",
-             LV_SYMBOL_GPS);
-    lv_label_set_text(label_gps_status, info_text);
+    ui_label_set_formatted_text(label_gps_status, "%s GPS: ERROR", LV_SYMBOL_GPS);
     lv_obj_set_style_text_color(label_gps_status, lv_color_hex(KO_COLOR), 0);
   }
 
   // WiFi
   if (wifi_get_connected_status()) {
-    snprintf(info_text, sizeof(info_text), "%s WiFi: %s",
-             LV_SYMBOL_WIFI,
-             wifi_get_current_ssid());
-    lv_label_set_text(label_wifi_status, info_text);
+    ui_label_set_formatted_text(label_wifi_status, "%s WiFi: %s", LV_SYMBOL_WIFI, wifi_get_current_ssid());
     lv_obj_set_style_text_color(label_wifi_status, lv_color_hex(OK_COLOR), 0);
 
     // Lancer recuperation METAR si WiFi OK
@@ -156,9 +130,7 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
     }
 #endif
   } else {
-    snprintf(info_text, sizeof(info_text), "%s WiFi: Connexion...",
-             LV_SYMBOL_WIFI);
-    lv_label_set_text(label_wifi_status, info_text);
+    ui_label_set_formatted_text(label_wifi_status, "%s WiFi: Connexion...", LV_SYMBOL_WIFI);
     lv_obj_set_style_text_color(label_wifi_status, lv_color_hex(WG_COLOR), 0);
   }
 
@@ -166,26 +138,18 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
   float qnh = metar_get_qnh();
   metar_data_t metar;
   if (metar_get_data(&metar) && metar.valid) {
-    snprintf(info_text, sizeof(info_text), "QNH: %.1f hPa (%s)",
-             qnh, metar.station);
-    lv_label_set_text(label_qnh_status, info_text);
+    ui_label_set_formatted_text(label_qnh_status, "QNH: %.1f hPa (%s)", qnh, metar.station);
     lv_obj_set_style_text_color(label_qnh_status, lv_color_hex(OK_COLOR), 0);
   } else {
-    snprintf(info_text, sizeof(info_text), "QNH: %.1f hPa (Standard)",
-             qnh);
-    lv_label_set_text(label_qnh_status, info_text);
+    ui_label_set_formatted_text(label_qnh_status, "QNH: %.1f hPa (Standard)", qnh);
     lv_obj_set_style_text_color(label_qnh_status, lv_color_hex(WG_COLOR), 0);
   }
 
   // Kalman
   kalman_data_t kdata;
   kalman_get_data(&kdata);
-  snprintf(info_text, sizeof(info_text), "%s Kalman: %s",
-           LV_SYMBOL_SETTINGS,
-           kdata.valid ? "OK" : "INIT...");
-  lv_label_set_text(label_kalman_status, info_text);
-  lv_obj_set_style_text_color(label_kalman_status,
-                              kdata.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
+  ui_label_set_formatted_text(label_kalman_status, "%s Kalman: %s", LV_SYMBOL_SETTINGS, kdata.valid ? "OK" : "INIT...");
+  lv_obj_set_style_text_color(label_kalman_status, kdata.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
 
   // Activer/desactiver bouton Start
   if (btn_start) {
@@ -203,10 +167,6 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
 
 // Callbacks boutons
 static void btn_file_transfer_cb(lv_event_t *e) {
-#ifdef DEBUG_MODE
-  Serial.println("[PRESTART] File transfer clicked");
-#endif
-
   if (sensor_status_timer != NULL) {
     lv_timer_del(sensor_status_timer);
     sensor_status_timer = NULL;
@@ -218,10 +178,6 @@ static void btn_file_transfer_cb(lv_event_t *e) {
 }
 
 static void btn_settings_cb(lv_event_t *e) {
-#ifdef DEBUG_MODE
-  Serial.println("[PRESTART] Settings clicked");
-#endif
-
   if (sensor_status_timer != NULL) {
     lv_timer_del(sensor_status_timer);
     sensor_status_timer = NULL;
@@ -233,10 +189,6 @@ static void btn_settings_cb(lv_event_t *e) {
 }
 
 static void btn_start_cb(lv_event_t *e) {
-#ifdef DEBUG_MODE
-  Serial.println("[PRESTART] Start clicked");
-#endif
-
   if (sensor_status_timer != NULL) {
     lv_timer_del(sensor_status_timer);
     sensor_status_timer = NULL;
@@ -249,9 +201,6 @@ static void btn_start_cb(lv_event_t *e) {
 
 // Initialisation ecran prestart
 void ui_prestart_init(void) {
-#ifdef DEBUG_MODE
-  Serial.println("[PRESTART] Init");
-#endif
 #ifdef FLIGHT_TEST_MODE
   start_tile_cache_task(params.map_zoom, TEST_LAT, TEST_LON);
 #endif
@@ -468,26 +417,8 @@ void ui_prestart_show(void) {
   label_sd_status = NULL;
   btn_start = NULL;
 
-  // Sauvegarder ancien écran
-  lv_obj_t *old_screen = lv_scr_act();
+  ui_switch_screen(ui_prestart_init);
 
-  if (lvgl_port_lock(-1)) {
-    // Créer nouvel écran
-    current_screen = lv_obj_create(NULL);
-    ui_prestart_init();
-
-    lv_screen_load(current_screen);
-    force_full_refresh();
-    lvgl_port_unlock();
-  }
-
-  // Détruire ancien écran
-  if (old_screen != current_screen && old_screen != NULL) {
-    lv_obj_del(old_screen);
-#ifdef DEBUG_MODE
-    Serial.println("[UI] Old screen deleted");
-#endif
-  }
   wifi_task_start();
   metar_start();
 #ifdef DEBUG_MODE

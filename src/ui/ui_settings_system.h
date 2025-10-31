@@ -17,14 +17,8 @@ static lv_obj_t *label_brightness_value = NULL;
 static lv_obj_t *dropdown_language = NULL;
 
 static void load_system_settings(void) {
-  if (slider_brightness) {
-    lv_slider_set_value(slider_brightness, params.system_brightness, LV_ANIM_OFF);
-    lv_label_set_text_fmt(label_brightness_value, "%d%%", params.system_brightness);
-  }
-
-  if (dropdown_language) {
-    lv_dropdown_set_selected(dropdown_language, (int)params.system_language);
-  }
+  ui_load_slider_with_label(slider_brightness, label_brightness_value, params.system_brightness, "%d%%");
+  ui_load_dropdown(dropdown_language, (int)params.system_language);
 
 #ifdef DEBUG_MODE
   Serial.printf("System settings loaded from params: brightness=%d%%, language=%d\n",
@@ -33,18 +27,11 @@ static void load_system_settings(void) {
 }
 
 static void save_system_settings(void) {
-  params.system_brightness = (int)lv_slider_get_value(slider_brightness);
-  params.system_language = (Language)lv_dropdown_get_selected(dropdown_language);
+  params.system_brightness = ui_save_slider(slider_brightness);
+  params.system_language = (Language)ui_save_dropdown(dropdown_language);
 
   params_save_system();
-
-  // Appliquer la luminosite
   wavesahre_rgb_lcd_set_brightness(params.system_brightness);
-
-#ifdef DEBUG_MODE
-  Serial.printf("System settings saved: brightness=%d%%, language=%d\n",
-                params.system_brightness, (int)params.system_language);
-#endif
 }
 
 static void slider_brightness_event_cb(lv_event_t *e) {
@@ -162,25 +149,7 @@ void ui_settings_system_init(void) {
 }
 
 void ui_settings_system_show(void) {
-  // Sauvegarder ancien écran
-  lv_obj_t *old_screen = lv_scr_act();
-
-  if (lvgl_port_lock(-1)) {
-    // Créer nouvel écran
-    current_screen = lv_obj_create(NULL);
-    ui_settings_system_init();
-    lv_screen_load(current_screen);
-    force_full_refresh();
-    lvgl_port_unlock();
-  }
-
-  // Détruire ancien écran
-  if (old_screen != current_screen && old_screen != NULL) {
-    lv_obj_del(old_screen);
-#ifdef DEBUG_MODE
-    Serial.println("[UI] Old screen deleted");
-#endif
-  }
+  ui_switch_screen(ui_settings_system_init);
 }
 
 #endif

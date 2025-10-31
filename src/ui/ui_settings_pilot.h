@@ -61,33 +61,13 @@ static void ta_pilot_event_cb(lv_event_t *e) {
   }
 }
 
-static void keyboard_pilot_event_cb(lv_event_t *e) {
-  lv_event_code_t code = lv_event_get_code(e);
-  if (code == LV_EVENT_READY || code == LV_EVENT_CANCEL) {
-    lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
-    ta_active = NULL;
-    force_full_refresh();
-  }
-}
-
 static void btn_save_pilot_cb(lv_event_t *e) {
   pilot_widgets_t *widgets = (pilot_widgets_t *)lv_event_get_user_data(e);
-
-#ifdef DEBUG_MODE
-  Serial.println("Save pilot data clicked");
-#endif
-
   if (widgets == NULL) {
-#ifdef DEBUG_MODE
-    Serial.println("ERROR: widgets is NULL!");
-#endif
     return;
   }
 
   if (widgets->ta_name == NULL || widgets->ta_firstname == NULL || widgets->ta_wing == NULL || widgets->ta_phone == NULL) {
-#ifdef DEBUG_MODE
-    Serial.println("ERROR: widget pointers are NULL!");
-#endif
     return;
   }
 
@@ -96,9 +76,6 @@ static void btn_save_pilot_cb(lv_event_t *e) {
 }
 
 static void btn_cancel_pilot_cb(lv_event_t *e) {
-#ifdef DEBUG_MODE
-  Serial.println("Cancel pilot settings clicked");
-#endif
   ui_settings_show();
 }
 
@@ -133,7 +110,7 @@ void ui_settings_pilot_init(void) {
   // Clavier
   if (!keyboard) {
     keyboard = ui_create_keyboard(main_frame);
-    lv_obj_add_event_cb(keyboard, keyboard_pilot_event_cb, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(keyboard, ui_keyboard_common_event_cb, LV_EVENT_ALL, NULL);
   }
 
   // Bouton Save
@@ -155,26 +132,7 @@ void ui_settings_pilot_init(void) {
 }
 
 void ui_settings_pilot_show(void) {
-  lv_obj_t *old_screen = lv_scr_act();
-
-  if (lvgl_port_lock(-1)) {
-    // Créer nouvel écran
-    current_screen = lv_obj_create(NULL);
-
-    ui_settings_pilot_init();
-
-    lv_screen_load(current_screen);
-    force_full_refresh();
-    lvgl_port_unlock();
-  }
-
-  // Détruire ancien écran
-  if (old_screen != current_screen && old_screen != NULL) {
-    lv_obj_del(old_screen);
-#ifdef DEBUG_MODE
-    Serial.println("[UI] Old screen deleted");
-#endif
-  }
+  ui_switch_screen(ui_settings_pilot_init);
 }
 
 #endif

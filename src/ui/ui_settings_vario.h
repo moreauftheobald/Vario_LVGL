@@ -6,9 +6,6 @@
 #include "UI_helper.h"
 #include "lang.h"
 #include "src/params/params.h"
-#include <Preferences.h>
-
-extern Preferences prefs;
 
 extern void force_full_refresh(void);
 
@@ -37,6 +34,20 @@ static void slider_integration_event_cb(lv_event_t *e) {
     Serial.printf("Integration period changed to: %d s\n", value);
 #endif
   }
+}
+
+static void save_vario_settings(void) {
+  params.vario_integration_period = (int)lv_slider_get_value(slider_integration);
+
+  for (int i = 0; i < 16; i++) {
+    params.vario_audio_frequencies[i] = audio_frequencies[i];
+  }
+
+  params_save_vario();
+
+#ifdef DEBUG_MODE
+  Serial.println("Vario settings saved to params");
+#endif
 }
 
 static void chart_audio_event_cb(lv_event_t *e) {
@@ -89,22 +100,10 @@ static void btn_save_vario_cb(lv_event_t *e) {
   Serial.println("Saving vario settings");
 #endif
 
-  prefs.begin("vario", false);
-  int integration = (int)lv_slider_get_value(slider_integration);
-
-  prefs.putInt("integration", integration);
-
-  // Sauvegarde des frequences
-  for (int i = 0; i < 16; i++) {
-    char key[16];
-    snprintf(key, sizeof(key), "freq_%d", i);
-    prefs.putUShort(key, audio_frequencies[i]);
-  }
-
-  prefs.end();
+  save_vario_settings();
 
 #ifdef DEBUG_MODE
-  Serial.printf("Vario settings saved - Integration: %d s\n", integration);
+  Serial.printf("Vario settings saved - Integration: %d s\n", params.vario_integration_period);
 #endif
 
   ui_settings_show();
@@ -136,10 +135,7 @@ static void btn_reset_audio_cb(lv_event_t *e) {
 }
 
 static void load_vario_settings(void) {
-  if (slider_integration && label_integration_value) {
-    lv_slider_set_value(slider_integration, params.vario_integration_period, LV_ANIM_OFF);
-    lv_label_set_text_fmt(label_integration_value, "%d s", params.vario_integration_period);
-  }
+  ui_load_slider_with_label(slider_integration, label_integration_value,  params.vario_integration_period, "%d s");
 
   // Charger les frequences audio
   for (int i = 0; i < 16; i++) {
@@ -153,20 +149,6 @@ static void load_vario_settings(void) {
 
 #ifdef DEBUG_MODE
   Serial.println("Vario settings loaded from params");
-#endif
-}
-
-static void save_vario_settings(void) {
-  params.vario_integration_period = (int)lv_slider_get_value(slider_integration);
-
-  for (int i = 0; i < 16; i++) {
-    params.vario_audio_frequencies[i] = audio_frequencies[i];
-  }
-
-  params_save_vario();
-
-#ifdef DEBUG_MODE
-  Serial.println("Vario settings saved to params");
 #endif
 }
 
@@ -278,27 +260,7 @@ void ui_settings_vario_init(void) {
 }
 
 void ui_settings_vario_show(void) {
-  lv_obj_t *old_screen = lv_scr_act();
-
-  if (lvgl_port_lock(-1)) {
-    current_screen = lv_obj_create(NULL);
-    ui_settings_vario_init();
-    lv_screen_load(current_screen);
-    force_full_refresh(); 
-    lvgl_port_unlock(); 
-  }
-
-  // Détruire ancien écran
-  if (old_screen != current_screen && old_screen != NULL) {
-    lv_obj_del(old_screen);
-#ifdef DEBUG_MODE
-    Serial.println("[UI] Old screen deleted");
-#endif
-  }
-
-#ifdef DEBUG_MODE
-  Serial.println("[VARIO] show() complete");
-#endif
+  ui_switch_screen(ui_settings_vario_init);
 }
 
 #endif

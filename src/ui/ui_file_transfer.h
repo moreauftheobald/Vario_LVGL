@@ -31,14 +31,8 @@ static void status_update_timer_cb(lv_timer_t *timer) {
     lv_obj_set_style_text_color(label_status, lv_color_hex(0x34c759), 0);
 
     // Construire le texte SSID avec buffer
-    char ssid_buffer[64];
-    snprintf(ssid_buffer, sizeof(ssid_buffer), "SSID: %s", wifi_get_current_ssid());
-    lv_label_set_text(label_ssid, ssid_buffer);
-
-    // Construire le texte IP avec buffer
-    char ip_buffer[32];
-    snprintf(ip_buffer, sizeof(ip_buffer), "IP: %s", wifi_get_current_ip());
-    lv_label_set_text(label_ip, ip_buffer);
+    ui_label_set_formatted_text(label_ssid, "SSID: %s", wifi_get_current_ssid());
+    ui_label_set_formatted_text(label_ip, "IP: %s", wifi_get_current_ip());
   } else {
     lv_label_set_text(label_status, LV_SYMBOL_WARNING " Connecting...");
     lv_obj_set_style_text_color(label_status, lv_color_hex(0xff9500), 0);
@@ -84,7 +78,7 @@ void ui_file_transfer_init(void) {
   ui_create_main_frame(main_frame, false, txt->file_transfer);
 
   lv_obj_align(main_left, LV_ALIGN_CENTER, 0, 10);
-  
+
 
   // WiFi status
   label_status = ui_create_label(main_left, LV_SYMBOL_WIFI " Starting...",
@@ -142,26 +136,7 @@ void ui_file_transfer_init(void) {
 }
 
 void ui_file_transfer_show(void) {
-  lv_obj_t *old_screen = lv_scr_act();
-
-  if (lvgl_port_lock(-1)) {
-    // Créer nouvel écran
-    current_screen = lv_obj_create(NULL);
-
-    ui_file_transfer_init();
-
-    lv_screen_load(current_screen);
-    force_full_refresh();
-    lvgl_port_unlock();
-  }
-
-  // Détruire ancien écran
-  if (old_screen != current_screen && old_screen != NULL) {
-    lv_obj_del(old_screen);
-#ifdef DEBUG_MODE
-    Serial.println("[UI] Old screen deleted");
-#endif
-  }
+  ui_switch_screen(ui_file_transfer_init);
 }
 
 #endif

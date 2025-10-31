@@ -56,9 +56,6 @@ static void swipe_event_handler(lv_event_t *e) {
     if (indev) {
       lv_indev_get_point(indev, &touch_start_point);
       touch_started = true;
-#ifdef DEBUG_MODE
-      Serial.printf("Touch start: x=%d, y=%d\n", touch_start_point.x, touch_start_point.y);
-#endif
     }
   } else if (code == LV_EVENT_RELEASED) {
     if (touch_started) {
@@ -69,11 +66,6 @@ static void swipe_event_handler(lv_event_t *e) {
 
         int32_t diff_x = touch_end_point.x - touch_start_point.x;
         int32_t diff_y = touch_end_point.y - touch_start_point.y;
-
-#ifdef DEBUG_MODE
-        Serial.printf("Touch end: x=%d, y=%d, diff_x=%d, diff_y=%d\n",
-                      touch_end_point.x, touch_end_point.y, diff_x, diff_y);
-#endif
 
         // Detection swipe horizontal (threshold: 80px)
         if (abs(diff_x) > 80 && abs(diff_x) > abs(diff_y)) {

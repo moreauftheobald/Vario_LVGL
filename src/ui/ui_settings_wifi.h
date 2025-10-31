@@ -15,83 +15,89 @@ static lv_obj_t *ta_ssid = NULL;
 static lv_obj_t *ta_password = NULL;
 static int current_priority = 0;
 
-// Donnees temporaires pour les 4 priorites - allouees en PSRAM
-static char *wifi_data_ssid[4] = { NULL, NULL, NULL, NULL };
-static char *wifi_data_pass[4] = { NULL, NULL, NULL, NULL };
+// Backup pour Cancel - allouees en PSRAM
+static char *wifi_backup_ssid[4] = { NULL, NULL, NULL, NULL };
+static char *wifi_backup_pass[4] = { NULL, NULL, NULL, NULL };
 
-static void load_all_wifi_data(void) {
+// Sauvegarder params actuels pour Cancel
+static void backup_wifi_data(void) {
   for (int i = 0; i < 4; i++) {
-    // Liberer anciennes allocations
-    if (wifi_data_ssid[i]) {
-      heap_caps_free(wifi_data_ssid[i]);
-      wifi_data_ssid[i] = NULL;
+    // Liberer ancien backup
+    if (wifi_backup_ssid[i]) {
+      heap_caps_free(wifi_backup_ssid[i]);
+      wifi_backup_ssid[i] = NULL;
     }
-    if (wifi_data_pass[i]) {
-      heap_caps_free(wifi_data_pass[i]);
-      wifi_data_pass[i] = NULL;
+    if (wifi_backup_pass[i]) {
+      heap_caps_free(wifi_backup_pass[i]);
+      wifi_backup_pass[i] = NULL;
     }
 
-    // Copier depuis params vers donnees temporaires
-    wifi_data_ssid[i] = psram_strdup(psram_str_get(params.wifi_ssid[i]));
-    wifi_data_pass[i] = psram_strdup(psram_str_get(params.wifi_password[i]));
+    // Copier params actuels
+    wifi_backup_ssid[i] = psram_strdup(psram_str_get(params.wifi_ssid[i]));
+    wifi_backup_pass[i] = psram_strdup(psram_str_get(params.wifi_password[i]));
   }
 
 #ifdef DEBUG_MODE
-  Serial.println("All WiFi data loaded from params");
+  Serial.println("WiFi data backed up");
 #endif
 }
 
-static void save_all_wifi_data(void) {
+// Restaurer params depuis backup (pour Cancel)
+static void restore_wifi_data(void) {
   for (int i = 0; i < 4; i++) {
-    // Sauvegarder depuis donnees temporaires vers params
-    psram_str_set(&params.wifi_ssid[i], wifi_data_ssid[i]);
-    psram_str_set(&params.wifi_password[i], wifi_data_pass[i]);
+    psram_str_set(&params.wifi_ssid[i], wifi_backup_ssid[i]);
+    psram_str_set(&params.wifi_password[i], wifi_backup_pass[i]);
   }
 
-  params_save_wifi();
-
 #ifdef DEBUG_MODE
-  Serial.println("All WiFi data saved to params");
+  Serial.println("WiFi data restored from backup");
 #endif
 }
 
-static void save_current_fields_to_memory(void) {
+// Liberer backup
+static void free_wifi_backup(void) {
+  for (int i = 0; i < 4; i++) {
+    if (wifi_backup_ssid[i]) {
+      heap_caps_free(wifi_backup_ssid[i]);
+      wifi_backup_ssid[i] = NULL;
+    }
+    if (wifi_backup_pass[i]) {
+      heap_caps_free(wifi_backup_pass[i]);
+      wifi_backup_pass[i] = NULL;
+    }
+  }
+}
+
+// Sauvegarder champs actuels dans params
+static void save_current_fields_to_params(void) {
   if (ta_ssid && ta_password) {
     const char *ssid = lv_textarea_get_text(ta_ssid);
     const char *pass = lv_textarea_get_text(ta_password);
 
-    // Liberer anciennes allocations
-    if (wifi_data_ssid[current_priority]) {
-      heap_caps_free(wifi_data_ssid[current_priority]);
-    }
-    if (wifi_data_pass[current_priority]) {
-      heap_caps_free(wifi_data_pass[current_priority]);
-    }
-
-    // Allouer et copier (en supprimant les espaces)
+    // Supprimer espaces et sauvegarder directement dans params
     String ssid_str = String(ssid);
     ssid_str.trim();
-    wifi_data_ssid[current_priority] = psram_strdup(ssid_str.c_str());
+    psram_str_set(&params.wifi_ssid[current_priority], ssid_str.c_str());
 
     String pass_str = String(pass);
     pass_str.trim();
-    wifi_data_pass[current_priority] = psram_strdup(pass_str.c_str());
+    psram_str_set(&params.wifi_password[current_priority], pass_str.c_str());
 
 #ifdef DEBUG_MODE
-    Serial.printf("Saved SSID: '%s' (len=%d)\n",
-                  wifi_data_ssid[current_priority],
-                  strlen(wifi_data_ssid[current_priority]));
-    Serial.printf("Saved Pass len: %d\n", strlen(wifi_data_pass[current_priority]));
+    Serial.printf("Priority %d saved: SSID='%s' (len=%d), Pass len=%d\n",
+                  current_priority + 1,
+                  psram_str_get(params.wifi_ssid[current_priority]),
+                  strlen(psram_str_get(params.wifi_ssid[current_priority])),
+                  strlen(psram_str_get(params.wifi_password[current_priority])));
 #endif
   }
 }
 
+// Charger params dans champs
 static void load_current_priority_to_fields(void) {
   if (ta_ssid && ta_password) {
-    lv_textarea_set_text(ta_ssid,
-                         wifi_data_ssid[current_priority] ? wifi_data_ssid[current_priority] : "");
-    lv_textarea_set_text(ta_password,
-                         wifi_data_pass[current_priority] ? wifi_data_pass[current_priority] : "");
+    lv_textarea_set_text(ta_ssid, psram_str_get(params.wifi_ssid[current_priority]));
+    lv_textarea_set_text(ta_password, psram_str_get(params.wifi_password[current_priority]));
   }
 }
 
@@ -99,7 +105,7 @@ static void load_current_priority_to_fields(void) {
 static void dropdown_wifi_event_cb(lv_event_t *e) {
   lv_event_code_t code = lv_event_get_code(e);
   if (code == LV_EVENT_VALUE_CHANGED) {
-    save_current_fields_to_memory();
+    save_current_fields_to_params();
     current_priority = lv_dropdown_get_selected(dropdown_priority);
     load_current_priority_to_fields();
 
@@ -135,20 +141,19 @@ static void btn_save_wifi_cb(lv_event_t *e) {
   Serial.println("Save WiFi data clicked");
 #endif
 
-  save_current_fields_to_memory();
+  // Sauvegarder champs courants
+  save_current_fields_to_params();
 
-  // Verifier avant sauvegarde
+  // Ecrire params en NVS
+  params_save_wifi();
+
+  // Liberer backup
+  free_wifi_backup();
+
 #ifdef DEBUG_MODE
-  for (int i = 0; i < 4; i++) {
-    Serial.printf("Priority %d: SSID='%s' (len=%d), Pass len=%d\n",
-                  i + 1,
-                  wifi_data_ssid[i] ? wifi_data_ssid[i] : "",
-                  wifi_data_ssid[i] ? strlen(wifi_data_ssid[i]) : 0,
-                  wifi_data_pass[i] ? strlen(wifi_data_pass[i]) : 0);
-  }
+  Serial.println("WiFi settings saved to NVS");
 #endif
 
-  save_all_wifi_data();
   ui_settings_show();
 }
 
@@ -157,17 +162,11 @@ static void btn_cancel_wifi_cb(lv_event_t *e) {
   Serial.println("Cancel WiFi settings clicked");
 #endif
 
-  // Liberer les donnees temporaires
-  for (int i = 0; i < 4; i++) {
-    if (wifi_data_ssid[i]) {
-      heap_caps_free(wifi_data_ssid[i]);
-      wifi_data_ssid[i] = NULL;
-    }
-    if (wifi_data_pass[i]) {
-      heap_caps_free(wifi_data_pass[i]);
-      wifi_data_pass[i] = NULL;
-    }
-  }
+  // Restaurer params depuis backup
+  restore_wifi_data();
+
+  // Liberer backup
+  free_wifi_backup();
 
   ui_settings_show();
 }
@@ -175,7 +174,8 @@ static void btn_cancel_wifi_cb(lv_event_t *e) {
 void ui_settings_wifi_init(void) {
   const TextStrings *txt = get_text();
 
-  load_all_wifi_data();
+  // Backup params au debut
+  backup_wifi_data();
   current_priority = 0;
 
   lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);

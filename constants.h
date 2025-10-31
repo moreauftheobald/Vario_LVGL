@@ -229,7 +229,7 @@ METAR CONSTANTS
 #define QNH_UPDATE_DISTANCE_KM (30)  
 
 //Methode Update QNH
-#define QNH_ADJUST_METHOD 1
+#define QNH_ADJUST_METHOD 3
 
 /*=========================================================================
 OTHER CONSTANTS

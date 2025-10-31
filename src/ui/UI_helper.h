@@ -37,6 +37,134 @@ static inline void ui_cleanup_old_screen(lv_obj_t **screen_ptr) {
 }
 
 /**
+ * @brief Charge un slider avec sa valeur et met a jour le label associe
+ * @param slider Widget slider LVGL
+ * @param label Label affichant la valeur (peut etre NULL)
+ * @param value Valeur a charger
+ * @param format Format printf pour le label (ex: "%d", "%d s", "%d%%")
+ */
+static inline void ui_load_slider_with_label(lv_obj_t *slider, lv_obj_t *label, int value, const char *format) {
+  if (!slider) return;
+  
+  lv_slider_set_value(slider, value, LV_ANIM_OFF);
+  
+  if (label && format) {
+    lv_label_set_text_fmt(label, format, value);
+  }
+}
+
+/**
+ * @brief Charge un dropdown avec sa valeur
+ * @param dropdown Widget dropdown LVGL
+ * @param value Index a selectionner
+ */
+static inline void ui_load_dropdown(lv_obj_t *dropdown, int value) {
+  if (!dropdown) return;
+  lv_dropdown_set_selected(dropdown, value);
+}
+
+/**
+ * @brief Charge un switch avec son etat et positionne l'indicateur
+ * @param switch_obj Widget switch LVGL
+ * @param indicator Indicateur visuel (peut etre NULL)
+ * @param state Etat du switch (true = ON)
+ */
+static inline void ui_load_switch(lv_obj_t *switch_obj, lv_obj_t *indicator, bool state) {
+  if (!switch_obj) return;
+  
+  if (state) {
+    lv_obj_add_state(switch_obj, LV_STATE_CHECKED);
+    if (indicator) {
+      lv_obj_align(indicator, LV_ALIGN_RIGHT_MID, -2, 0);
+    }
+  } else {
+    lv_obj_clear_state(switch_obj, LV_STATE_CHECKED);
+    if (indicator) {
+      lv_obj_align(indicator, LV_ALIGN_LEFT_MID, 2, 0);
+    }
+  }
+}
+
+/**
+ * @brief Sauvegarde la valeur d'un slider
+ * @param slider Widget slider LVGL
+ * @return Valeur du slider
+ */
+static inline int ui_save_slider(lv_obj_t *slider) {
+  if (!slider) return 0;
+  return (int)lv_slider_get_value(slider);
+}
+
+/**
+ * @brief Sauvegarde la valeur d'un dropdown
+ * @param dropdown Widget dropdown LVGL
+ * @return Index selectionne
+ */
+static inline int ui_save_dropdown(lv_obj_t *dropdown) {
+  if (!dropdown) return 0;
+  return lv_dropdown_get_selected(dropdown);
+}
+
+/**
+ * @brief Sauvegarde l'etat d'un switch
+ * @param switch_obj Widget switch LVGL
+ * @return Etat du switch (true = ON)
+ */
+static inline bool ui_save_switch(lv_obj_t *switch_obj) {
+  if (!switch_obj) return false;
+  return lv_obj_has_state(switch_obj, LV_STATE_CHECKED);
+}
+
+
+/**
+ * @brief Met a jour un label avec texte formate (remplace snprintf + lv_label_set_text)
+ * @param label Pointeur vers le label LVGL
+ * @param format Chaine de format (style printf)
+ * @param ... Arguments variables
+ * 
+ * @note Utilise un buffer statique de 256 caracteres
+ * @warning Thread-safe uniquement si appele depuis le meme thread LVGL
+ */
+static inline void ui_label_set_formatted_text(lv_obj_t *label, const char *format, ...) {
+  if (!label || !format) return;
+  
+  static char buffer[256];
+  va_list args;
+  va_start(args, format);
+  vsnprintf(buffer, sizeof(buffer), format, args);
+  va_end(args);
+  
+  lv_label_set_text(label, buffer);
+}
+
+/**
+ * @brief Callback unifie pour tous les claviers
+ * Cache le clavier lors de READY ou CANCEL
+ */
+static inline void ui_keyboard_common_event_cb(lv_event_t *e) {
+  lv_event_code_t code = lv_event_get_code(e);
+  if (code == LV_EVENT_READY || code == LV_EVENT_CANCEL) {
+    lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+    ta_active = NULL;
+    force_full_refresh();
+  }
+}
+
+void ui_switch_screen(void (*init_func)(void)) {
+  lv_obj_t *old_screen = lv_scr_act();
+  if (lvgl_port_lock(-1)) {
+    current_screen = lv_obj_create(NULL);
+    init_func();
+    lv_screen_load(current_screen);
+    force_full_refresh();
+    lvgl_port_unlock();
+  }
+  if (old_screen != current_screen && old_screen != NULL) {
+    lv_obj_del(old_screen);
+  }
+}
+
+/**
  * @brief Cree un ecran noir avec un frame principal ayant une bordure blanche
  * @param border_width Epaisseur de la bordure en pixels
  * @param radius Rayon des coins arrondis
@@ -45,7 +173,7 @@ static inline void ui_cleanup_old_screen(lv_obj_t **screen_ptr) {
  */
 static inline lv_obj_t *ui_create_black_screen_with_frame(uint16_t border_width, uint16_t radius, lv_obj_t **screen_ptr) {
   // Ecran noir sans bordure
- if (*screen_ptr != NULL) {
+  if (*screen_ptr != NULL) {
     lv_obj_clean(*screen_ptr);
   } else {
     *screen_ptr = lv_obj_create(NULL);

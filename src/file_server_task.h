@@ -123,9 +123,6 @@ static void handle_not_found() {
 
 // Tache serveur de fichiers
 static void file_server_task(void *pvParameters) {
-#ifdef DEBUG_MODE
-  Serial.println("File server task started");
-#endif
 
   web_server = new WebServer(80);
 
@@ -135,10 +132,6 @@ static void file_server_task(void *pvParameters) {
 
   web_server->begin();
   server_is_running = true;
-
-#ifdef DEBUG_MODE
-  Serial.println("HTTP server started on port 80");
-#endif
 
   while (1) {
     web_server->handleClient();
@@ -165,9 +158,7 @@ void file_server_start(void) {
     &file_server_task_handle,
     0);
 
-#ifdef DEBUG_MODE
-  Serial.println("File server task created");
-#endif
+
 }
 
 void file_server_stop(void) {
@@ -181,10 +172,6 @@ void file_server_stop(void) {
     vTaskDelete(file_server_task_handle);
     file_server_task_handle = NULL;
     server_is_running = false;
-
-#ifdef DEBUG_MODE
-    Serial.println("File server stopped");
-#endif
   }
 }
 

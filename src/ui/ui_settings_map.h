@@ -122,33 +122,10 @@ static void load_map_settings(lv_obj_t *slider_zoom, lv_obj_t *label_zoom_value,
                               lv_obj_t *dropdown_tile_server, lv_obj_t *slider_track_points,
                               lv_obj_t *label_track_value, lv_obj_t *switch_vario_colors,
                               lv_obj_t *switch_indicator) {
-  if (slider_zoom) {
-    lv_slider_set_value(slider_zoom, params.map_zoom, LV_ANIM_OFF);
-    lv_label_set_text_fmt(label_zoom_value, "%d", params.map_zoom);
-  }
-
-  if (dropdown_tile_server) {
-    lv_dropdown_set_selected(dropdown_tile_server, params.map_tile_server);
-  }
-
-  if (slider_track_points) {
-    lv_slider_set_value(slider_track_points, params.map_track_points, LV_ANIM_OFF);
-    lv_label_set_text_fmt(label_track_value, "%d", params.map_track_points);
-  }
-
-  if (switch_vario_colors) {
-    if (params.map_vario_colors) {
-      lv_obj_add_state(switch_vario_colors, LV_STATE_CHECKED);
-      if (switch_indicator) {
-        lv_obj_align(switch_indicator, LV_ALIGN_RIGHT_MID, -2, 0);
-      }
-    } else {
-      lv_obj_clear_state(switch_vario_colors, LV_STATE_CHECKED);
-      if (switch_indicator) {
-        lv_obj_align(switch_indicator, LV_ALIGN_LEFT_MID, 2, 0);
-      }
-    }
-  }
+  ui_load_slider_with_label(slider_zoom, label_zoom_value, params.map_zoom, "%d");
+  ui_load_dropdown(dropdown_tile_server, params.map_tile_server);
+  ui_load_slider_with_label(slider_track_points, label_track_value, params.map_track_points, "%d");
+  ui_load_switch(switch_vario_colors, switch_indicator, params.map_vario_colors);
 
 #ifdef DEBUG_MODE
   Serial.println("Map settings loaded from params");
@@ -157,10 +134,10 @@ static void load_map_settings(lv_obj_t *slider_zoom, lv_obj_t *label_zoom_value,
 
 static void save_map_settings(lv_obj_t *slider_zoom, lv_obj_t *dropdown_tile_server,
                               lv_obj_t *slider_track_points, lv_obj_t *switch_vario_colors) {
-  params.map_zoom = (int)lv_slider_get_value(slider_zoom);
-  params.map_tile_server = lv_dropdown_get_selected(dropdown_tile_server);
-  params.map_track_points = (int)lv_slider_get_value(slider_track_points);
-  params.map_vario_colors = lv_obj_has_state(switch_vario_colors, LV_STATE_CHECKED);
+  params.map_zoom = ui_save_slider(slider_zoom);
+  params.map_tile_server = ui_save_dropdown(dropdown_tile_server);
+  params.map_track_points = ui_save_slider(slider_track_points);
+  params.map_vario_colors = ui_save_switch(switch_vario_colors);
 
   params_save_map();
 
@@ -180,10 +157,6 @@ static void slider_zoom_event_cb(lv_event_t *e) {
 
     // AJOUTE: Rafraîchir l'aperçu carte
     refresh_map_preview(value);
-
-#ifdef DEBUG_MODE
-    Serial.printf("Zoom changed to: %d\n", value);
-#endif
   }
 }
 
@@ -194,10 +167,6 @@ static void slider_track_event_cb(lv_event_t *e) {
     lv_obj_t *label = (lv_obj_t *)lv_event_get_user_data(e);
     int value = (int)lv_slider_get_value(slider);
     lv_label_set_text_fmt(label, "%d", value);
-
-#ifdef DEBUG_MODE
-    Serial.printf("Track points changed to: %d\n", value);
-#endif
   }
 }
 
@@ -206,12 +175,6 @@ static void dropdown_map_event_cb(lv_event_t *e) {
   if (code == LV_EVENT_VALUE_CHANGED) {
     lv_obj_t *dropdown = (lv_obj_t *)lv_event_get_target(e);
     int selected = lv_dropdown_get_selected(dropdown);
-
-#ifdef DEBUG_MODE
-    char name[64];
-    get_tile_server_name(selected, name, sizeof(name));
-    Serial.printf("Tile server changed to: %s\n", name);
-#endif
   }
 }
 
@@ -229,10 +192,6 @@ static void switch_vario_event_cb(lv_event_t *e) {
         lv_obj_align(indicator, LV_ALIGN_LEFT_MID, 2, 0);
       }
     }
-
-#ifdef DEBUG_MODE
-    Serial.printf("Vario colors: %s\n", checked ? "ON" : "OFF");
-#endif
   }
 }
 
@@ -255,9 +214,6 @@ static void btn_save_map_cb(lv_event_t *e) {
 }
 
 static void btn_cancel_map_cb(lv_event_t *e) {
-#ifdef DEBUG_MODE
-  Serial.println("Cancel map settings clicked");
-#endif
   ui_settings_show();
 }
 
@@ -392,26 +348,7 @@ void ui_settings_map_init(void) {
 }
 
 void ui_settings_map_show(void) {
-  // Sauvegarder ancien écran
-  lv_obj_t *old_screen = lv_scr_act();
-
-  if (lvgl_port_lock(-1)) {
-    // Créer nouvel écran
-    current_screen = lv_obj_create(NULL);
-    ui_settings_map_init();
-
-    lv_screen_load(current_screen);
-    force_full_refresh();
-    lvgl_port_unlock();
-  }
-
-  // Détruire ancien écran
-  if (old_screen != current_screen && old_screen != NULL) {
-    lv_obj_del(old_screen);
-#ifdef DEBUG_MODE
-    Serial.println("[UI] Old screen deleted");
-#endif
-  }
+  ui_switch_screen(ui_settings_map_init);
 }
 
 #endif
