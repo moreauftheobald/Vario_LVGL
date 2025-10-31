@@ -7,40 +7,40 @@
 
 // Structure des donnees filtrees
 typedef struct {
-  float altitude;      // m
-  float vario;         // m/s
-  float altitude_qne;  // m (QNE 1013.25 hPa)
-  float altitude_qnh;  // m (QNH reglable)
-  float altitude_qfe;  // m (hauteur sol)
-  uint32_t timestamp;  // millis()
+  float altitude;
+  float vario;
+  float altitude_qne;
+  float altitude_qnh;
+  float altitude_qfe;
+  uint32_t timestamp;
   bool valid;
 } kalman_data_t;
 
 // Structure interne du filtre
 typedef struct {
-  float x[3];        // Etat: [altitude, vario, accel_z]
-  float P[3][3];     // Covariance
-  float Q[3][3];     // Bruit processus
-  float K[3];        // Gain
-  bool initialized;  // Flag initialisation
+  float x[3];
+  float P[3][3];
+  float Q[3][3];
+  float K[3];
+  bool initialized;
 } KalmanFilter_t;
 
 // Variables globales
 static KalmanFilter_t kf;
 static kalman_data_t kalman_data;
 static SemaphoreHandle_t kalman_mutex = NULL;
-static float qnh_setting = 1013.25f;  // hPa
+static float qnh_setting = 1013.25f;
 static float qfe_offset = 0.0f;  
-static float last_qnh = 1013.25f;     // hPa (correction: c'était marqué "m")
-static bool qnh_ready = false;           // QNH récupéré ou timeout
-static uint32_t startup_time = 0;        // Timestamp démarrage
-static const uint32_t SENSOR_STABILIZATION_TIME = 3000;  // 3 secondes
+static float last_qnh = 1013.25f;
+static bool qnh_ready = false;
+static uint32_t startup_time = 0;
+static const uint32_t SENSOR_STABILIZATION_TIME = 3000;
 
 // Buffer init
 static float init_buffer[INIT_SAMPLES];
 static int init_count = 0;
 
-// Fonction à appeler depuis metar_task quand QNH est récupéré
+// Fonction pour appeler depuis metar_task quand QNH est recupere
 void kalman_set_qnh_ready(float qnh_hpa) {
   qnh_setting = qnh_hpa;
   qnh_ready = true;
@@ -51,7 +51,7 @@ void kalman_set_qnh_ready(float qnh_hpa) {
 #endif
 }
 
-// Fonction pour forcer le démarrage avec QNH standard si timeout
+// Fonction pour forcer le demarrage avec QNH standard si timeout
 void kalman_force_start_standard_qnh() {
   qnh_setting = 1013.25f;
   qnh_ready = true;
@@ -62,26 +62,45 @@ void kalman_force_start_standard_qnh() {
 #endif
 }
 
+// METHOD 3: Appliquer un offset d'altitude direct
+void kalman_apply_altitude_offset(float offset_m) {
+#ifdef DEBUG_MODE
+  Serial.printf("[KALMAN] Applying altitude offset: %.1f m (before: %.1f m)\n", 
+                offset_m, kf.x[0]);
+#endif
+  
+  // Appliquer l'offset sur l'altitude uniquement
+  kf.x[0] += offset_m;
+  
+  // La vitesse verticale (vario) reste inchangee
+  // L'acceleration reste inchangee
+  
+  // Pas besoin de modifier la covariance car il n'y a pas de discontinuite
+  // dans la dynamique du systeme
+  
+#ifdef DEBUG_MODE
+  Serial.printf("[KALMAN] Altitude after offset: %.1f m\n", kf.x[0]);
+#endif
+}
+
 // Conversion pression -> altitude
 static float pressure_to_altitude(float pressure_pa, float qnh_hpa) {
   float pressure_hpa = pressure_pa / 100.0f;
   return 44330.0f * (1.0f - pow(pressure_hpa / qnh_hpa, 0.1903f));
 }
 
-// Réinitialisation Kalman lors changement QNH
+// Reinitialisation Kalman lors changement QNH (pas utilisee avec les nouvelles methodes)
 void kalman_reset_on_qnh_change(float new_altitude, float current_qnh) {
-    if (fabs(current_qnh - last_qnh) > 0.5) {  // QNH a changé de > 0.5 hPa
+    if (fabs(current_qnh - last_qnh) > 0.5) {
 #ifdef DEBUG_MODE
         Serial.printf("[KALMAN] QNH changed: %.2f -> %.2f hPa, reinitializing state\n", 
                       last_qnh, current_qnh);
 #endif
-        // Réinitialiser l'état avec la nouvelle altitude
-        kf.x[0] = new_altitude;  // Position (correction: kf.x au lieu de state)
-        kf.x[1] = 0.0;           // Vitesse remise à 0
+        kf.x[0] = new_altitude;
+        kf.x[1] = 0.0;
         
-        // Augmenter temporairement l'incertitude
-        kf.P[0][0] = 100.0;  // Grande incertitude sur position (correction: kf.P au lieu de P)
-        kf.P[1][1] = 10.0;   // Grande incertitude sur vitesse
+        kf.P[0][0] = 100.0;
+        kf.P[1][1] = 10.0;
         
         last_qnh = current_qnh;
     }
@@ -95,189 +114,135 @@ static void kalman_init() {
   kf.initialized = false;
   init_count = 0;
 
-  // Covariance initiale
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
-      kf.P[i][j] = (i == j) ? 10.0f : 0.0f;
+      kf.P[i][j] = (i == j) ? 1.0f : 0.0f;
     }
   }
 
-  // Bruit processus
   kf.Q[0][0] = 0.001f;
-  kf.Q[0][1] = 0.0f;
-  kf.Q[0][2] = 0.0f;
-  kf.Q[1][0] = 0.0f;
   kf.Q[1][1] = 0.01f;
-  kf.Q[1][2] = 0.0f;
-  kf.Q[2][0] = 0.0f;
-  kf.Q[2][1] = 0.0f;
   kf.Q[2][2] = 0.1f;
-
-  kalman_data.altitude = 0.0f;
-  kalman_data.vario = 0.0f;
-  kalman_data.altitude_qne = 0.0f;
-  kalman_data.altitude_qnh = 0.0f;
-  kalman_data.altitude_qfe = 0.0f;
-  kalman_data.timestamp = 0;
-  kalman_data.valid = false;
-
-  kalman_mutex = xSemaphoreCreateMutex();
+  kf.Q[0][1] = kf.Q[1][0] = 0.0f;
+  kf.Q[0][2] = kf.Q[2][0] = 0.0f;
+  kf.Q[1][2] = kf.Q[2][1] = 0.0f;
 
 #ifdef DEBUG_MODE
-  Serial.println("[KALMAN] Init OK");
+  Serial.println("[KALMAN] Filter initialized");
 #endif
 }
 
-// Initialisation avec moyenne
-static bool kalman_try_init() {
-  // Vérifier que QNH est prêt
-  if (!qnh_ready) {
-#ifdef DEBUG_MODE
-    static uint32_t last_qnh_msg = 0;
-    if (millis() - last_qnh_msg > 1000) {
-      Serial.println("[KALMAN] Waiting for QNH...");
-      last_qnh_msg = millis();
-    }
-#endif
-    return false;
-  }
-  
-  // Attendre stabilisation capteurs (3 secondes après démarrage)
-  if (millis() - startup_time < SENSOR_STABILIZATION_TIME) {
-#ifdef DEBUG_MODE
-    static uint32_t last_stab_msg = 0;
-    if (millis() - last_stab_msg > 1000) {
-      uint32_t remaining = SENSOR_STABILIZATION_TIME - (millis() - startup_time);
-      Serial.printf("[KALMAN] Sensor stabilization... %lums remaining\n", remaining);
-      last_stab_msg = millis();
-    }
-#endif
-    return false;
-  }
-  
-  if (!g_sensor_data.bmp390.valid) {
-#ifdef DEBUG_MODE
-    static uint32_t last_bmp_msg = 0;
-    if (millis() - last_bmp_msg > 1000) {
-      Serial.println("[KALMAN] Waiting for BMP390...");
-      last_bmp_msg = millis();
-    }
-#endif
-    return false;
-  }
-
-  float alt = pressure_to_altitude(g_sensor_data.bmp390.pressure, qnh_setting);
-
-#ifdef DEBUG_MODE
-  Serial.printf("[KALMAN] Init sample %d: P=%.1fPa QNH=%.2fhPa Alt=%.1fm\n", 
-                init_count, g_sensor_data.bmp390.pressure, qnh_setting, alt);
-#endif
-
-  init_buffer[init_count++] = alt;
-
-  if (init_count >= INIT_SAMPLES) {
-    // Calcul moyenne
-    float sum = 0.0f;
-    for (int i = 0; i < INIT_SAMPLES; i++) {
-      sum += init_buffer[i];
-    }
-    float alt_init = sum / INIT_SAMPLES;
-
-    kf.x[0] = alt_init;
-    kf.x[1] = 0.0f;
-    kf.x[2] = 0.0f;
-    kf.initialized = true;
-
-#ifdef DEBUG_MODE
-    Serial.printf("[KALMAN] Initialized with QNH=%.2f hPa, avg alt=%.1fm\n", 
-                  qnh_setting, alt_init);
-#endif
-
-    return true;
-  }
-
-  return false;
-}
-
-// Prediction
+// Predict
 static void kalman_predict(float dt) {
-  if (!kf.initialized) return;
-
-  if (dt > 0.1f) dt = 0.1f;
-  if (dt < 0.001f) dt = 0.001f;
+  float x_pred[3];
+  x_pred[0] = kf.x[0] + kf.x[1] * dt + 0.5f * kf.x[2] * dt * dt;
+  x_pred[1] = kf.x[1] + kf.x[2] * dt;
+  x_pred[2] = kf.x[2];
 
   float F[3][3] = {
-    { 1.0f, dt, 0.5f * dt * dt },
-    { 0.0f, 1.0f, dt },
-    { 0.0f, 0.0f, 0.95f }
+    {1.0f, dt, 0.5f * dt * dt},
+    {0.0f, 1.0f, dt},
+    {0.0f, 0.0f, 1.0f}
   };
 
-  float x_new[3] = { 0 };
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-      x_new[i] += F[i][j] * kf.x[j];
-    }
-  }
-  memcpy(kf.x, x_new, sizeof(x_new));
-
-  float P_tmp[3][3] = { 0 };
+  float P_pred[3][3] = {0};
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
       for (int k = 0; k < 3; k++) {
-        P_tmp[i][j] += F[i][k] * kf.P[k][j];
+        P_pred[i][j] += F[i][k] * kf.P[k][j];
+      }
+    }
+  }
+
+  float temp[3][3] = {0};
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      temp[i][j] = P_pred[i][j];
+    }
+  }
+
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      P_pred[i][j] = 0;
+      for (int k = 0; k < 3; k++) {
+        P_pred[i][j] += temp[i][k] * F[j][k];
       }
     }
   }
 
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
-      kf.P[i][j] = kf.Q[i][j];
-      for (int k = 0; k < 3; k++) {
-        kf.P[i][j] += P_tmp[i][k] * F[j][k];
-      }
+      P_pred[i][j] += kf.Q[i][j];
+    }
+  }
+
+  for (int i = 0; i < 3; i++) {
+    kf.x[i] = x_pred[i];
+    for (int j = 0; j < 3; j++) {
+      kf.P[i][j] = P_pred[i][j];
     }
   }
 }
 
-// Update mesure
-static void kalman_update(float measurement, float variance, int measurement_idx) {
-  if (!kf.initialized) return;
-
-  float y = measurement - kf.x[measurement_idx];
-
-  // Outlier rejection (plus tolerant)
-  if (measurement_idx == 0 && fabs(y) > 100.0f) {
-#ifdef DEBUG_MODE
-    Serial.printf("[KALMAN] Outlier rejected: meas=%.1fm state=%.1fm diff=%.1fm\n", measurement, kf.x[0], y);
-#endif
-    return;
+// Update
+static void kalman_update(float measurement, float variance, int measurement_type) {
+  float H[3] = {0};
+  if (measurement_type == 0 || measurement_type == 1) {
+    H[0] = 1.0f;
+  } else if (measurement_type == 2) {
+    H[2] = 1.0f;
   }
 
-  float S = kf.P[measurement_idx][measurement_idx] + variance;
-  if (S < 0.001f) S = 0.001f;
+  float y = measurement;
+  for (int i = 0; i < 3; i++) {
+    y -= H[i] * kf.x[i];
+  }
+
+  float S = variance;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      S += H[i] * kf.P[i][j] * H[j];
+    }
+  }
 
   for (int i = 0; i < 3; i++) {
-    kf.K[i] = kf.P[i][measurement_idx] / S;
+    kf.K[i] = 0.0f;
+    for (int j = 0; j < 3; j++) {
+      kf.K[i] += kf.P[i][j] * H[j];
+    }
+    kf.K[i] /= S;
   }
 
   for (int i = 0; i < 3; i++) {
     kf.x[i] += kf.K[i] * y;
   }
 
-  if (kf.x[1] > 20.0f) kf.x[1] = 20.0f;
-  if (kf.x[1] < -20.0f) kf.x[1] = -20.0f;
-
-  float P_new[3][3];
+  float I_KH[3][3];
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
-      P_new[i][j] = kf.P[i][j] - kf.K[i] * kf.P[measurement_idx][j];
+      I_KH[i][j] = (i == j) ? 1.0f : 0.0f;
+      I_KH[i][j] -= kf.K[i] * H[j];
     }
   }
-  memcpy(kf.P, P_new, sizeof(P_new));
+
+  float P_new[3][3] = {0};
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      for (int k = 0; k < 3; k++) {
+        P_new[i][j] += I_KH[i][k] * kf.P[k][j];
+      }
+    }
+  }
+
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      kf.P[i][j] = P_new[i][j];
+    }
+  }
 }
 
-// Rotation acceleration
-static float get_accel_z_world(const bno080_data_t* imu) {
+// Rotation quaternion -> acceleration monde
+static float get_accel_z_world(bno080_data_t* imu) {
   float qw = imu->quat_real;
   float qx = imu->quat_i;
   float qy = imu->quat_j;
@@ -287,66 +252,71 @@ static float get_accel_z_world(const bno080_data_t* imu) {
   float ay = imu->accel_y;
   float az = imu->accel_z;
 
-  float az_world = ax * (2.0f * qx * qz - 2.0f * qw * qy) + ay * (2.0f * qy * qz + 2.0f * qw * qx) + az * (qw * qw - qx * qx - qy * qy + qz * qz);
+  float az_world = 2.0f * (qw * qz + qx * qy) * ax
+                 + 2.0f * (qy * qz - qw * qx) * ay
+                 + (qw * qw - qx * qx - qy * qy + qz * qz) * az;
 
-  return az_world;
-}
-
-// Getters
-void kalman_get_data(kalman_data_t* out) {
-  if (xSemaphoreTake(kalman_mutex, pdMS_TO_TICKS(10))) {
-    memcpy(out, &kalman_data, sizeof(kalman_data_t));
-    xSemaphoreGive(kalman_mutex);
-  }
-}
-
-void kalman_set_qnh(float qnh_hpa) {
-  qnh_setting = qnh_hpa;
-}
-
-void kalman_reset_qfe() {
-  qfe_offset = kf.x[0];
+  return az_world - 9.81f;
 }
 
 // Tache principale
 static void kalman_task(void* parameter) {
+#ifdef DEBUG_MODE
+  Serial.println("[KALMAN] Task started");
+#endif
+
   kalman_init();
-  
-  startup_time = millis();  // Sauvegarder temps de démarrage
+  if (!kalman_mutex) kalman_mutex = xSemaphoreCreateMutex();
+
+  startup_time = millis();
 
   TickType_t last_wake = xTaskGetTickCount();
-  const TickType_t period = pdMS_TO_TICKS(50);
-
   uint32_t last_baro_time = 0;
   uint32_t last_gps_time = 0;
 
-#ifdef DEBUG_MODE
-  Serial.println("[KALMAN] Task started - waiting for QNH and sensor stabilization");
-#endif
-
   while (1) {
-    uint32_t now = millis();
-    TickType_t current_tick = xTaskGetTickCount();
-    float dt = (current_tick - last_wake) * portTICK_PERIOD_MS / 1000.0f;
-    last_wake = current_tick;
-
-    // Phase init
-    if (!kf.initialized) {
-      if (kalman_try_init()) {
-        last_wake = xTaskGetTickCount();
-      }
-      vTaskDelayUntil(&last_wake, period);
+    if (!qnh_ready) {
+      vTaskDelay(pdMS_TO_TICKS(100));
       continue;
     }
 
-    // Phase normale - 50Hz
-    kalman_predict(dt);
+    if ((millis() - startup_time) < SENSOR_STABILIZATION_TIME) {
+      vTaskDelay(pdMS_TO_TICKS(100));
+      continue;
+    }
 
-    // Update baro
+    if (!kf.initialized) {
+      if (g_sensor_data.bmp390.valid) {
+        float alt = pressure_to_altitude(g_sensor_data.bmp390.pressure, qnh_setting);
+        init_buffer[init_count++] = alt;
+
+        if (init_count >= INIT_SAMPLES) {
+          float sum = 0.0f;
+          for (int i = 0; i < INIT_SAMPLES; i++) {
+            sum += init_buffer[i];
+          }
+          kf.x[0] = sum / INIT_SAMPLES;
+          kf.x[1] = 0.0f;
+          kf.x[2] = 0.0f;
+          kf.initialized = true;
+          qfe_offset = kf.x[0];
+
+#ifdef DEBUG_MODE
+          Serial.printf("[KALMAN] Initialized at %.1f m\n", kf.x[0]);
+#endif
+        }
+      }
+      vTaskDelay(pdMS_TO_TICKS(50));
+      continue;
+    }
+
+    uint32_t now = millis();
+    kalman_predict(0.02f);
+
+    // Update Baro
     if (g_sensor_data.bmp390.valid) {
-      if (now - last_baro_time >= 20) {
+      if (now - last_baro_time >= 200) {
         float alt_baro = pressure_to_altitude(g_sensor_data.bmp390.pressure, qnh_setting);
-        kalman_reset_on_qnh_change(alt_baro, qnh_setting);  // Correction: alt_baro et qnh_setting
         kalman_update(alt_baro, 0.25f, 0);
         last_baro_time = now;
       }
@@ -355,18 +325,33 @@ static void kalman_task(void* parameter) {
     // Update GPS
     if (g_sensor_data.gps.valid && g_sensor_data.gps.fix && g_sensor_data.gps.fixquality >= 1) {
       if (now - last_gps_time >= 500) {
-        // Pas besoin de reset QNH ici, l'altitude GPS ne dépend pas du QNH
         kalman_update(g_sensor_data.gps.altitude, 5.0f, 0);
         last_gps_time = now;
       }
     }
 
-    // Update IMU
+    // Update IMU avec ajustement confiance si METHOD 2
     if (g_sensor_data.bno080.valid) {
       float az_world = get_accel_z_world(&g_sensor_data.bno080);
       if (fabs(az_world) < 0.05f) az_world = 0.0f;
-      // Pas de reset QNH pour l'accélération
-      kalman_update(az_world, 1.0f, 2);
+      
+      // METHOD 2: Si en transition QNH, augmenter la confiance IMU
+      float imu_variance = 1.0f;  // Variance par defaut
+      
+#if QNH_ADJUST_METHOD == 2
+      if (g_sensor_data.qnh_transition) {
+        imu_variance = 0.1f;  // 10x plus de confiance pendant transition
+#ifdef DEBUG_MODE
+        static uint32_t last_debug_transition = 0;
+        if (now - last_debug_transition >= 1000) {
+          Serial.println("[KALMAN] QNH transition: IMU confidence boosted");
+          last_debug_transition = now;
+        }
+#endif
+      }
+#endif
+      
+      kalman_update(az_world, imu_variance, 2);
     }
 
     // Maj donnees filtrees
@@ -415,6 +400,27 @@ static bool kalman_start() {
   }
 
   return true;
+}
+
+// Fonctions publiques d'acces aux donnees
+bool kalman_get_data(kalman_data_t* out) {
+  if (!kalman_mutex) return false;
+  
+  if (xSemaphoreTake(kalman_mutex, pdMS_TO_TICKS(10))) {
+    memcpy(out, &kalman_data, sizeof(kalman_data_t));
+    xSemaphoreGive(kalman_mutex);
+    return kalman_data.valid;
+  }
+  return false;
+}
+
+void kalman_set_qfe(void) {
+  if (kf.initialized) {
+    qfe_offset = kf.x[0];
+#ifdef DEBUG_MODE
+    Serial.printf("[KALMAN] QFE offset set to %.1f m\n", qfe_offset);
+#endif
+  }
 }
 
 #ifdef TEST_MODE

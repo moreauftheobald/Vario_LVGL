@@ -1,4 +1,4 @@
-SET_LOOP_TASK_STACK_SIZE(32 * 1024);
+SET_LOOP_TASK_STACK_SIZE(4 * 1024);
 #include "constants.h"
 #include "globals.h"
 #include "src/params/params.h"
@@ -93,7 +93,7 @@ void setup() {
 }
 
 void loop() {
-#ifdef DEBUG_MODE_ALL
+#ifdef DEBUG_MODE
   static unsigned long last_print = 0;
 
   if (millis() - last_print > 5000) {

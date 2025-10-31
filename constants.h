@@ -160,7 +160,7 @@ LVGL AND GRAPHICS CONSTANTS
 #define LVGL_PORT_TICK_PERIOD_MS (2)
 #define LVGL_PORT_TASK_MAX_DELAY_MS (500)
 #define LVGL_PORT_TASK_MIN_DELAY_MS (10)
-#define LVGL_PORT_TASK_STACK_SIZE (10 * 1024)
+#define LVGL_PORT_TASK_STACK_SIZE (16 * 1024)
 #define LVGL_PORT_TASK_PRIORITY (2)
 #define LVGL_PORT_TASK_CORE (1)
 #define CONFIG_LVGL_PORT_BUF_PSRAM 1
@@ -221,6 +221,9 @@ METAR CONSTANTS
 // Configuration
 #define QNH_UPDATE_INTERVAL_MS (3600000)  // 1 heure par défaut
 #define QNH_UPDATE_DISTANCE_KM (30)  
+
+//Methode Update QNH
+#define QNH_ADJUST_METHOD 3
 
 /*=========================================================================
 OTHER CONSTANTS

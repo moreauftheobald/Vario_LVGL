@@ -54,12 +54,14 @@ typedef struct {
 } gps_data_t;
 
 // Structure globale accessible par toutes les taches
+// Structure globale accessible par toutes les taches
 typedef struct {
   bmp390_data_t bmp390;
   bno080_data_t bno080;
   gps_data_t gps;
-  float qnh_metar;  // QNH du METAR en hPa (default: 1013.25)
-} sensor_raw_data_t;
+  float qnh_metar;          // QNH du METAR en hPa (default: 1013.25)
+  bool qnh_transition;      // Flag: true pendant transition QNH (method 2)
+} sensor_raw_data_t;  
 
 // Structure donnees METAR
 typedef struct {
@@ -141,5 +143,4 @@ void print_all_tasks_stack_usage() {
   }
 }
 #endif
-
 #endif
