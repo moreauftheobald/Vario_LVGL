@@ -190,6 +190,8 @@ TILES CONSTANTS
 // Taille standard tuile OSM
 #define OSM_TILE_SIZE 256
 
+#define MAP_VIEW_MAX_SIZE 540 
+
 // Position test: Décollage parapente Volmerange-les-Mines
 //#define TEST_LAT 49.446845
 //#define TEST_LON 06.099846
@@ -199,8 +201,12 @@ TILES CONSTANTS
 //#define TEST_LON 06.057100
 
 // Position test: Bureau Livange
-#define TEST_LAT 49.53165
-#define TEST_LON 06.12221
+//#define TEST_LAT 49.53165
+//#define TEST_LON 06.12221
+
+// Position test: Bureau Yutz
+#define TEST_LAT 49.36315
+#define TEST_LON 06.20037
 
 
 // Nom du serveur de cartes (peut être paramétrable plus tard)
@@ -223,7 +229,7 @@ METAR CONSTANTS
 #define QNH_UPDATE_DISTANCE_KM (30)  
 
 //Methode Update QNH
-#define QNH_ADJUST_METHOD 3
+#define QNH_ADJUST_METHOD 2
 
 /*=========================================================================
 OTHER CONSTANTS

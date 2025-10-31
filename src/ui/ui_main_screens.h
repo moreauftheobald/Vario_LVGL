@@ -23,6 +23,8 @@ static lv_obj_t *map_container = NULL;
 static lv_obj_t *btn_zoom_in = NULL;
 static lv_obj_t *btn_zoom_out = NULL;
 static lv_obj_t *position_marker = NULL;
+static uint32_t last_zoom_time = 0;
+static const uint32_t ZOOM_DEBOUNCE_MS = 800;
 
 // Fonction pour changer d'ecran
 static void switch_to_screen(uint8_t index) {
@@ -47,7 +49,7 @@ static void switch_to_screen(uint8_t index) {
 }
 
 static lv_obj_t *create_simple_position_marker(lv_obj_t *parent, float heading_deg) {
-  // Container pour le marqueur (30x30 pixels)
+  // Container rotatif 30x30
   lv_obj_t *container = lv_obj_create(parent);
   lv_obj_set_size(container, 30, 30);
   lv_obj_set_style_bg_opa(container, LV_OPA_TRANSP, 0);
@@ -55,26 +57,38 @@ static lv_obj_t *create_simple_position_marker(lv_obj_t *parent, float heading_d
   lv_obj_clear_flag(container, LV_OBJ_FLAG_CLICKABLE);
   lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
 
-  // METHODE 1 : Label avec symbole triangle Unicode
-  lv_obj_t *arrow = lv_label_create(container);
-  lv_label_set_text(arrow, "▲");  // Triangle Unicode
-  lv_obj_set_style_text_font(arrow, &lv_font_montserrat_48, 0);
-  lv_obj_set_style_text_color(arrow, lv_color_hex(0x2196F3), 0);  // Bleu
-  lv_obj_center(arrow);
+  // Cercle bleu exterieur
+  lv_obj_t *circle = lv_obj_create(container);
+  lv_obj_set_size(circle, 24, 24);
+  lv_obj_center(circle);
+  lv_obj_set_style_radius(circle, LV_RADIUS_CIRCLE, 0);
+  lv_obj_set_style_bg_color(circle, lv_color_hex(0x2196F3), 0);
+  lv_obj_set_style_border_width(circle, 2, 0);
+  lv_obj_set_style_border_color(circle, lv_color_hex(0xFFFFFF), 0);
+  lv_obj_clear_flag(circle, LV_OBJ_FLAG_CLICKABLE);
 
-  // Rotation du label (en 0.1 degres pour LVGL)
-  lv_obj_set_style_transform_angle(arrow, (int16_t)(heading_deg * 10), 0);
-  lv_obj_set_style_transform_pivot_x(arrow, 14, 0);  // Centre de rotation
-  lv_obj_set_style_transform_pivot_y(arrow, 14, 0);
+  // Fleche directionnelle (petit rectangle blanc en haut)
+  lv_obj_t *arrow = lv_obj_create(container);
+  lv_obj_set_size(arrow, 4, 8);
+  lv_obj_align(arrow, LV_ALIGN_TOP_MID, 0, 0);
+  lv_obj_set_style_radius(arrow, 2, 0);
+  lv_obj_set_style_bg_color(arrow, lv_color_hex(0xFFFFFF), 0);
+  lv_obj_set_style_border_width(arrow, 0, 0);
+  lv_obj_clear_flag(arrow, LV_OBJ_FLAG_CLICKABLE);
+
+  // Rotation du container complet (heading en 0.1 degres pour LVGL)
+  lv_obj_set_style_transform_angle(container, (int16_t)(heading_deg * 10), 0);
+  lv_obj_set_style_transform_pivot_x(container, 15, 0);
+  lv_obj_set_style_transform_pivot_y(container, 15, 0);
 
   // Point rouge au centre (position GPS exacte)
   lv_obj_t *center_dot = lv_obj_create(container);
   lv_obj_set_size(center_dot, 6, 6);
   lv_obj_center(center_dot);
   lv_obj_set_style_radius(center_dot, LV_RADIUS_CIRCLE, 0);
-  lv_obj_set_style_bg_color(center_dot, lv_color_hex(0xFF0000), 0);  // Rouge
+  lv_obj_set_style_bg_color(center_dot, lv_color_hex(0xFF0000), 0);
   lv_obj_set_style_border_width(center_dot, 1, 0);
-  lv_obj_set_style_border_color(center_dot, lv_color_hex(0xFFFFFF), 0);  // Blanc
+  lv_obj_set_style_border_color(center_dot, lv_color_hex(0xFFFFFF), 0);
   lv_obj_clear_flag(center_dot, LV_OBJ_FLAG_CLICKABLE);
 
   return container;
@@ -152,59 +166,32 @@ static void update_zoom_buttons_state(void) {
   }
 }
 
-// Callbacks pour boutons zoom
-static void btn_zoom_in_cb(lv_event_t *e) {
-  if (current_map_zoom < MAP_ZOOM_MAX + 1) {  // +1 pour super zoom
-    current_map_zoom++;
-
-    // Supprimer ancien canvas
-    if (map_canvas) {
-      lv_obj_del(map_canvas);
-      map_canvas = NULL;
-    }
-
-    // Recreer carte avec nouveau zoom
-#ifdef FLIGHT_TEST_MODE
-    map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON,
-                                 current_map_zoom, 527, 527);
-#else
-    double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
-    double display_lon = g_sensor_data.gps.valid ? g_sensor_data.gps.longitude : TEST_LON;
-    map_canvas = create_map_view(map_container, display_lat, display_lon,
-                                 current_map_zoom, 527, 527);
-#endif
-    if (map_canvas) {
-      lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
-    }
-
-    // Remonter les boutons au premier plan
-    if (btn_zoom_in) lv_obj_move_foreground(btn_zoom_in);
-    if (btn_zoom_out) lv_obj_move_foreground(btn_zoom_out);
-
-    // Recreer le marqueur position
-    float heading = g_sensor_data.gps.valid ? g_sensor_data.gps.angle : 0.0f;
-    position_marker = create_simple_position_marker(map_container, heading);
-    lv_obj_center(position_marker);
-    lv_obj_move_foreground(position_marker);
-
-    // Mettre a jour l'etat des boutons
-    update_zoom_buttons_state();
-
-#ifdef DEBUG_MODE
-    Serial.printf("Zoom IN: %d\n", current_map_zoom);
-#endif
-  }
-}
+// ========================================
+// FONCTION btn_zoom_out_cb COMPLETE
+// Ajouter dans ui_main_screens.h
+// ========================================
 
 static void btn_zoom_out_cb(lv_event_t *e) {
   if (current_map_zoom > MAP_ZOOM_MIN) {
     current_map_zoom--;
 
+#ifdef DEBUG_MODE
+    Serial.printf("Zoom OUT: %d (deleting old canvas...)\n", current_map_zoom);
+#endif
+
     // Supprimer ancien canvas
     if (map_canvas) {
       lv_obj_del(map_canvas);
       map_canvas = NULL;
     }
+
+    // CRITIQUE : Attendre que LVGL nettoie complètement
+    lv_task_handler();
+    vTaskDelay(pdMS_TO_TICKS(50));  // 50ms de pause
+
+#ifdef DEBUG_MODE
+    Serial.println("Creating new canvas...");
+#endif
 
     // Recreer carte avec nouveau zoom
 #ifdef FLIGHT_TEST_MODE
@@ -216,15 +203,22 @@ static void btn_zoom_out_cb(lv_event_t *e) {
     map_canvas = create_map_view(map_container, display_lat, display_lon,
                                  current_map_zoom, 527, 527);
 #endif
+
     if (map_canvas) {
       lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
     }
+
+    // Force refresh LVGL
+    lv_task_handler();
 
     // Remonter les boutons au premier plan
     if (btn_zoom_in) lv_obj_move_foreground(btn_zoom_in);
     if (btn_zoom_out) lv_obj_move_foreground(btn_zoom_out);
 
     // Recreer le marqueur position
+    if (position_marker) {
+      lv_obj_del(position_marker);
+    }
     float heading = g_sensor_data.gps.valid ? g_sensor_data.gps.angle : 0.0f;
     position_marker = create_simple_position_marker(map_container, heading);
     lv_obj_center(position_marker);
@@ -234,7 +228,74 @@ static void btn_zoom_out_cb(lv_event_t *e) {
     update_zoom_buttons_state();
 
 #ifdef DEBUG_MODE
-    Serial.printf("Zoom OUT: %d\n", current_map_zoom);
+    Serial.printf("Zoom OUT complete: %d\n", current_map_zoom);
+#endif
+  }
+}
+
+
+// ========================================
+// BONUS : btn_zoom_in_cb aussi
+// ========================================
+
+static void btn_zoom_in_cb(lv_event_t *e) {
+  if (current_map_zoom < MAP_ZOOM_MAX + 1) {  // +1 pour super zoom
+    current_map_zoom++;
+
+#ifdef DEBUG_MODE
+    Serial.printf("Zoom IN: %d (deleting old canvas...)\n", current_map_zoom);
+#endif
+
+    // Supprimer ancien canvas
+    if (map_canvas) {
+      lv_obj_del(map_canvas);
+      map_canvas = NULL;
+    }
+
+    // CRITIQUE : Attendre que LVGL nettoie complètement
+    lv_task_handler();
+    vTaskDelay(pdMS_TO_TICKS(50));  // 50ms de pause
+
+#ifdef DEBUG_MODE
+    Serial.println("Creating new canvas...");
+#endif
+
+    // Recreer carte avec nouveau zoom
+#ifdef FLIGHT_TEST_MODE
+    map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON,
+                                 current_map_zoom, 527, 527);
+#else
+    double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
+    double display_lon = g_sensor_data.gps.valid ? g_sensor_data.gps.longitude : TEST_LON;
+    map_canvas = create_map_view(map_container, display_lat, display_lon,
+                                 current_map_zoom, 527, 527);
+#endif
+
+    if (map_canvas) {
+      lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
+    }
+
+    // Force refresh LVGL
+    lv_task_handler();
+
+    // Remonter les boutons au premier plan
+    if (btn_zoom_in) lv_obj_move_foreground(btn_zoom_in);
+    if (btn_zoom_out) lv_obj_move_foreground(btn_zoom_out);
+
+    // Recreer le marqueur position
+    if (position_marker) {
+      lv_obj_del(position_marker);
+    }
+    float heading = g_sensor_data.gps.valid ? g_sensor_data.gps.angle : 0.0f;
+    position_marker = create_simple_position_marker(map_container, heading);
+    lv_obj_center(position_marker);
+    lv_obj_move_foreground(position_marker);
+
+    // Mettre a jour l'etat des boutons
+    update_zoom_buttons_state();
+
+#ifdef DEBUG_MODE
+    Serial.printf("Zoom IN complete: %d\n", current_map_zoom);
 #endif
   }
 }
