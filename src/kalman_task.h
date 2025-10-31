@@ -252,11 +252,12 @@ static float get_accel_z_world(bno080_data_t* imu) {
   float ay = imu->accel_y;
   float az = imu->accel_z;
 
-  float az_world = 2.0f * (qw * qz + qx * qy) * ax
-                 + 2.0f * (qy * qz - qw * qx) * ay
-                 + (qw * qw - qx * qx - qy * qy + qz * qz) * az;
+  // Rotation quaternion correcte
+  float az_world = ax * (2.0f * qx * qz - 2.0f * qw * qy)
+                 + ay * (2.0f * qy * qz + 2.0f * qw * qx)
+                 + az * (qw * qw - qx * qx - qy * qy + qz * qz);
 
-  return az_world - 9.81f;
+  return az_world;  // Pas de "- 9.81f" avec LINEAR_ACCELERATION
 }
 
 // Tache principale

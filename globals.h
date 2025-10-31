@@ -100,21 +100,9 @@ sensor_raw_data_t g_sensor_data = {
 };
 
 void force_full_refresh(void) {
-#ifdef DEBUG_MODE
-  Serial.println("Vario settings screen debug 6");
-#endif
   lv_obj_invalidate(lv_screen_active());
-#ifdef DEBUG_MODE
-  Serial.println("Vario settings screen debug 7");
-#endif
   lv_refr_now(NULL);
-#ifdef DEBUG_MODE
-  Serial.println("Vario settings screen debug 8");
-#endif
   vTaskDelay(pdMS_TO_TICKS(10));
-#ifdef DEBUG_MODE
-  Serial.println("Vario settings screen debug 9");
-#endif
 }
 
 #ifdef DEBUG_MODE
