@@ -94,7 +94,7 @@ static void handle_download() {
   String filename = web_server->arg("file");
   
   // CORRIGÉ: Construire le chemin proprement
-  char filepath[128];
+  char filepath[96];
   snprintf(filepath, sizeof(filepath), "%s/%s", FLIGHTS_DIR, filename.c_str());
 
   if (!SD_MMC.exists(filepath)) {

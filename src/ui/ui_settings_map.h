@@ -244,8 +244,8 @@ void ui_settings_map_init(void) {
   lv_obj_set_width(widgets.dropdown_tile_server, lv_pct(90));
 
   // Construire la liste des serveurs depuis PROGMEM
-  char names_buffer[256] = "";
-  char temp_name[64];
+  char names_buffer[192] = "";
+  char temp_name[48];
   for (int i = 0; i < tile_servers_count; i++) {
     get_tile_server_name(i, temp_name, sizeof(temp_name));
     if (i > 0) strcat(names_buffer, "\n");

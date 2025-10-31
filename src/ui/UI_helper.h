@@ -128,7 +128,7 @@ static inline bool ui_save_switch(lv_obj_t *switch_obj) {
 static inline void ui_label_set_formatted_text(lv_obj_t *label, const char *format, ...) {
   if (!label || !format) return;
   
-  static char buffer[256];
+  static char buffer[128];
   va_list args;
   va_start(args, format);
   vsnprintf(buffer, sizeof(buffer), format, args);

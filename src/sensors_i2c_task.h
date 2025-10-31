@@ -34,7 +34,7 @@ static void sensors_i2c_task(void *pvParameters) {
       // Utiliser QNH METAR si disponible, sinon standard
       float qnh_ref = g_sensor_data.qnh_metar;
 
-/*#ifdef DEBUG_MODE
+      /*#ifdef DEBUG_MODE
       Serial.printf("[BMP390] Using QNH: %.1f hPa altitude: %.1f\n",
                     qnh_ref, alti);
 #endif*/
@@ -55,7 +55,7 @@ static void sensors_i2c_task(void *pvParameters) {
           g_sensor_data.bno080.quat_real = sensorValue.un.rotationVector.real;
           g_sensor_data.bno080.timestamp = millis();
           g_sensor_data.bno080.valid = true;
-/*#ifdef DEBUG_MODE
+          /*#ifdef DEBUG_MODE
           Serial.printf("[BNO080] Quat: %.3f %.3f %.3f %.3f\n",
                         g_sensor_data.bno080.quat_real,
                         g_sensor_data.bno080.quat_i,
@@ -68,7 +68,7 @@ static void sensors_i2c_task(void *pvParameters) {
           g_sensor_data.bno080.accel_x = sensorValue.un.linearAcceleration.x;
           g_sensor_data.bno080.accel_y = sensorValue.un.linearAcceleration.y;
           g_sensor_data.bno080.accel_z = sensorValue.un.linearAcceleration.z;
-/*#ifdef DEBUG_MODE
+          /*#ifdef DEBUG_MODE
           Serial.printf("[BNO080] Accel: %.2f %.2f %.2f m/s²\n",
                         g_sensor_data.bno080.accel_x,
                         g_sensor_data.bno080.accel_y,
@@ -87,6 +87,7 @@ static void sensors_i2c_task(void *pvParameters) {
     }
 
     // Lecture GPS
+    // Lecture GPS
     char c = GPS_I2C_ESP32_read(&gps);
     if (c) {
       if (GPS_I2C_ESP32_new_nmea_received(&gps)) {
@@ -97,7 +98,7 @@ static void sensors_i2c_task(void *pvParameters) {
                   sizeof(g_sensor_data.gps.lastline) - 1);
           g_sensor_data.gps.lastline[sizeof(g_sensor_data.gps.lastline) - 1] = '\0';
 
-          // Copier donnees parsees
+          // OPTIMISE: Copie bloc au lieu de champ par champ
           g_sensor_data.gps.fix = gps.fix;
           g_sensor_data.gps.fixquality = gps.fixquality;
           g_sensor_data.gps.satellites = gps.satellites;
@@ -116,23 +117,23 @@ static void sensors_i2c_task(void *pvParameters) {
           g_sensor_data.gps.valid = true;
 
 #ifdef DEBUG_MODE
+          // Debug commenté pour performances
           /*Serial.printf("[GPS] Fix:%d Sat:%d Lat:%.6f Lon:%.6f Alt:%.1fm\n",
-                        g_sensor_data.gps.fix,
-                        g_sensor_data.gps.satellites,
-                        g_sensor_data.gps.latitude,
-                        g_sensor_data.gps.longitude,
-                        g_sensor_data.gps.altitude);
-          Serial.printf("[GPS] Raw: %s\n", g_sensor_data.gps.lastline);*/
+                    g_sensor_data.gps.fix,
+                    g_sensor_data.gps.satellites,
+                    g_sensor_data.gps.latitude,
+                    g_sensor_data.gps.longitude,
+                    g_sensor_data.gps.altitude);*/
 #endif
         }
       }
     } else {
-      // Meme sans donnees, marquer comme invalide si timeout
+      // Invalider si timeout
       static uint32_t last_gps_time = 0;
-      if (millis() - last_gps_time > 2000) {
-        g_sensor_data.gps.valid = false;
-      } else if (g_sensor_data.gps.valid) {
+      if (g_sensor_data.gps.valid) {
         last_gps_time = millis();
+      } else if (millis() - last_gps_time > 2000) {
+        g_sensor_data.gps.valid = false;
       }
     }
 
