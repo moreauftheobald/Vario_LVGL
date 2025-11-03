@@ -106,7 +106,7 @@ void ui_settings_system_init(void) {
   lv_dropdown_set_options(dropdown_language, "Francais\nEnglish");
   lv_obj_set_size(dropdown_language, lv_pct(100), 50);
   lv_obj_set_style_bg_color(dropdown_language, lv_color_hex(UI_COLOR_CONTROL_BG), 0);
-  lv_obj_set_style_border_color(dropdown_language, lv_color_hex(0x4080a0), 0);
+  lv_obj_set_style_border_color(dropdown_language, lv_color_hex(UI_COLOR_BORDER_INPUT), 0);
   lv_obj_set_style_border_width(dropdown_language, UI_BORDER_THIN, 0);
   lv_obj_set_style_text_font(dropdown_language, UI_FONT_NORMAL, 0);
   lv_obj_set_style_text_color(dropdown_language, lv_color_white(), 0);

@@ -40,6 +40,8 @@
 /* --- Couleurs de bordures --- */
 #define UI_COLOR_BORDER_PRIMARY   0xffffff    // Blanc
 #define UI_COLOR_BORDER_SECONDARY 0x8e8e93    // Gris
+#define UI_COLOR_BORDER_INPUT     0x4080a0    // Bleu clair (textarea, dropdown)
+#define UI_COLOR_BORDER_PANEL     0x6080a0    // Bleu moyen (colonnes, panels)
 
 /* --- Couleurs des boutons --- */
 #define UI_COLOR_BTN_START        0x34c759    // Vert (Start/OK)
@@ -58,6 +60,13 @@
 #define UI_COLOR_LED_ALERT        0xff3b30    // Rouge LED
 #define UI_COLOR_SLIDER_BG        0x2a3f5f    // Fond slider
 #define UI_COLOR_AUDIO_CHART_BG   0x1a2035    // Fond graphique audio
+#define UI_COLOR_SEPARATOR        0x2a3f5f    // Séparateurs horizontaux
+#define UI_COLOR_CHART_BG         0x0f1729    // Fond graphiques/charts
+#define UI_COLOR_CHART_LINE       0x404040    // Lignes graphiques
+#define UI_COLOR_PANEL_DARK       0x1a2035    // Fond panels sombres
+#define UI_COLOR_GPS_MARKER       0x003366    // Marqueur GPS (bleu foncé)
+#define UI_COLOR_DISABLED_BTN     0x808080    // Boutons désactivés
+#define UI_COLOR_SEPARATOR        0x2a3f5f    // Séparateurs
 
 
 /*=============================================================================

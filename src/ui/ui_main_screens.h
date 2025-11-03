@@ -142,7 +142,7 @@ static void btn_zoom_in_cb(lv_event_t *e) {
       position_marker = lv_label_create(map_container);
       lv_label_set_text(position_marker, LV_SYMBOL_GPS);
       lv_obj_set_style_text_font(position_marker, &lv_font_montserrat_32, 0);
-      lv_obj_set_style_text_color(position_marker, lv_color_hex(0x003366), 0);
+      lv_obj_set_style_text_color(position_marker, lv_color_hex(UI_COLOR_GPS_MARKER), 0);
       lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
       lv_obj_center(position_marker);
       lv_obj_move_foreground(position_marker);
@@ -186,7 +186,7 @@ static void btn_zoom_out_cb(lv_event_t *e) {
       position_marker = lv_label_create(map_container);
       lv_label_set_text(position_marker, LV_SYMBOL_GPS);
       lv_obj_set_style_text_font(position_marker, &lv_font_montserrat_32, 0);
-      lv_obj_set_style_text_color(position_marker, lv_color_hex(0x003366), 0);
+      lv_obj_set_style_text_color(position_marker, lv_color_hex(UI_COLOR_GPS_MARKER), 0);
       lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
       lv_obj_center(position_marker);
       lv_obj_move_foreground(position_marker);
@@ -203,7 +203,7 @@ void ui_screen_left_init(void) {
     current_screen = lv_obj_create(NULL);
   }
 
-  lv_obj_set_style_bg_color(current_screen, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_color(current_screen, lv_color_hex(UI_COLOR_BACKGROUND), 0);
   lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
 
   // Barre de statut
@@ -212,7 +212,7 @@ void ui_screen_left_init(void) {
   lv_obj_t *frame = lv_obj_create(current_screen);
   lv_obj_set_size(frame, LCD_H_RES, LCD_V_RES - 60);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
-  lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_color(frame, lv_color_hex(UI_COLOR_BACKGROUND), 0);
   lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(frame, 3, 0);
   lv_obj_set_style_border_color(frame, lv_color_hex(UI_COLOR_BORDER_PRIMARY), 0);
@@ -250,7 +250,7 @@ void ui_screen_center_init(void) {
     current_screen = lv_obj_create(NULL);
   }
 
-  lv_obj_set_style_bg_color(current_screen, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_color(current_screen, lv_color_hex(UI_COLOR_BACKGROUND), 0);
    lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
 
   // Barre de statut
@@ -259,10 +259,10 @@ void ui_screen_center_init(void) {
   lv_obj_t *frame = lv_obj_create(current_screen);
   lv_obj_set_size(frame, LCD_H_RES, LCD_V_RES - 55);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 55);
-  lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_color(frame, lv_color_hex(UI_COLOR_BACKGROUND), 0);
   lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(frame, 0, 0);
-  lv_obj_set_style_border_color(frame, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_border_color(frame, lv_color_hex(UI_COLOR_BACKGROUND), 0);
   lv_obj_set_style_radius(frame, 0, 0);
   lv_obj_set_style_pad_all(frame, 0, 0);
   lv_obj_clear_flag(frame, LV_OBJ_FLAG_SCROLLABLE);
@@ -276,7 +276,7 @@ void ui_screen_center_init(void) {
   lv_obj_t *col_left = lv_obj_create(frame);
   lv_obj_set_size(col_left, col_side_width, col_height);
   lv_obj_set_pos(col_left, 0, 5);
-  lv_obj_set_style_bg_color(col_left, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_color(col_left, lv_color_hex(UI_COLOR_BACKGROUND), 0);
   lv_obj_set_style_bg_opa(col_left, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(col_left, 2, 0);
   lv_obj_set_style_border_color(col_left, lv_color_hex(UI_COLOR_BORDER_PRIMARY), 0);
@@ -296,7 +296,7 @@ void ui_screen_center_init(void) {
   map_container = lv_obj_create(frame);
   lv_obj_set_size(map_container, col_center_width, col_height);
   lv_obj_set_pos(map_container, col_side_width + 5, 5);
-  lv_obj_set_style_bg_color(map_container, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_color(map_container, lv_color_hex(UI_COLOR_BACKGROUND), 0);
   lv_obj_set_style_bg_opa(map_container, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(map_container, 2, 0);
   lv_obj_set_style_border_color(map_container, lv_color_hex(UI_COLOR_BORDER_PRIMARY), 0);
@@ -346,7 +346,7 @@ void ui_screen_center_init(void) {
   lv_obj_t *col_right = lv_obj_create(frame);
   lv_obj_set_size(col_right, col_side_width, col_height);
   lv_obj_set_pos(col_right, col_side_width + col_center_width + 10, 5);
-  lv_obj_set_style_bg_color(col_right, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_color(col_right, lv_color_hex(UI_COLOR_BACKGROUND), 0);
   lv_obj_set_style_bg_opa(col_right, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(col_right, 2, 0);
   lv_obj_set_style_border_color(col_right, lv_color_hex(UI_COLOR_BORDER_PRIMARY), 0);
@@ -365,7 +365,7 @@ void ui_screen_center_init(void) {
   position_marker = lv_label_create(map_container);
   lv_label_set_text(position_marker, LV_SYMBOL_GPS);
   lv_obj_set_style_text_font(position_marker, &lv_font_montserrat_32, 0);
-  lv_obj_set_style_text_color(position_marker, lv_color_hex(0x003366), 0);  // Bleu fonce
+  lv_obj_set_style_text_color(position_marker, lv_color_hex(UI_COLOR_GPS_MARKER), 0);  // Bleu fonce
   lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
   lv_obj_center(position_marker);
   lv_obj_move_foreground(position_marker);
@@ -392,7 +392,7 @@ void ui_screen_right_init(void) {
     current_screen = lv_obj_create(NULL);
   }
 
-  lv_obj_set_style_bg_color(current_screen, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_color(current_screen, lv_color_hex(UI_COLOR_BACKGROUND), 0);
   lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
 
   // Barre de statut
@@ -401,7 +401,7 @@ void ui_screen_right_init(void) {
   lv_obj_t *frame = lv_obj_create(current_screen);
   lv_obj_set_size(frame, LCD_H_RES, LCD_V_RES - 60);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
-  lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
+  lv_obj_set_style_bg_color(frame, lv_color_hex(UI_COLOR_BACKGROUND), 0);
   lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(frame, 3, 0);
   lv_obj_set_style_border_color(frame, lv_color_hex(UI_COLOR_BORDER_PRIMARY), 0);

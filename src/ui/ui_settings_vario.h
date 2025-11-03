@@ -208,10 +208,10 @@ void ui_settings_vario_init(void) {
   lv_chart_set_div_line_count(chart_audio, 5, 0);
 
   // Style du graphique
-  lv_obj_set_style_bg_color(chart_audio, lv_color_hex(0x0f1729), 0);
+  lv_obj_set_style_bg_color(chart_audio, lv_color_hex(UI_COLOR_CHART_BG), 0);
   lv_obj_set_style_border_width(chart_audio, 1, 0);
-  lv_obj_set_style_border_color(chart_audio, lv_color_hex(0x4080a0), 0);
-  lv_obj_set_style_line_color(chart_audio, lv_color_hex(0x404040), LV_PART_ITEMS);
+  lv_obj_set_style_border_color(chart_audio, lv_color_hex(UI_COLOR_BORDER_INPUT), 0);
+  lv_obj_set_style_line_color(chart_audio, lv_color_hex(UI_COLOR_CHART_LINE), LV_PART_ITEMS);
 
   // Taille des points
   lv_obj_set_style_size(chart_audio, 15, 15, LV_PART_INDICATOR);
