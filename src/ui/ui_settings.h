@@ -10,6 +10,7 @@
 #include "ui_settings_wifi.h"
 #include "ui_settings_map.h"
 #include "ui_settings_system.h"
+#include "ui_settings_ice.h"
 
 // Forward declarations
 void ui_prestart_show(void);
@@ -19,6 +20,7 @@ void ui_settings_screen_show(void);
 void ui_settings_vario_show(void);
 void ui_settings_map_show(void);
 void ui_settings_system_show(void);
+void ui_settings_ice_show(void);
 
 // Callbacks
 static void btn_back_cb(lv_event_t *e) {
@@ -26,6 +28,13 @@ static void btn_back_cb(lv_event_t *e) {
   Serial.println("Back button clicked");
 #endif
   ui_prestart_show();
+}
+
+static void btn_ice_cb(lv_event_t *e) {
+#ifdef DEBUG_MODE
+  Serial.println("ICE settings clicked");
+#endif
+  ui_settings_ice_show();
 }
 
 static void btn_pilot_cb(lv_event_t *e) {
@@ -89,6 +98,10 @@ void ui_settings_init(void) {
 
   lv_obj_t *btn_map = ui_create_button(main_left, txt->map_settings, LV_SYMBOL_GPS, lv_color_hex(UI_COLOR_BTN_START),
                                        UI_BTN_SETTINGS_W, UI_BTN_SETTINGS_H, UI_FONT_NORMAL, UI_FONT_LARGE, btn_map_cb,
+                                       NULL, (lv_align_t)0, NULL, NULL);
+
+  lv_obj_t *btn_ice = ui_create_button(main_left, txt->ice_settings, LV_SYMBOL_CALL, lv_color_hex(UI_COLOR_BTN_CANCEL),
+                                       UI_BTN_SETTINGS_W, UI_BTN_SETTINGS_H, UI_FONT_NORMAL, UI_FONT_LARGE, btn_ice_cb,
                                        NULL, (lv_align_t)0, NULL, NULL);
 
   lv_obj_t *btn_wifi = ui_create_button(main_right, txt->wifi_settings, LV_SYMBOL_WIFI, lv_color_hex(UI_COLOR_BTN_WIFI),

@@ -20,6 +20,7 @@ SET_LOOP_TASK_STACK_SIZE(4 * 1024);
 #include "src/ui/ui_main_screens.h"
 #include "src/ui/ui_prestart.h"
 #include "src/ui/ui_splash.h"
+#include "src/ui/ui_settings_ice.h"
 #include "src/test_logger_task.h"
 #include "src/kalman_task.h"
 
@@ -31,11 +32,18 @@ void setup() {
   Serial.setDebugOutput(true);
 #endif
 
+  // Delai initial stabilisation
+  delay(100);
+
   // 1. Bus I2C + IO Extender
   DEV_I2C_Init();
+  delay(50);
+  
   IO_EXTENSION_Init();
-  delay(10);
+  delay(100);  // Augmente de 10->100ms
+  
   IO_EXTENSION_Output(IO_EXTENSION_IO_4, 1);
+  delay(50);
 
   // 2. Params + SD Card
   params_init();
@@ -55,13 +63,18 @@ void setup() {
   Serial.printf("Version: %s\n", VARIO_VERSION);
 #endif
 
+  // Delai avant capteurs I2C
+  delay(100);
+
   // 3. Capteurs I2C (BMP390, BNO080, GPS)
   sensors_i2c_start();
 
   // 4. Kalman
   kalman_start();
-
   metar_start();
+
+  // Delai avant ecran
+  delay(100);
 
   // 5. Ecran + Touch
   esp_lcd_touch_handle_t tp_handle = touch_gt911_init();

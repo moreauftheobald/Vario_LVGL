@@ -323,8 +323,7 @@ void ui_prestart_init(void) {
                                                   UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_SECONDARY));
   const char *firstname_str = psram_str_get(params.pilot_firstname);
   lv_obj_t *label_firstname_value = ui_create_label(firstname_row,
-                                                    (firstname_str && strlen(firstname_str) > 0) ?
-                                                    firstname_str : "---",
+                                                    (firstname_str && strlen(firstname_str) > 0) ? firstname_str : "---",
                                                     UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_PRIMARY));
 
   // Telephone
@@ -348,9 +347,49 @@ void ui_prestart_init(void) {
                                              UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_SECONDARY));
   const char *wing_str = psram_str_get(params.pilot_wing);
   lv_obj_t *label_wing_value = ui_create_label(wing_row,
-                                               (wing_str && strlen(wing_str) > 0) ?
-                                               wing_str : "---",
+                                               (wing_str && strlen(wing_str) > 0) ? wing_str : "---",
                                                UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_PRIMARY));
+
+  // Separateur et titre ICE
+  ui_create_separator(main_right);
+  lv_obj_t *ice_title = ui_create_label(main_right, txt->ice_contact,
+                                        UI_FONT_NORMAL, lv_color_hex(UI_COLOR_LED_ALERT));
+
+  // Nom ICE
+  lv_obj_t *ice_name_row = ui_create_inline_container(main_right);
+  lv_obj_t *label_ice_name_title = ui_create_label(ice_name_row, txt->ice_name,
+                                                   UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_SECONDARY));
+  lv_obj_set_width(label_ice_name_title, UI_HEADER_LINE_W);
+  lv_obj_t *label_ice_name_sep = ui_create_label(ice_name_row, ":",
+                                                 UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_SECONDARY));
+  const char *ice_name_str = psram_str_get(params.ice_name);
+  lv_obj_t *label_ice_name_value = ui_create_label(ice_name_row,
+                                                   (ice_name_str && strlen(ice_name_str) > 0) ? ice_name_str : "---",
+                                                   UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_PRIMARY));
+
+  // Prenom ICE
+  lv_obj_t *ice_firstname_row = ui_create_inline_container(main_right);
+  lv_obj_t *label_ice_firstname_title = ui_create_label(ice_firstname_row, txt->ice_firstname,
+                                                        UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_SECONDARY));
+  lv_obj_set_width(label_ice_firstname_title, UI_HEADER_LINE_W);
+  lv_obj_t *label_ice_firstname_sep = ui_create_label(ice_firstname_row, ":",
+                                                      UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_SECONDARY));
+  const char *ice_firstname_str = psram_str_get(params.ice_firstname);
+  lv_obj_t *label_ice_firstname_value = ui_create_label(ice_firstname_row,
+                                                        (ice_firstname_str && strlen(ice_firstname_str) > 0) ? ice_firstname_str : "---",
+                                                        UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_PRIMARY));
+
+  // Telephone ICE
+  lv_obj_t *ice_phone_row = ui_create_inline_container(main_right);
+  lv_obj_t *label_ice_phone_title = ui_create_label(ice_phone_row, txt->ice_phone,
+                                                    UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_SECONDARY));
+  lv_obj_set_width(label_ice_phone_title, UI_HEADER_LINE_W);
+  lv_obj_t *label_ice_phone_sep = ui_create_label(ice_phone_row, ":",
+                                                  UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_SECONDARY));
+  const char *ice_phone_str = psram_str_get(params.ice_phone);
+  lv_obj_t *label_ice_phone_value = ui_create_label(ice_phone_row,
+                                                    (ice_phone_str && strlen(ice_phone_str) > 0) ? ice_phone_str : "---",
+                                                    UI_FONT_SMALL, lv_color_hex(UI_COLOR_TEXT_PRIMARY));
 
   // Boutons
   btn_start = ui_create_button(btn_container, txt->start, LV_SYMBOL_PLAY,

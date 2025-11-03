@@ -49,6 +49,11 @@ struct TextStrings {
   const char* flights;
   const char* pilot;
   const char* phone;
+  const char* ice_settings;
+  const char* ice_name;
+  const char* ice_firstname;
+  const char* ice_phone;
+  const char* ice_contact;
 };
 
 // Strings FR en PROGMEM
@@ -90,6 +95,11 @@ static const char str_fr_maps[] PROGMEM = "Cartes";
 static const char str_fr_flights[] PROGMEM = "Vols";
 static const char str_fr_pilot[] PROGMEM = "Pilote";
 static const char str_fr_phone[] PROGMEM = "Telephone";
+static const char str_fr_ice_settings[] PROGMEM = "Contact Urgence";
+static const char str_fr_ice_name[] PROGMEM = "Nom";
+static const char str_fr_ice_firstname[] PROGMEM = "Prenom";
+static const char str_fr_ice_phone[] PROGMEM = "Telephone";
+static const char str_fr_ice_contact[] PROGMEM = "Contact urgence";
 
 // Strings EN en PROGMEM
 static const char str_en_file_transfer[] PROGMEM = "File Transfer";
@@ -130,6 +140,11 @@ static const char str_en_maps[] PROGMEM = "Maps";
 static const char str_en_flights[] PROGMEM = "Flights";
 static const char str_en_pilot[] PROGMEM = "Pilot";
 static const char str_en_phone[] PROGMEM = "Phone";
+static const char str_en_ice_settings[] PROGMEM = "Emergency Contact";
+static const char str_en_ice_name[] PROGMEM = "Name";
+static const char str_en_ice_firstname[] PROGMEM = "First Name";
+static const char str_en_ice_phone[] PROGMEM = "Phone";
+static const char str_en_ice_contact[] PROGMEM = "Emergency contact";
 
 // Tables de pointeurs en PROGMEM
 static const TextStrings text_fr PROGMEM = {
@@ -170,7 +185,12 @@ static const TextStrings text_fr PROGMEM = {
   str_fr_maps,
   str_fr_flights,
   str_fr_pilot,
-  str_fr_phone
+  str_fr_phone,
+  str_fr_ice_settings,
+  str_fr_ice_name,
+  str_fr_ice_firstname,
+  str_fr_ice_phone,
+  str_fr_ice_contact
 };
 
 static const TextStrings text_en PROGMEM = {
@@ -211,7 +231,12 @@ static const TextStrings text_en PROGMEM = {
   str_en_maps,
   str_en_flights,
   str_en_pilot,
-  str_en_phone
+  str_en_phone,
+  str_en_ice_settings,
+  str_en_ice_name,
+  str_en_ice_firstname,
+  str_en_ice_phone,
+  str_en_ice_contact
 };
 
 // Fonction helper pour copier depuis PROGMEM vers SRAM
@@ -219,10 +244,10 @@ static TextStrings current_text_ram;
 
 static inline const TextStrings* get_text(void) {
   const TextStrings* src = (current_language == LANG_FR) ? &text_fr : &text_en;
-  
+
   // Copier la structure depuis PROGMEM vers SRAM
   memcpy_P(&current_text_ram, src, sizeof(TextStrings));
-  
+
   return &current_text_ram;
 }
 
