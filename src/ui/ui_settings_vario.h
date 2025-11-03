@@ -155,25 +155,25 @@ static void load_vario_settings(void) {
 void ui_settings_vario_init(void) {
   const TextStrings *txt = get_text();
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(UI_BORDER_MEDIUM, UI_RADIUS_LARGE, &current_screen);
   ui_create_main_frame(main_frame, false, txt->vario_settings);
 
   // 1. Periode d'integration du vario
-  lv_obj_t *integration_row = ui_create_form_row(main_left, "Periode d'integration", PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
-  slider_integration = ui_create_slider_with_label(integration_row, VARIO_SLIDER_W, VARIO_SLIDER_H,
-                                                   INT_MIN_PER, INT_MAX_PER, 5, "%d s", INFO_FONT_BIG,
-                                                   lv_color_hex(TITLE_COLOR), &label_integration_value);
+  lv_obj_t *integration_row = ui_create_form_row(main_left, "Periode d'integration", UI_HEADER_LINE_W, lv_color_hex(UI_COLOR_PRIMARY));
+  slider_integration = ui_create_slider_with_label(integration_row, UI_SLIDER_VARIO_W, UI_SLIDER_VARIO_H,
+                                                   INT_MIN_PER, INT_MAX_PER, 5, "%d s", UI_FONT_NORMAL,
+                                                   lv_color_hex(UI_COLOR_PRIMARY), &label_integration_value);
   lv_obj_set_width(label_integration_value, 60);
   lv_obj_add_event_cb(slider_integration, slider_integration_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
   // 2. Profil sonore avec graphique
-  lv_obj_t *label_audio = ui_create_label(main_left, "Profil sonore (Vario m/s -> Frequence Hz)", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
+  lv_obj_t *label_audio = ui_create_label(main_left, "Profil sonore (Vario m/s -> Frequence Hz)", UI_FONT_NORMAL, lv_color_hex(UI_COLOR_PRIMARY));
 
   // Container pour le graphique avec labels (augmente de 40px)
   chart_container = lv_obj_create(main_left);
-  lv_obj_set_size(chart_container, lv_pct(100), AUDIO_CHART_H);
-  ui_set_panel_style(chart_container, lv_color_hex(AUDIO_CHART_BG), LV_OPA_80,
-                     2, lv_color_hex(TITLE_COLOR), ROUND_FRANE_RADUIS_SMALL, 15);
+  lv_obj_set_size(chart_container, lv_pct(100), UI_AUDIO_CHART_H);
+  ui_set_panel_style(chart_container, lv_color_hex(UI_COLOR_AUDIO_CHART_BG), LV_OPA_80,
+                     UI_BORDER_THIN, lv_color_hex(UI_COLOR_PRIMARY), UI_RADIUS_SMALL, 15);
   lv_obj_clear_flag(chart_container, LV_OBJ_FLAG_SCROLLABLE);
 
   // Labels axe Y (frequences) - 600, 800, 1000, 1200, 1400
@@ -182,7 +182,7 @@ void ui_settings_vario_init(void) {
     lv_obj_t *label_y = lv_label_create(chart_container);
     lv_label_set_text_fmt(label_y, "%d", freq);
     lv_obj_set_style_text_font(label_y, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_text_color(label_y, lv_color_hex(INFO_LABEL_COLOR), 0);
+    lv_obj_set_style_text_color(label_y, lv_color_hex(UI_COLOR_TEXT_SECONDARY), 0);
     lv_obj_set_pos(label_y, 5, 20 + (i * 60));
   }
 
@@ -192,7 +192,7 @@ void ui_settings_vario_init(void) {
     lv_obj_t *label_x = lv_label_create(chart_container);
     lv_label_set_text_fmt(label_x, "%d", vario);
     lv_obj_set_style_text_font(label_x, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_text_color(label_x, lv_color_hex(INFO_LABEL_COLOR), 0);
+    lv_obj_set_style_text_color(label_x, lv_color_hex(UI_COLOR_TEXT_SECONDARY), 0);
     lv_obj_set_pos(label_x, 45 + 6 + (i * 870 / 15) - 6, 275);
   }
 
@@ -217,11 +217,11 @@ void ui_settings_vario_init(void) {
   lv_obj_set_style_size(chart_audio, 15, 15, LV_PART_INDICATOR);
 
   // Serie de donnees en ROUGE
-  series_audio = lv_chart_add_series(chart_audio, lv_color_hex(0xff0000), LV_CHART_AXIS_PRIMARY_Y);
-  lv_obj_set_style_line_width(chart_audio, 3, LV_PART_ITEMS);
+  series_audio = lv_chart_add_series(chart_audio, lv_color_hex(UI_COLOR_ERROR), LV_CHART_AXIS_PRIMARY_Y);
+  lv_obj_set_style_line_width(chart_audio, UI_BORDER_MEDIUM, LV_PART_ITEMS);
 
   // Couleur rouge pour les points aussi
-  lv_obj_set_style_bg_color(chart_audio, lv_color_hex(0xff0000), LV_PART_INDICATOR);
+  lv_obj_set_style_bg_color(chart_audio, lv_color_hex(UI_COLOR_ERROR), LV_PART_INDICATOR);
 
   // Initialisation des points
   for (int i = 0; i < 16; i++) {
@@ -234,18 +234,18 @@ void ui_settings_vario_init(void) {
   lv_obj_add_event_cb(chart_audio, chart_audio_event_cb, LV_EVENT_PRESSING, NULL);
 
   // Bouton Save
-  lv_obj_t *btn_save_vario = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(START_BTN_COLOR),
-                                              PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_save_vario_cb,
+  lv_obj_t *btn_save_vario = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(UI_COLOR_BTN_START),
+                                              UI_BTN_PRESTART_W, UI_BTN_PRESTART_H, UI_FONT_SMALL, UI_FONT_NORMAL, btn_save_vario_cb,
                                               NULL, (lv_align_t)0, NULL, NULL);
 
   // Bouton Cancel
-  lv_obj_t *btn_cancel_vario = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
-                                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_cancel_vario_cb,
+  lv_obj_t *btn_cancel_vario = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(UI_COLOR_BTN_CANCEL),
+                                                UI_BTN_PRESTART_W, UI_BTN_PRESTART_H, UI_FONT_SMALL, UI_FONT_NORMAL, btn_cancel_vario_cb,
                                                 NULL, (lv_align_t)0, NULL, NULL);
 
   // Bouton Reset
-  lv_obj_t *btn_reset_vario = ui_create_button(btn_container, txt->reset, LV_SYMBOL_BACKSPACE, lv_color_hex(RESET_BTN_COLOR),
-                                               PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_reset_audio_cb,
+  lv_obj_t *btn_reset_vario = ui_create_button(btn_container, txt->reset, LV_SYMBOL_BACKSPACE, lv_color_hex(UI_COLOR_BTN_RESET),
+                                               UI_BTN_PRESTART_W, UI_BTN_PRESTART_H, UI_FONT_SMALL, UI_FONT_NORMAL, btn_reset_audio_cb,
                                                NULL, (lv_align_t)0, NULL, NULL);
 
   load_vario_settings();

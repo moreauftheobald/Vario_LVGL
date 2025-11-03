@@ -82,29 +82,30 @@ static void btn_cancel_pilot_cb(lv_event_t *e) {
 void ui_settings_pilot_init(void) {
   const TextStrings *txt = get_text();
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(UI_BORDER_MEDIUM, UI_RADIUS_LARGE, &current_screen);
   ui_create_main_frame(main_frame, false, txt->pilot_settings);
 
   // Widgets statiques
   static pilot_widgets_t widgets;
 
   // Nom
-  lv_obj_t *name_row = ui_create_form_row(main_left, txt->pilot_name, PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
-  widgets.ta_name = ui_create_textarea(name_row, TXT_AREA_W, TXT_AREA_H, 32, true);
+  lv_obj_t *name_row = ui_create_form_row(main_left, txt->pilot_name, UI_HEADER_LINE_W, lv_color_hex(UI_COLOR_PRIMARY));
+  widgets.ta_name = ui_create_textarea(name_row, UI_TEXTAREA_W, UI_TEXTAREA_H, 32, true);
   lv_obj_add_event_cb(widgets.ta_name, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
+  
   // Prenom
-  lv_obj_t *firstname_row = ui_create_form_row(main_left, txt->pilot_firstname, PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
-  widgets.ta_firstname = ui_create_textarea(firstname_row, TXT_AREA_W, TXT_AREA_H, 32, true);
+  lv_obj_t *firstname_row = ui_create_form_row(main_left, txt->pilot_firstname, UI_HEADER_LINE_W, lv_color_hex(UI_COLOR_PRIMARY));
+  widgets.ta_firstname = ui_create_textarea(firstname_row, UI_TEXTAREA_W, UI_TEXTAREA_H, 32, true);
   lv_obj_add_event_cb(widgets.ta_firstname, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
 
   // Voile
-  lv_obj_t *wing_row = ui_create_form_row(main_left, txt->pilot_wing, PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
-  widgets.ta_wing = ui_create_textarea(wing_row, TXT_AREA_W, TXT_AREA_H, 32, true);
+  lv_obj_t *wing_row = ui_create_form_row(main_left, txt->pilot_wing, UI_HEADER_LINE_W, lv_color_hex(UI_COLOR_PRIMARY));
+  widgets.ta_wing = ui_create_textarea(wing_row, UI_TEXTAREA_W, UI_TEXTAREA_H, 32, true);
   lv_obj_add_event_cb(widgets.ta_wing, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
 
   // Telephone
-  lv_obj_t *phone_row = ui_create_form_row(main_left, txt->pilot_phone, PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
-  widgets.ta_phone = ui_create_textarea(phone_row, TXT_AREA_W, TXT_AREA_H, 32, true);
+  lv_obj_t *phone_row = ui_create_form_row(main_left, txt->pilot_phone, UI_HEADER_LINE_W, lv_color_hex(UI_COLOR_PRIMARY));
+  widgets.ta_phone = ui_create_textarea(phone_row, UI_TEXTAREA_W, UI_TEXTAREA_H, 32, true);
   lv_obj_add_event_cb(widgets.ta_phone, ta_pilot_event_cb, LV_EVENT_FOCUSED, NULL);
 
   // Clavier
@@ -114,13 +115,13 @@ void ui_settings_pilot_init(void) {
   }
 
   // Bouton Save
-  lv_obj_t *btn_save_pilot = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(START_BTN_COLOR),
-                                              PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_save_pilot_cb,
+  lv_obj_t *btn_save_pilot = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(UI_COLOR_BTN_START),
+                                              UI_BTN_PRESTART_W, UI_BTN_PRESTART_H, UI_FONT_SMALL, UI_FONT_NORMAL, btn_save_pilot_cb,
                                               &widgets, (lv_align_t)0, NULL, NULL);
 
   // Bouton Cancel
-  lv_obj_t *btn_cancel_pilot = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
-                                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_cancel_pilot_cb,
+  lv_obj_t *btn_cancel_pilot = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(UI_COLOR_BTN_CANCEL),
+                                                UI_BTN_PRESTART_W, UI_BTN_PRESTART_H, UI_FONT_SMALL, UI_FONT_NORMAL, btn_cancel_pilot_cb,
                                                 NULL, (lv_align_t)0, NULL, NULL);
 
   // Charger les donnees

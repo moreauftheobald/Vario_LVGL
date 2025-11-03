@@ -6,6 +6,7 @@
 #include "UI_helper.h"
 #include "lang.h"
 #include "globals.h"
+#include "graphical.h"
 #include "src/params/params.h"
 
 void ui_settings_show(void);
@@ -178,28 +179,28 @@ void ui_settings_wifi_init(void) {
   backup_wifi_data();
   current_priority = 0;
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, UI_RADIUS_LARGE, &current_screen);
   ui_create_main_frame(main_frame, false, txt->wifi_settings);
 
   // Ligne Priorite
-  lv_obj_t *priority_row = ui_create_form_row(main_left, txt->wifi_priority, 140, lv_color_hex(0xff9500));
+  lv_obj_t *priority_row = ui_create_form_row(main_left, txt->wifi_priority, 140, lv_color_hex(UI_COLOR_BTN_RESET));
 
   dropdown_priority = lv_dropdown_create(priority_row);
   lv_dropdown_set_options(dropdown_priority, "Priorite 1\nPriorite 2\nPriorite 3\nPriorite 4");
-  lv_obj_set_width(dropdown_priority, 760);
-  lv_obj_set_style_bg_color(dropdown_priority, lv_color_hex(0x0f1520), 0);
+  lv_obj_set_width(dropdown_priority, UI_TEXTAREA_W);
+  lv_obj_set_style_bg_color(dropdown_priority, lv_color_hex(UI_COLOR_CONTROL_BG), 0);
   lv_obj_set_style_text_color(dropdown_priority, lv_color_white(), 0);
-  lv_obj_set_style_text_font(dropdown_priority, &lv_font_montserrat_20, 0);
+  lv_obj_set_style_text_font(dropdown_priority, UI_FONT_NORMAL, 0);
   lv_obj_add_event_cb(dropdown_priority, dropdown_wifi_event_cb, LV_EVENT_ALL, NULL);
 
   // Ligne SSID
-  lv_obj_t *ssid_row = ui_create_form_row(main_left, txt->wifi_ssid, 140, lv_color_hex(0x00d4ff));
-  ta_ssid = ui_create_textarea(ssid_row, TXT_AREA_W, TXT_AREA_H, 32, true);
+  lv_obj_t *ssid_row = ui_create_form_row(main_left, txt->wifi_ssid, 140, lv_color_hex(UI_COLOR_PRIMARY));
+  ta_ssid = ui_create_textarea(ssid_row, UI_TEXTAREA_W, UI_TEXTAREA_H, 32, true);
   lv_obj_add_event_cb(ta_ssid, ta_wifi_event_cb, LV_EVENT_FOCUSED, NULL);
 
   // Ligne Password
-  lv_obj_t *password_row = ui_create_form_row(main_left, txt->wifi_password, 140, lv_color_hex(0x00d4ff));
-  ta_password = ui_create_textarea(password_row, TXT_AREA_W, TXT_AREA_H, 32, true);
+  lv_obj_t *password_row = ui_create_form_row(main_left, txt->wifi_password, 140, lv_color_hex(UI_COLOR_PRIMARY));
+  ta_password = ui_create_textarea(password_row, UI_TEXTAREA_W, UI_TEXTAREA_H, 32, true);
   lv_obj_add_event_cb(ta_password, ta_wifi_event_cb, LV_EVENT_FOCUSED, NULL);
 
   // Clavier
@@ -209,13 +210,13 @@ void ui_settings_wifi_init(void) {
   }
 
   // Bouton Save
-  lv_obj_t *btn_save_wifi = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(START_BTN_COLOR),
-                                             PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_save_wifi_cb,
+  lv_obj_t *btn_save_wifi = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(UI_COLOR_BTN_START),
+                                             UI_BTN_PRESTART_W, UI_BTN_PRESTART_H, UI_FONT_SMALL, UI_FONT_NORMAL, btn_save_wifi_cb,
                                              NULL, (lv_align_t)0, NULL, NULL);
 
   // Bouton Cancel
-  lv_obj_t *btn_cancel_wifi = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
-                                               PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_cancel_wifi_cb,
+  lv_obj_t *btn_cancel_wifi = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(UI_COLOR_BTN_CANCEL),
+                                               UI_BTN_PRESTART_W, UI_BTN_PRESTART_H, UI_FONT_SMALL, UI_FONT_NORMAL, btn_cancel_wifi_cb,
                                                NULL, (lv_align_t)0, NULL, NULL);
 
   // Charger la priorite 0
@@ -227,11 +228,11 @@ void ui_settings_wifi_init(void) {
 }
 
 void ui_settings_wifi_show(void) {
-  // Sauvegarder ancien écran
+  // Sauvegarder ancien ecran
   lv_obj_t *old_screen = lv_scr_act();
 
   if (lvgl_port_lock(-1)) {
-    // Créer nouvel écran
+    // Creer nouvel ecran
     current_screen = lv_obj_create(NULL);
 
     ui_settings_wifi_init();
@@ -240,7 +241,7 @@ void ui_settings_wifi_show(void) {
     lvgl_port_unlock();
   }
 
-  // Détruire ancien écran
+  // Detruire ancien ecran
   if (old_screen != current_screen && old_screen != NULL) {
     lv_obj_del(old_screen);
 #ifdef DEBUG_MODE

@@ -57,7 +57,6 @@ static const TileServer tile_servers[] PROGMEM = {
 static const int tile_servers_count = sizeof(tile_servers) / sizeof(TileServer);
 
 // Fonction pour rafraîchir l'aperçu carte
-// Fonction pour rafraîchir l'aperçu carte
 static void refresh_map_preview(int zoom) {
   if (!map_container_preview) return;
 
@@ -69,11 +68,11 @@ static void refresh_map_preview(int zoom) {
 
   // Créer nouvelle vue carte avec 9 tuiles (3x3)
 #ifdef FLIGHT_TEST_MODE
-  map_canvas_preview = create_map_view(map_container_preview, TEST_LAT, TEST_LON, zoom, 440, 350);
+  map_canvas_preview = create_map_view(map_container_preview, TEST_LAT, TEST_LON, zoom, UI_MAP_CANVAS_W, UI_MAP_CANVAS_H);
 #else
   double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
   double display_lon = g_sensor_data.gps.valid ? g_sensor_data.gps.longitude : TEST_LON;
-  map_canvas_preview = create_map_view(map_container_preview, display_lat, display_lon, zoom, 440, 350);
+  map_canvas_preview = create_map_view(map_container_preview, display_lat, display_lon, zoom, UI_MAP_CANVAS_W, UI_MAP_CANVAS_H);
 #endif
 
   if (map_canvas_preview) {
@@ -84,9 +83,9 @@ static void refresh_map_preview(int zoom) {
     lv_obj_set_size(marker, 16, 16);
     lv_obj_center(marker);
     lv_obj_set_style_radius(marker, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(marker, lv_color_hex(0xff0000), 0);
-    lv_obj_set_style_border_width(marker, 3, 0);
-    lv_obj_set_style_border_color(marker, lv_color_hex(0xffffff), 0);
+    lv_obj_set_style_bg_color(marker, lv_color_hex(UI_COLOR_ERROR), 0);
+    lv_obj_set_style_border_width(marker, UI_BORDER_MEDIUM, 0);
+    lv_obj_set_style_border_color(marker, lv_color_hex(UI_COLOR_BORDER_PRIMARY), 0);
   }
 
 #ifdef DEBUG_MODE
@@ -220,7 +219,7 @@ static void btn_cancel_map_cb(lv_event_t *e) {
 void ui_settings_map_init(void) {
   const TextStrings *txt = get_text();
 
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(UI_BORDER_MEDIUM, UI_RADIUS_LARGE, &current_screen);
 
   ui_create_main_frame(main_frame, true, txt->map_settings);
 
@@ -228,15 +227,15 @@ void ui_settings_map_init(void) {
   static map_widgets_t widgets;
 
   // 1. Niveau de zoom
-  lv_obj_t *label_zoom = ui_create_label(main_left, "Niveau de zoom", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
+  lv_obj_t *label_zoom = ui_create_label(main_left, "Niveau de zoom", UI_FONT_NORMAL, lv_color_hex(UI_COLOR_PRIMARY));
   lv_obj_t *label_zoom_value;
   widgets.slider_zoom = ui_create_slider_with_label(main_left, lv_pct(90), LV_SIZE_CONTENT,
-                                                    MAP_ZOOM_MIN, MAP_ZOOM_MAX, 13, "%d", INFO_FONT_BIG,
-                                                    lv_color_hex(INFO_DATAS_COLOR), &label_zoom_value);
+                                                    MAP_ZOOM_MIN, MAP_ZOOM_MAX, 13, "%d", UI_FONT_NORMAL,
+                                                    lv_color_hex(UI_COLOR_TEXT_PRIMARY), &label_zoom_value);
   lv_obj_add_event_cb(widgets.slider_zoom, slider_zoom_event_cb, LV_EVENT_VALUE_CHANGED, label_zoom_value);
 
   // 2. Serveur de tuiles
-  lv_obj_t *label_server = ui_create_label(main_left, "Serveur de tuiles", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
+  lv_obj_t *label_server = ui_create_label(main_left, "Serveur de tuiles", UI_FONT_NORMAL, lv_color_hex(UI_COLOR_PRIMARY));
 
   // Construire la liste des serveurs depuis PROGMEM
   char names_buffer[192] = "";
@@ -249,39 +248,39 @@ void ui_settings_map_init(void) {
   widgets.dropdown_tile_server = ui_create_styled_dropdown(main_left, names_buffer, lv_pct(90));
 
   // 3. Points de trace
-  lv_obj_t *label_track = ui_create_label(main_left, "Points de trace", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
+  lv_obj_t *label_track = ui_create_label(main_left, "Points de trace", UI_FONT_NORMAL, lv_color_hex(UI_COLOR_PRIMARY));
   lv_obj_t *label_track_value;
   widgets.slider_track_points = ui_create_slider_with_label(main_left, lv_pct(90), LV_SIZE_CONTENT,
-                                                            50, 500, 200, "%d", INFO_FONT_BIG,
-                                                            lv_color_hex(INFO_DATAS_COLOR), &label_track_value);
+                                                            50, 500, 200, "%d", UI_FONT_NORMAL,
+                                                            lv_color_hex(UI_COLOR_TEXT_PRIMARY), &label_track_value);
   lv_obj_add_event_cb(widgets.slider_track_points, slider_track_event_cb, LV_EVENT_VALUE_CHANGED, label_track_value);
 
   // 4. Switch couleurs vario
-  lv_obj_t *label_vario = ui_create_label(main_left, "Couleurs vario sur trace", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
+  lv_obj_t *label_vario = ui_create_label(main_left, "Couleurs vario sur trace", UI_FONT_NORMAL, lv_color_hex(UI_COLOR_PRIMARY));
 
   lv_obj_t *switch_indicator;
-  widgets.switch_vario_colors = ui_create_switch_with_indicator(main_left, 60, 30,
-                                                                lv_color_hex(SW_ON), lv_color_hex(SW_OFF), &switch_indicator);
+  widgets.switch_vario_colors = ui_create_switch_with_indicator(main_left, UI_SWITCH_WIDTH, UI_SWITCH_HEIGHT,
+                                                                lv_color_hex(UI_COLOR_SWITCH_ON), lv_color_hex(UI_COLOR_SWITCH_OFF), &switch_indicator);
   lv_obj_add_event_cb(widgets.switch_vario_colors, switch_vario_event_cb, LV_EVENT_VALUE_CHANGED, switch_indicator);
 
   // Titre aperçu
-  lv_obj_t *label_preview = ui_create_label(main_right, "Apercu carte", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
+  lv_obj_t *label_preview = ui_create_label(main_right, "Apercu carte", UI_FONT_NORMAL, lv_color_hex(UI_COLOR_PRIMARY));
   lv_obj_align(label_preview, LV_ALIGN_TOP_MID, 0, 0);
 
   // Conteneur pour la carte (agrandi pour occuper tout l'espace)
   map_container_preview = lv_obj_create(main_right);
-  ui_set_size_and_align(map_container_preview, 450, 360, LV_ALIGN_CENTER, 0, 20);
-  ui_set_panel_style(map_container_preview, lv_color_hex(0x1c1c1e), LV_OPA_COVER,
-                     2, lv_color_hex(TITLE_COLOR), 0, 5);
+  ui_set_size_and_align(map_container_preview, UI_MAP_PREVIEW_W, UI_MAP_PREVIEW_H, LV_ALIGN_CENTER, 0, 20);
+  ui_set_panel_style(map_container_preview, lv_color_hex(UI_MAP_CONTAINER_BG), LV_OPA_COVER,
+                     UI_MAP_BORDER_WIDTH, lv_color_hex(UI_COLOR_PRIMARY), UI_RADIUS_NONE, UI_MAP_PAD);
   lv_obj_clear_flag(map_container_preview, LV_OBJ_FLAG_SCROLLABLE);
 
   // Afficher vue carte multi-tuiles (3x3)
 #ifdef FLIGHT_TEST_MODE
-  map_canvas_preview = create_map_view(map_container_preview, TEST_LAT, TEST_LON, params.map_zoom, 440, 350);
+  map_canvas_preview = create_map_view(map_container_preview, TEST_LAT, TEST_LON, params.map_zoom, UI_MAP_CANVAS_W, UI_MAP_CANVAS_H);
 #else
   double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
   double display_lon = g_sensor_data.gps.valid ? g_sensor_data.gps.longitude : TEST_LON;
-  map_canvas_preview = create_map_view(map_container_preview, display_lat, display_lon, params.map_zoom, 440, 350);
+  map_canvas_preview = create_map_view(map_container_preview, display_lat, display_lon, params.map_zoom, UI_MAP_CANVAS_W, UI_MAP_CANVAS_H);
 #endif
 
   if (map_canvas_preview) {
@@ -292,19 +291,19 @@ void ui_settings_map_init(void) {
     lv_obj_set_size(marker, 16, 16);
     lv_obj_center(marker);
     lv_obj_set_style_radius(marker, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(marker, lv_color_hex(KO_COLOR), 0);
-    lv_obj_set_style_border_width(marker, 3, 0);
-    lv_obj_set_style_border_color(marker, lv_color_hex(BORDERS_COLOR), 0);
+    lv_obj_set_style_bg_color(marker, lv_color_hex(UI_COLOR_ERROR), 0);
+    lv_obj_set_style_border_width(marker, UI_BORDER_MEDIUM, 0);
+    lv_obj_set_style_border_color(marker, lv_color_hex(UI_COLOR_BORDER_PRIMARY), 0);
   }
 
   // Bouton Save
-  lv_obj_t *btn_save_map = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(START_BTN_COLOR),
-                                            PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_save_map_cb,
+  lv_obj_t *btn_save_map = ui_create_button(btn_container, txt->save, LV_SYMBOL_SAVE, lv_color_hex(UI_COLOR_BTN_START),
+                                            UI_BTN_PRESTART_W, UI_BTN_PRESTART_H, UI_FONT_SMALL, UI_FONT_NORMAL, btn_save_map_cb,
                                             &widgets, (lv_align_t)0, NULL, NULL);
 
   // Bouton Cancel
-  lv_obj_t *btn_cancel_map = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
-                                              PRE_BTN_W, PRE_BTN_H, INFO_FONT_S, INFO_FONT_BIG, btn_cancel_map_cb,
+  lv_obj_t *btn_cancel_map = ui_create_button(btn_container, txt->cancel, LV_SYMBOL_BACKSPACE, lv_color_hex(UI_COLOR_BTN_CANCEL),
+                                              UI_BTN_PRESTART_W, UI_BTN_PRESTART_H, UI_FONT_SMALL, UI_FONT_NORMAL, btn_cancel_map_cb,
                                               &widgets, (lv_align_t)0, NULL, NULL);
 
   // Charger valeurs actuelles

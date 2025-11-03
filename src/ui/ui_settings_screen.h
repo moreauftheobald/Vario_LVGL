@@ -195,7 +195,7 @@ static void btn_test_calib_cb(lv_event_t *e) {
     test_point = lv_obj_create(current_screen);
     lv_obj_set_size(test_point, 20, 20);
     lv_obj_set_style_radius(test_point, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(test_point, lv_color_hex(0x00FF00), 0);
+    lv_obj_set_style_bg_color(test_point, lv_color_hex(UI_COLOR_SUCCESS), 0);
     lv_obj_set_style_border_width(test_point, 0, 0);
     lv_obj_set_style_pad_all(test_point, 0, 0);
     lv_obj_set_pos(test_point, 0, 0);  // Position initiale en haut à gauche
@@ -246,8 +246,8 @@ void ui_settings_screen_init(void) {
   // Instructions (directement sur l'écran principal)
   instruction_label = lv_label_create(current_screen);
   lv_label_set_text(instruction_label, "Point 1/2 - Touchez la cible");
-  lv_obj_set_style_text_font(instruction_label, &lv_font_montserrat_24, 0);
-  lv_obj_set_style_text_color(instruction_label, lv_color_hex(0xFFFFFF), 0);
+  lv_obj_set_style_text_font(instruction_label, UI_FONT_LARGE, 0);
+  lv_obj_set_style_text_color(instruction_label, lv_color_hex(UI_COLOR_TEXT_PRIMARY), 0);
   lv_obj_set_style_text_align(instruction_label, LV_TEXT_ALIGN_CENTER, 0);
   lv_obj_align(instruction_label, LV_ALIGN_TOP_MID, 0, 20);
   lv_obj_clear_flag(instruction_label, LV_OBJ_FLAG_CLICKABLE);
@@ -265,8 +265,8 @@ void ui_settings_screen_init(void) {
   lv_obj_set_size(circle, 100, 100);
   lv_obj_set_style_radius(circle, LV_RADIUS_CIRCLE, 0);
   lv_obj_set_style_bg_opa(circle, LV_OPA_TRANSP, 0);
-  lv_obj_set_style_border_color(circle, lv_color_hex(0xFF0000), 0);
-  lv_obj_set_style_border_width(circle, 3, 0);
+  lv_obj_set_style_border_color(circle, lv_color_hex(UI_COLOR_ERROR), 0);
+  lv_obj_set_style_border_width(circle, UI_BORDER_MEDIUM, 0);
   lv_obj_set_style_pad_all(circle, 0, 0);
   lv_obj_center(circle);
   lv_obj_clear_flag(circle, LV_OBJ_FLAG_CLICKABLE);

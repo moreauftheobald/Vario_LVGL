@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "UI_helper.h"
 #include "lang.h"
+#include "graphical.h"
 #include "ui_settings_pilot.h"
 #include "ui_settings_wifi.h"
 #include "ui_settings_map.h"
@@ -66,45 +67,45 @@ static void btn_system_cb(lv_event_t *e) {
 #ifdef DEBUG_MODE
   Serial.println("System settings clicked");
 #endif
-  ui_settings_system_show();  // Enlève le commentaire TODO
+  ui_settings_system_show();
 }
 
 void ui_settings_init(void) {
   const TextStrings *txt = get_text();
 
   // Ecran et frame
-  lv_obj_t *main_frame = ui_create_black_screen_with_frame(3, ROUND_FRANE_RADUIS_BIG, &current_screen);
+  lv_obj_t *main_frame = ui_create_black_screen_with_frame(UI_BORDER_NONE, UI_RADIUS_LARGE, &current_screen);
 
   ui_create_main_frame(main_frame, true, txt->settings);
 
   // Boutons de parametres
-  lv_obj_t *btn_pilot = ui_create_button(main_left, txt->pilot_settings, LV_SYMBOL_HOME, lv_color_hex(FILES_BTN_COLOR),
-                                         STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_pilot_cb,
+  lv_obj_t *btn_pilot = ui_create_button(main_left, txt->pilot_settings, LV_SYMBOL_HOME, lv_color_hex(UI_COLOR_BTN_FILES),
+                                         UI_BTN_SETTINGS_W, UI_BTN_SETTINGS_H, UI_FONT_NORMAL, UI_FONT_LARGE, btn_pilot_cb,
                                          NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_screen = ui_create_button(main_left, txt->screen_calibration, LV_SYMBOL_SETTINGS, lv_color_hex(RESET_BTN_COLOR),
-                                          STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_screen_cb,
+  lv_obj_t *btn_screen = ui_create_button(main_left, txt->screen_calibration, LV_SYMBOL_SETTINGS, lv_color_hex(UI_COLOR_BTN_RESET),
+                                          UI_BTN_SETTINGS_W, UI_BTN_SETTINGS_H, UI_FONT_NORMAL, UI_FONT_LARGE, btn_screen_cb,
                                           NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_map = ui_create_button(main_left, txt->map_settings, LV_SYMBOL_GPS, lv_color_hex(START_BTN_COLOR),
-                                       STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_map_cb,
+  lv_obj_t *btn_map = ui_create_button(main_left, txt->map_settings, LV_SYMBOL_GPS, lv_color_hex(UI_COLOR_BTN_START),
+                                       UI_BTN_SETTINGS_W, UI_BTN_SETTINGS_H, UI_FONT_NORMAL, UI_FONT_LARGE, btn_map_cb,
                                        NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_wifi = ui_create_button(main_right, txt->wifi_settings, LV_SYMBOL_WIFI, lv_color_hex(WIFI_BTN_COLOR),
-                                        STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_wifi_cb,
+  lv_obj_t *btn_wifi = ui_create_button(main_right, txt->wifi_settings, LV_SYMBOL_WIFI, lv_color_hex(UI_COLOR_BTN_WIFI),
+                                        UI_BTN_SETTINGS_W, UI_BTN_SETTINGS_H, UI_FONT_NORMAL, UI_FONT_LARGE, btn_wifi_cb,
                                         NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_vario = ui_create_button(main_right, txt->vario_settings, LV_SYMBOL_UP, lv_color_hex(VARIO_BTN_COLOR),
-                                         STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_vario_cb,
+  lv_obj_t *btn_vario = ui_create_button(main_right, txt->vario_settings, LV_SYMBOL_UP, lv_color_hex(UI_COLOR_BTN_VARIO),
+                                         UI_BTN_SETTINGS_W, UI_BTN_SETTINGS_H, UI_FONT_NORMAL, UI_FONT_LARGE, btn_vario_cb,
                                          NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_system = ui_create_button(main_right, txt->system_settings, LV_SYMBOL_LIST, lv_color_hex(SETUP_BTN_COLOR),
-                                          STP_BTN_W, STP_BTN_H, INFO_FONT_BIG, SETUP_SYMB, btn_system_cb,
+  lv_obj_t *btn_system = ui_create_button(main_right, txt->system_settings, LV_SYMBOL_LIST, lv_color_hex(UI_COLOR_BTN_SETTINGS),
+                                          UI_BTN_SETTINGS_W, UI_BTN_SETTINGS_H, UI_FONT_NORMAL, UI_FONT_LARGE, btn_system_cb,
                                           NULL, (lv_align_t)0, NULL, NULL);
 
   // Bouton retour
-  lv_obj_t *btn_back = ui_create_button(btn_container, txt->back, LV_SYMBOL_BACKSPACE, lv_color_hex(CANCE_BTN_COLOR),
-                                        PRE_BTN_W, PRE_BTN_H, INFO_FONT_BIG, INFO_FONT_BIG, btn_back_cb,
+  lv_obj_t *btn_back = ui_create_button(btn_container, txt->back, LV_SYMBOL_BACKSPACE, lv_color_hex(UI_COLOR_BTN_CANCEL),
+                                        UI_BTN_PRESTART_W, UI_BTN_PRESTART_H, UI_FONT_NORMAL, UI_FONT_NORMAL, btn_back_cb,
                                         NULL, LV_ALIGN_BOTTOM_MID, NULL, NULL);
 
 #ifdef DEBUG_MODE
