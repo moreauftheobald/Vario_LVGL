@@ -130,22 +130,16 @@ static void btn_zoom_in_cb(lv_event_t *e) {
       if (map_canvas) {
         lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
       }
-      
+
       // Remonter les boutons au premier plan
       if (btn_zoom_in) lv_obj_move_foreground(btn_zoom_in);
       if (btn_zoom_out) lv_obj_move_foreground(btn_zoom_out);
-      
+
       // Recreer le marqueur position
       if (position_marker) {
         lv_obj_del(position_marker);
       }
-      position_marker = lv_label_create(map_container);
-      lv_label_set_text(position_marker, LV_SYMBOL_GPS);
-      lv_obj_set_style_text_font(position_marker, &lv_font_montserrat_32, 0);
-      lv_obj_set_style_text_color(position_marker, lv_color_hex(UI_COLOR_GPS_MARKER), 0);
-      lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
-      lv_obj_center(position_marker);
-      lv_obj_move_foreground(position_marker);
+      position_marker = ui_create_position_marker(map_container);
     }
   }
 }
@@ -174,22 +168,16 @@ static void btn_zoom_out_cb(lv_event_t *e) {
       if (map_canvas) {
         lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
       }
-      
+
       // Remonter les boutons au premier plan
       if (btn_zoom_in) lv_obj_move_foreground(btn_zoom_in);
       if (btn_zoom_out) lv_obj_move_foreground(btn_zoom_out);
-      
+
       // Recreer le marqueur position
       if (position_marker) {
         lv_obj_del(position_marker);
       }
-      position_marker = lv_label_create(map_container);
-      lv_label_set_text(position_marker, LV_SYMBOL_GPS);
-      lv_obj_set_style_text_font(position_marker, &lv_font_montserrat_32, 0);
-      lv_obj_set_style_text_color(position_marker, lv_color_hex(UI_COLOR_GPS_MARKER), 0);
-      lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
-      lv_obj_center(position_marker);
-      lv_obj_move_foreground(position_marker);
+      position_marker = ui_create_position_marker(map_container);
     }
   }
 }
@@ -251,7 +239,7 @@ void ui_screen_center_init(void) {
   }
 
   lv_obj_set_style_bg_color(current_screen, lv_color_hex(UI_COLOR_BACKGROUND), 0);
-   lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
 
   // Barre de statut
   ui_create_status_bar(current_screen);
@@ -362,13 +350,7 @@ void ui_screen_center_init(void) {
   lv_obj_center(label_right);
 
   // Marqueur position sur carte
-  position_marker = lv_label_create(map_container);
-  lv_label_set_text(position_marker, LV_SYMBOL_GPS);
-  lv_obj_set_style_text_font(position_marker, &lv_font_montserrat_32, 0);
-  lv_obj_set_style_text_color(position_marker, lv_color_hex(UI_COLOR_GPS_MARKER), 0);  // Bleu fonce
-  lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
-  lv_obj_center(position_marker);
-  lv_obj_move_foreground(position_marker);
+  position_marker = ui_create_position_marker(map_container);
 
   // Ajouter handler swipe sur l'ecran complet
   lv_obj_add_event_cb(current_screen, swipe_event_handler, LV_EVENT_PRESSED, NULL);

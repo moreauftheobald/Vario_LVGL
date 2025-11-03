@@ -42,6 +42,23 @@ static inline void ui_clear_standard_flags(lv_obj_t *obj) {
 }
 
 /**
+ * @brief Clear flags standards (scrollable + clickable)
+ */
+static inline lv_obj_t * ui_create_position_marker(lv_obj_t *parent) {
+  lv_obj_t *position_marker = lv_label_create(parent);
+  lv_label_set_text(position_marker, LV_SYMBOL_GPS);
+  lv_obj_set_style_text_font(position_marker, &lv_font_montserrat_32, 0);
+  lv_obj_set_style_text_color(position_marker, lv_color_hex(UI_COLOR_GPS_MARKER), 0);  // Bleu fonce
+  lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
+  lv_obj_center(position_marker);
+  lv_obj_move_foreground(position_marker);
+  lv_obj_set_style_transform_angle(position_marker, -450, 0);
+
+  return position_marker;
+
+}
+
+/**
  * @brief Configure un container transparent (bg opa 0, border 0, pad 0)
  */
 static inline void ui_set_transparent_container_style(lv_obj_t *obj) {
