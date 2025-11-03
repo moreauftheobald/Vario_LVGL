@@ -229,19 +229,14 @@ void ui_settings_map_init(void) {
 
   // 1. Niveau de zoom
   lv_obj_t *label_zoom = ui_create_label(main_left, "Niveau de zoom", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
-
-  widgets.slider_zoom = lv_slider_create(main_left);
-  lv_slider_set_range(widgets.slider_zoom, MAP_ZOOM_MIN, MAP_ZOOM_MAX);
-  lv_obj_set_width(widgets.slider_zoom, lv_pct(90));
-
-  lv_obj_t *label_zoom_value = ui_create_label(main_left, "13", INFO_FONT_BIG, lv_color_hex(INFO_DATAS_COLOR));
+  lv_obj_t *label_zoom_value;
+  widgets.slider_zoom = ui_create_slider_with_label(main_left, lv_pct(90), LV_SIZE_CONTENT,
+                                                    MAP_ZOOM_MIN, MAP_ZOOM_MAX, 13, "%d", INFO_FONT_BIG,
+                                                    lv_color_hex(INFO_DATAS_COLOR), &label_zoom_value);
   lv_obj_add_event_cb(widgets.slider_zoom, slider_zoom_event_cb, LV_EVENT_VALUE_CHANGED, label_zoom_value);
 
   // 2. Serveur de tuiles
   lv_obj_t *label_server = ui_create_label(main_left, "Serveur de tuiles", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
-
-  widgets.dropdown_tile_server = lv_dropdown_create(main_left);
-  lv_obj_set_width(widgets.dropdown_tile_server, lv_pct(90));
 
   // Construire la liste des serveurs depuis PROGMEM
   char names_buffer[192] = "";
@@ -251,43 +246,22 @@ void ui_settings_map_init(void) {
     if (i > 0) strcat(names_buffer, "\n");
     strcat(names_buffer, temp_name);
   }
-  lv_dropdown_set_options(widgets.dropdown_tile_server, names_buffer);
-  lv_obj_set_style_bg_color(widgets.dropdown_tile_server, lv_color_hex(CTL_BG_COLOR), 0);
-  lv_obj_set_style_text_color(widgets.dropdown_tile_server, lv_color_white(), 0);
-  lv_obj_set_style_text_font(widgets.dropdown_tile_server, INFO_FONT_BIG, 0);
-  lv_obj_add_event_cb(widgets.dropdown_tile_server, dropdown_map_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+  widgets.dropdown_tile_server = ui_create_styled_dropdown(main_left, names_buffer, lv_pct(90));
 
   // 3. Points de trace
   lv_obj_t *label_track = ui_create_label(main_left, "Points de trace", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
-
-  widgets.slider_track_points = lv_slider_create(main_left);
-  lv_slider_set_range(widgets.slider_track_points, 50, 500);
-  lv_obj_set_width(widgets.slider_track_points, lv_pct(90));
-
-  lv_obj_t *label_track_value = ui_create_label(main_left, "200", INFO_FONT_BIG, lv_color_hex(INFO_DATAS_COLOR));
+  lv_obj_t *label_track_value;
+  widgets.slider_track_points = ui_create_slider_with_label(main_left, lv_pct(90), LV_SIZE_CONTENT,
+                                                            50, 500, 200, "%d", INFO_FONT_BIG,
+                                                            lv_color_hex(INFO_DATAS_COLOR), &label_track_value);
   lv_obj_add_event_cb(widgets.slider_track_points, slider_track_event_cb, LV_EVENT_VALUE_CHANGED, label_track_value);
 
   // 4. Switch couleurs vario
   lv_obj_t *label_vario = ui_create_label(main_left, "Couleurs vario sur trace", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
 
-  widgets.switch_vario_colors = lv_obj_create(main_left);
-  lv_obj_set_size(widgets.switch_vario_colors, 60, 30);
-  lv_obj_set_style_radius(widgets.switch_vario_colors, ROUND_FRANE_RADUIS_BIG, 0);
-  lv_obj_set_style_bg_color(widgets.switch_vario_colors, lv_color_hex(SW_ON), LV_STATE_CHECKED);
-  lv_obj_set_style_bg_color(widgets.switch_vario_colors, lv_color_hex(SW_OFF), 0);
-  lv_obj_add_flag(widgets.switch_vario_colors, LV_OBJ_FLAG_CHECKABLE);
-  lv_obj_add_flag(widgets.switch_vario_colors, LV_OBJ_FLAG_CLICKABLE);
-  lv_obj_clear_flag(widgets.switch_vario_colors, LV_OBJ_FLAG_SCROLLABLE);
-
-  lv_obj_t *switch_indicator = lv_obj_create(widgets.switch_vario_colors);
-  lv_obj_set_size(switch_indicator, 24, 24);
-  lv_obj_set_style_radius(switch_indicator, 12, 0);
-  lv_obj_set_style_bg_color(switch_indicator, lv_color_white(), 0);
-  lv_obj_set_style_border_width(switch_indicator, 0, 0);
-  lv_obj_clear_flag(switch_indicator, LV_OBJ_FLAG_CLICKABLE);
-  lv_obj_clear_flag(switch_indicator, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_align(switch_indicator, LV_ALIGN_RIGHT_MID, -2, 0);
-
+  lv_obj_t *switch_indicator;
+  widgets.switch_vario_colors = ui_create_switch_with_indicator(main_left, 60, 30,
+                                                                lv_color_hex(SW_ON), lv_color_hex(SW_OFF), &switch_indicator);
   lv_obj_add_event_cb(widgets.switch_vario_colors, switch_vario_event_cb, LV_EVENT_VALUE_CHANGED, switch_indicator);
 
   // Titre aperçu
@@ -296,12 +270,9 @@ void ui_settings_map_init(void) {
 
   // Conteneur pour la carte (agrandi pour occuper tout l'espace)
   map_container_preview = lv_obj_create(main_right);
-  lv_obj_set_size(map_container_preview, 450, 360);
-  lv_obj_align(map_container_preview, LV_ALIGN_CENTER, 0, 20);
-  lv_obj_set_style_bg_color(map_container_preview, lv_color_hex(0x1c1c1e), 0);
-  lv_obj_set_style_border_width(map_container_preview, 2, 0);
-  lv_obj_set_style_border_color(map_container_preview, lv_color_hex(TITLE_COLOR), 0);
-  lv_obj_set_style_pad_all(map_container_preview, 5, 0);
+  ui_set_size_and_align(map_container_preview, 450, 360, LV_ALIGN_CENTER, 0, 20);
+  ui_set_panel_style(map_container_preview, lv_color_hex(0x1c1c1e), LV_OPA_COVER,
+                     2, lv_color_hex(TITLE_COLOR), 0, 5);
   lv_obj_clear_flag(map_container_preview, LV_OBJ_FLAG_SCROLLABLE);
 
   // Afficher vue carte multi-tuiles (3x3)

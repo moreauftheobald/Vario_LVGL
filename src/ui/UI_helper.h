@@ -16,6 +16,262 @@ static lv_obj_t *g_label_internet = NULL;
 static lv_obj_t *g_label_gps_sats = NULL;
 static lv_obj_t *g_label_battery = NULL;
 
+
+/**
+ * @brief Configure le style complet d'un objet (bg, border, radius, pad)
+ */
+static inline void ui_set_panel_style(lv_obj_t *obj, lv_color_t bg_color, uint8_t bg_opa,
+                                     uint8_t border_width, lv_color_t border_color,
+                                     int radius, int pad_all) {
+  if (!obj) return;
+  lv_obj_set_style_bg_color(obj, bg_color, 0);
+  lv_obj_set_style_bg_opa(obj, bg_opa, 0);
+  lv_obj_set_style_border_width(obj, border_width, 0);
+  lv_obj_set_style_border_color(obj, border_color, 0);
+  lv_obj_set_style_radius(obj, radius, 0);
+  lv_obj_set_style_pad_all(obj, pad_all, 0);
+}
+
+/**
+ * @brief Clear flags standards (scrollable + clickable)
+ */
+static inline void ui_clear_standard_flags(lv_obj_t *obj) {
+  if (!obj) return;
+  lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_clear_flag(obj, LV_OBJ_FLAG_CLICKABLE);
+}
+
+/**
+ * @brief Configure un container transparent (bg opa 0, border 0, pad 0)
+ */
+static inline void ui_set_transparent_container_style(lv_obj_t *obj) {
+  if (!obj) return;
+  lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, 0);
+  lv_obj_set_style_border_width(obj, 0, 0);
+  lv_obj_set_style_pad_all(obj, 0, 0);
+}
+
+/**
+ * @brief Cree un switch complet avec indicateur
+ * @param parent Parent object
+ * @param width Largeur du switch
+ * @param height Hauteur du switch
+ * @param on_color Couleur etat ON
+ * @param off_color Couleur etat OFF
+ * @param indicator_out Pointeur de sortie pour l'indicateur (peut etre NULL)
+ * @return Le switch cree
+ */
+static inline lv_obj_t *ui_create_switch_with_indicator(lv_obj_t *parent, int width, int height,
+                                                        lv_color_t on_color, lv_color_t off_color,
+                                                        lv_obj_t **indicator_out) {
+  if (!parent) return NULL;
+  
+  lv_obj_t *sw = lv_obj_create(parent);
+  lv_obj_set_size(sw, width, height);
+  lv_obj_set_style_radius(sw, ROUND_FRANE_RADUIS_BIG, 0);
+  lv_obj_set_style_bg_color(sw, on_color, LV_STATE_CHECKED);
+  lv_obj_set_style_bg_color(sw, off_color, 0);
+  lv_obj_add_flag(sw, LV_OBJ_FLAG_CHECKABLE);
+  lv_obj_add_flag(sw, LV_OBJ_FLAG_CLICKABLE);
+  lv_obj_clear_flag(sw, LV_OBJ_FLAG_SCROLLABLE);
+
+  int indicator_size = height - 6;
+  lv_obj_t *indicator = lv_obj_create(sw);
+  lv_obj_set_size(indicator, indicator_size, indicator_size);
+  lv_obj_set_style_radius(indicator, indicator_size / 2, 0);
+  lv_obj_set_style_bg_color(indicator, lv_color_white(), 0);
+  lv_obj_set_style_border_width(indicator, 0, 0);
+  lv_obj_clear_flag(indicator, LV_OBJ_FLAG_CLICKABLE);
+  lv_obj_clear_flag(indicator, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_align(indicator, LV_ALIGN_LEFT_MID, 2, 0);
+
+  if (indicator_out) {
+    *indicator_out = indicator;
+  }
+
+  return sw;
+}
+
+/**
+ * @brief Cree un slider avec label de valeur automatique
+ * @param parent Parent object
+ * @param width Largeur du slider
+ * @param height Hauteur du slider
+ * @param min Valeur min
+ * @param max Valeur max
+ * @param default_value Valeur par defaut
+ * @param label_format Format pour le label (ex: "%d", "%d s")
+ * @param label_font Police du label
+ * @param label_color Couleur du label
+ * @param label_out Pointeur de sortie pour le label (obligatoire)
+ * @return Le slider cree
+ */
+static inline lv_obj_t *ui_create_slider_with_label(lv_obj_t *parent, int width, int height,
+                                                    int min, int max, int default_value,
+                                                    const char *label_format,
+                                                    const lv_font_t *label_font,
+                                                    lv_color_t label_color,
+                                                    lv_obj_t **label_out) {
+  if (!parent || !label_out) return NULL;
+
+  lv_obj_t *slider = lv_slider_create(parent);
+  lv_obj_set_size(slider, width, height);
+  lv_slider_set_range(slider, min, max);
+  lv_slider_set_value(slider, default_value, LV_ANIM_OFF);
+  lv_obj_set_style_bg_color(slider, lv_color_hex(SLIDER_BG_COLOR), LV_PART_MAIN);
+  lv_obj_set_style_bg_color(slider, lv_color_hex(TITLE_COLOR), LV_PART_INDICATOR);
+  lv_obj_set_style_bg_color(slider, lv_color_hex(TITLE_COLOR), LV_PART_KNOB);
+  lv_obj_set_style_pad_all(slider, 5, LV_PART_KNOB);
+
+  *label_out = lv_label_create(parent);
+  lv_label_set_text_fmt(*label_out, label_format, default_value);
+  lv_obj_set_style_text_font(*label_out, label_font, 0);
+  lv_obj_set_style_text_color(*label_out, label_color, 0);
+
+  return slider;
+}
+
+/**
+ * @brief Callback generique pour mettre a jour un label depuis un slider
+ * Usage: lv_obj_add_event_cb(slider, ui_slider_update_label_cb, LV_EVENT_VALUE_CHANGED, label);
+ */
+static void ui_slider_update_label_cb(lv_event_t *e) {
+  lv_obj_t *slider = (lv_obj_t *)lv_event_get_target(e);
+  lv_obj_t *label = (lv_obj_t *)lv_event_get_user_data(e);
+  
+  if (!slider || !label) return;
+  
+  int value = (int)lv_slider_get_value(slider);
+  lv_label_set_text_fmt(label, "%d", value);
+}
+
+/**
+ * @brief Callback generique pour slider avec format personnalise
+ * Usage: ui_slider_format_data_t data = {label, "%d s"};
+ *        lv_obj_add_event_cb(slider, ui_slider_update_label_fmt_cb, LV_EVENT_VALUE_CHANGED, &data);
+ */
+typedef struct {
+  lv_obj_t *label;
+  const char *format;
+} ui_slider_format_data_t;
+
+static void ui_slider_update_label_fmt_cb(lv_event_t *e) {
+  lv_obj_t *slider = (lv_obj_t *)lv_event_get_target(e);
+  ui_slider_format_data_t *data = (ui_slider_format_data_t *)lv_event_get_user_data(e);
+  
+  if (!slider || !data || !data->label || !data->format) return;
+  
+  int value = (int)lv_slider_get_value(slider);
+  lv_label_set_text_fmt(data->label, data->format, value);
+}
+
+/**
+ * @brief Callback pour switch avec indicateur
+ * Usage: lv_obj_add_event_cb(switch_obj, ui_switch_indicator_cb, LV_EVENT_VALUE_CHANGED, indicator);
+ */
+static void ui_switch_indicator_cb(lv_event_t *e) {
+    lv_obj_t *sw = (lv_obj_t *)lv_event_get_target(e);
+  lv_obj_t *indicator = (lv_obj_t *)lv_event_get_user_data(e);
+  
+  if (!sw || !indicator) return;
+  
+  if (lv_obj_has_state(sw, LV_STATE_CHECKED)) {
+    lv_obj_align(indicator, LV_ALIGN_RIGHT_MID, -2, 0);
+  } else {
+    lv_obj_align(indicator, LV_ALIGN_LEFT_MID, 2, 0);
+  }
+}
+
+/**
+ * @brief Configure taille + alignement en une seule fonction
+ */
+static inline void ui_set_size_and_align(lv_obj_t *obj, int width, int height,
+                                        lv_align_t align, int x_ofs, int y_ofs) {
+  if (!obj) return;
+  lv_obj_set_size(obj, width, height);
+  lv_obj_align(obj, align, x_ofs, y_ofs);
+}
+
+/**
+ * @brief Configure flex container avec alignement
+ */
+static inline void ui_set_flex_layout(lv_obj_t *obj, lv_flex_flow_t flow,
+                                     lv_flex_align_t main_align,
+                                     lv_flex_align_t cross_align,
+                                     lv_flex_align_t track_align) {
+  if (!obj) return;
+  lv_obj_set_flex_flow(obj, flow);
+  lv_obj_set_flex_align(obj, main_align, cross_align, track_align);
+}
+
+/**
+ * @brief Cree un conteneur avec style panel standard
+ * (bg noir, border blanc, radius small, pad 20, flex column)
+ */
+static inline lv_obj_t *ui_create_standard_panel(lv_obj_t *parent, int width, int height) {
+  if (!parent) return NULL;
+  
+  lv_obj_t *panel = lv_obj_create(parent);
+  lv_obj_set_size(panel, width, height);
+  ui_set_panel_style(panel, lv_color_hex(0x000000), LV_OPA_COVER, 
+                    3, lv_color_hex(0xFFFFFF), ROUND_FRANE_RADUIS_SMALL, 20);
+  lv_obj_set_flex_flow(panel, LV_FLEX_FLOW_COLUMN);
+  lv_obj_set_flex_align(panel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+  lv_obj_clear_flag(panel, LV_OBJ_FLAG_SCROLLABLE);
+  
+  return panel;
+}
+
+/**
+ * @brief Cree un dropdown avec style standard COMPLET (corrige)
+ * CRITIQUE: Style aussi la liste deroulante, pas seulement le bouton
+ */
+static inline lv_obj_t *ui_create_styled_dropdown(lv_obj_t *parent, const char *options,
+                                                  int width) {
+  if (!parent) return NULL;
+  
+  lv_obj_t *dd = lv_dropdown_create(parent);
+  lv_obj_set_width(dd, width);
+  lv_dropdown_set_options(dd, options);
+  
+  // Styles du bouton principal (LV_PART_MAIN)
+  lv_obj_set_style_bg_color(dd, lv_color_hex(CTL_BG_COLOR), LV_PART_MAIN);
+  lv_obj_set_style_text_color(dd, lv_color_white(), LV_PART_MAIN);
+  lv_obj_set_style_text_font(dd, INFO_FONT_BIG, LV_PART_MAIN);
+  
+  // CRITIQUE: Styles de la liste deroulante (LV_PART_SELECTED)
+  // Sans ça, la liste apparait vide/noire car pas de style
+  lv_obj_set_style_bg_color(dd, lv_color_hex(CTL_BG_COLOR), LV_PART_SELECTED);
+  lv_obj_set_style_bg_color(dd, lv_color_hex(TITLE_COLOR), LV_PART_SELECTED | LV_STATE_CHECKED);
+  lv_obj_set_style_text_color(dd, lv_color_white(), LV_PART_SELECTED);
+  lv_obj_set_style_text_font(dd, INFO_FONT_BIG, LV_PART_SELECTED);
+  
+  return dd;
+}
+
+/**
+ * @brief Configure les styles de bordure standard
+ */
+static inline void ui_set_border_style(lv_obj_t *obj, uint8_t width, lv_color_t color) {
+  if (!obj) return;
+  lv_obj_set_style_border_width(obj, width, 0);
+  lv_obj_set_style_border_color(obj, color, 0);
+}
+
+/**
+ * @brief Configure separateur horizontal standard
+ */
+static inline lv_obj_t *ui_create_h_separator(lv_obj_t *parent, lv_color_t color) {
+  if (!parent) return NULL;
+  
+  lv_obj_t *sep = lv_obj_create(parent);
+  lv_obj_set_size(sep, lv_pct(100), 1);
+  lv_obj_set_style_bg_color(sep, color, 0);
+  lv_obj_set_style_border_width(sep, 0, 0);
+  
+  return sep;
+}
+
 // ============================================================================
 // CREATION ECRANS ET WIDGETS DE BASE
 // ============================================================================

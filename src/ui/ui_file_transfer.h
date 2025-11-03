@@ -99,10 +99,7 @@ void ui_file_transfer_init(void) {
   lv_obj_set_width(label_ip, lv_pct(100));
 
   // Separator
-  lv_obj_t *sep = lv_obj_create(main_left);
-  lv_obj_set_size(sep, lv_pct(100), 1);
-  lv_obj_set_style_bg_color(sep, lv_color_hex(0x2a3f5f), 0);
-  lv_obj_set_style_border_width(sep, 0, 0);
+  lv_obj_t *sep = ui_create_h_separator(main_left, lv_color_hex(0x2a3f5f));
 
   // Instructions
   lv_obj_t *instructions = ui_create_label(main_left,

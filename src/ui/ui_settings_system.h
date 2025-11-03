@@ -90,18 +90,10 @@ void ui_settings_system_init(void) {
   lv_obj_set_size(brightness_row, lv_pct(100), LV_SIZE_CONTENT);
   lv_obj_set_flex_align(brightness_row, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
-  slider_brightness = lv_slider_create(brightness_row);
-  lv_slider_set_range(slider_brightness, 10, 100);
-  lv_slider_set_value(slider_brightness, 80, LV_ANIM_OFF);
-  lv_obj_set_size(slider_brightness, 800, 20);
-  lv_obj_set_style_bg_color(slider_brightness, lv_color_hex(0x4080a0), LV_PART_INDICATOR);
-  lv_obj_set_style_bg_color(slider_brightness, lv_color_hex(0x2a3f5f), LV_PART_MAIN);
-  lv_obj_add_event_cb(slider_brightness, slider_brightness_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
-
-  label_brightness_value = ui_create_label(brightness_row, "80%",
-                                           &lv_font_montserrat_24, lv_color_hex(0xFFFFFF));
-  lv_obj_set_width(label_brightness_value, 80);
-  lv_obj_set_style_text_align(label_brightness_value, LV_TEXT_ALIGN_RIGHT, 0);
+  slider_brightness = ui_create_slider_with_label(main_left, lv_pct(90), LV_SIZE_CONTENT,
+                                                  1, 100, params.system_brightness, "%d%%", INFO_FONT_BIG,
+                                                  lv_color_hex(INFO_DATAS_COLOR), &label_brightness_value);
+  lv_obj_add_event_cb(slider_brightness, slider_brightness_event_cb, LV_EVENT_VALUE_CHANGED, label_brightness_value);
 
   // Separateur
   ui_create_separator(main_left);
@@ -118,7 +110,6 @@ void ui_settings_system_init(void) {
   lv_obj_set_style_border_width(dropdown_language, 2, 0);
   lv_obj_set_style_text_font(dropdown_language, &lv_font_montserrat_20, 0);
   lv_obj_set_style_text_color(dropdown_language, lv_color_white(), 0);
-  lv_obj_add_event_cb(dropdown_language, dropdown_language_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
   // Separateur
   ui_create_separator(main_left);

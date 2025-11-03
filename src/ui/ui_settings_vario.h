@@ -135,7 +135,7 @@ static void btn_reset_audio_cb(lv_event_t *e) {
 }
 
 static void load_vario_settings(void) {
-  ui_load_slider_with_label(slider_integration, label_integration_value,  params.vario_integration_period, "%d s");
+  ui_load_slider_with_label(slider_integration, label_integration_value, params.vario_integration_period, "%d s");
 
   // Charger les frequences audio
   for (int i = 0; i < 16; i++) {
@@ -160,11 +160,11 @@ void ui_settings_vario_init(void) {
 
   // 1. Periode d'integration du vario
   lv_obj_t *integration_row = ui_create_form_row(main_left, "Periode d'integration", PRE_LINE_HEADER_W, lv_color_hex(TITLE_COLOR));
-  slider_integration = ui_create_slider(integration_row, VARIO_SLIDER_W, VARIO_SLIDER_H, INT_MIN_PER, INT_MAX_PER);
-  lv_obj_add_event_cb(slider_integration, slider_integration_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
-
-  label_integration_value = ui_create_label(integration_row, "5 s", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
+  slider_integration = ui_create_slider_with_label(integration_row, VARIO_SLIDER_W, VARIO_SLIDER_H,
+                                                   INT_MIN_PER, INT_MAX_PER, 5, "%d s", INFO_FONT_BIG,
+                                                   lv_color_hex(TITLE_COLOR), &label_integration_value);
   lv_obj_set_width(label_integration_value, 60);
+  lv_obj_add_event_cb(slider_integration, slider_integration_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
   // 2. Profil sonore avec graphique
   lv_obj_t *label_audio = ui_create_label(main_left, "Profil sonore (Vario m/s -> Frequence Hz)", INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
@@ -172,12 +172,8 @@ void ui_settings_vario_init(void) {
   // Container pour le graphique avec labels (augmente de 40px)
   chart_container = lv_obj_create(main_left);
   lv_obj_set_size(chart_container, lv_pct(100), AUDIO_CHART_H);
-  lv_obj_set_style_bg_color(chart_container, lv_color_hex(AUDIO_CHART_BG), 0);
-  lv_obj_set_style_bg_opa(chart_container, LV_OPA_80, 0);
-  lv_obj_set_style_border_width(chart_container, 2, 0);
-  lv_obj_set_style_border_color(chart_container, lv_color_hex(TITLE_COLOR), 0);
-  lv_obj_set_style_radius(chart_container, ROUND_FRANE_RADUIS_SMALL, 0);
-  lv_obj_set_style_pad_all(chart_container, 15, 0);
+  ui_set_panel_style(chart_container, lv_color_hex(AUDIO_CHART_BG), LV_OPA_80,
+                     2, lv_color_hex(TITLE_COLOR), ROUND_FRANE_RADUIS_SMALL, 15);
   lv_obj_clear_flag(chart_container, LV_OBJ_FLAG_SCROLLABLE);
 
   // Labels axe Y (frequences) - 600, 800, 1000, 1200, 1400

@@ -165,7 +165,7 @@ static void screen_touch_cb(lv_event_t *e) {
 
       if (current_point < 2) {
         update_target_position();
-        ui_label_set_formatted_text(instruction_label,  "Point %d/2 - Touchez la cible", current_point + 1);
+        ui_label_set_formatted_text(instruction_label, "Point %d/2 - Touchez la cible", current_point + 1);
       } else {
         calculate_calibration();
         calibration_done = true;
@@ -240,7 +240,7 @@ void ui_settings_screen_init(void) {
   load_calibration();
 
   current_screen = ui_create_screen();
-  lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);  // IMPORTANT: désactiver scroll
+  lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_add_event_cb(current_screen, screen_touch_cb, LV_EVENT_PRESSED, NULL);
 
   // Instructions (directement sur l'écran principal)

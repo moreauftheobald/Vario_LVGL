@@ -60,7 +60,7 @@ static void update_sensor_status_labels(void) {
     uint64_t total_gb = total_kb / (1024 * 1024);
     uint64_t free_gb = free_kb / (1024 * 1024);
 
-    snprintf(buf, sizeof(buf), "%s SD: %lluGB (%lluGB libre)", 
+    snprintf(buf, sizeof(buf), "%s SD: %lluGB (%lluGB libre)",
              LV_SYMBOL_SD_CARD, total_gb, free_gb);
     lv_label_set_text(label_sd_status, buf);
     lv_obj_set_style_text_color(label_sd_status, lv_color_hex(OK_COLOR), 0);
@@ -71,29 +71,29 @@ static void update_sensor_status_labels(void) {
   }
 
   // BMP390
-  snprintf(buf, sizeof(buf), "%s BMP390: %s", 
-           LV_SYMBOL_SETTINGS, 
+  snprintf(buf, sizeof(buf), "%s BMP390: %s",
+           LV_SYMBOL_SETTINGS,
            g_sensor_data.bmp390.valid ? "OK" : "ERROR");
   lv_label_set_text(label_bmp_status, buf);
-  lv_obj_set_style_text_color(label_bmp_status, 
-    g_sensor_data.bmp390.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
+  lv_obj_set_style_text_color(label_bmp_status,
+                              g_sensor_data.bmp390.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
 
   // BNO080
-  snprintf(buf, sizeof(buf), "%s BNO080: %s", 
-           LV_SYMBOL_GPS, 
+  snprintf(buf, sizeof(buf), "%s BNO080: %s",
+           LV_SYMBOL_GPS,
            g_sensor_data.bno080.valid ? "OK" : "ERROR");
   lv_label_set_text(label_bno_status, buf);
-  lv_obj_set_style_text_color(label_bno_status, 
-    g_sensor_data.bno080.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
+  lv_obj_set_style_text_color(label_bno_status,
+                              g_sensor_data.bno080.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
 
   // GPS
   if (g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
-    snprintf(buf, sizeof(buf), "%s GPS: FIX (%d sats)", 
+    snprintf(buf, sizeof(buf), "%s GPS: FIX (%d sats)",
              LV_SYMBOL_GPS, g_sensor_data.gps.satellites);
     lv_label_set_text(label_gps_status, buf);
     lv_obj_set_style_text_color(label_gps_status, lv_color_hex(OK_COLOR), 0);
   } else if (g_sensor_data.gps.valid) {
-    snprintf(buf, sizeof(buf), "%s GPS: NO FIX (%d sats)", 
+    snprintf(buf, sizeof(buf), "%s GPS: NO FIX (%d sats)",
              LV_SYMBOL_GPS, g_sensor_data.gps.satellites);
     lv_label_set_text(label_gps_status, buf);
     lv_obj_set_style_text_color(label_gps_status, lv_color_hex(WG_COLOR), 0);
@@ -105,7 +105,7 @@ static void update_sensor_status_labels(void) {
 
   // WiFi
   if (wifi_get_connected_status()) {
-    snprintf(buf, sizeof(buf), "%s WiFi: %s", 
+    snprintf(buf, sizeof(buf), "%s WiFi: %s",
              LV_SYMBOL_WIFI, wifi_get_current_ssid());
     lv_label_set_text(label_wifi_status, buf);
     lv_obj_set_style_text_color(label_wifi_status, lv_color_hex(OK_COLOR), 0);
@@ -152,12 +152,12 @@ static void update_sensor_status_labels(void) {
   // Kalman
   kalman_data_t kdata;
   kalman_get_data(&kdata);
-  snprintf(buf, sizeof(buf), "%s Kalman: %s", 
-           LV_SYMBOL_SETTINGS, 
+  snprintf(buf, sizeof(buf), "%s Kalman: %s",
+           LV_SYMBOL_SETTINGS,
            kdata.valid ? "OK" : "INIT...");
   lv_label_set_text(label_kalman_status, buf);
-  lv_obj_set_style_text_color(label_kalman_status, 
-    kdata.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
+  lv_obj_set_style_text_color(label_kalman_status,
+                              kdata.valid ? lv_color_hex(OK_COLOR) : lv_color_hex(KO_COLOR), 0);
 
   // Activer/desactiver bouton Start
   if (btn_start) {
@@ -178,9 +178,7 @@ static void update_sensor_status_labels(void) {
 // ============================================================================
 static void sensor_status_update_cb(lv_timer_t *timer) {
   // Verification securite objets valides
-  if (!label_bmp_status || !label_bno_status || !label_gps_status || 
-      !label_wifi_status || !label_qnh_status || !label_kalman_status || 
-      !label_sd_status) {
+  if (!label_bmp_status || !label_bno_status || !label_gps_status || !label_wifi_status || !label_qnh_status || !label_kalman_status || !label_sd_status) {
     if (timer) {
       lv_timer_del(timer);
       sensor_status_timer = NULL;
@@ -188,10 +186,7 @@ static void sensor_status_update_cb(lv_timer_t *timer) {
     return;
   }
 
-  if (!lv_obj_is_valid(label_bmp_status) || !lv_obj_is_valid(label_bno_status) || 
-      !lv_obj_is_valid(label_gps_status) || !lv_obj_is_valid(label_wifi_status) || 
-      !lv_obj_is_valid(label_qnh_status) || !lv_obj_is_valid(label_kalman_status) || 
-      !lv_obj_is_valid(label_sd_status)) {
+  if (!lv_obj_is_valid(label_bmp_status) || !lv_obj_is_valid(label_bno_status) || !lv_obj_is_valid(label_gps_status) || !lv_obj_is_valid(label_wifi_status) || !lv_obj_is_valid(label_qnh_status) || !lv_obj_is_valid(label_kalman_status) || !lv_obj_is_valid(label_sd_status)) {
     if (timer) {
       lv_timer_del(timer);
       sensor_status_timer = NULL;
@@ -251,14 +246,14 @@ void ui_prestart_init(void) {
   ui_create_main_frame(main_frame, true, VARIO_NAME);
 
   // Left Col Content
-  lv_obj_t *captors_title = ui_create_label(main_left, "Info Systeme", 
-                                             INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
+  lv_obj_t *captors_title = ui_create_label(main_left, "Info Systeme",
+                                            INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
   ui_create_separator(main_left);
 
   // Buffer optimise de 64 bytes
   char info_text[64];
   snprintf(info_text, sizeof(info_text), "Version Systeme: %s", VARIO_VERSION);
-  lv_obj_t *label_version = ui_create_label(main_left, info_text, 
+  lv_obj_t *label_version = ui_create_label(main_left, info_text,
                                             INFO_FONT_S, lv_color_hex(TITLE_COLOR));
 
   // Creation des labels de statut (vides, seront remplis par update_sensor_status_labels)
@@ -274,104 +269,101 @@ void ui_prestart_init(void) {
 #if defined(DEBUG_MODE) || defined(TEST_MODE) || defined(FLIGHT_TEST_MODE)
   lv_obj_t *warning_panel = lv_obj_create(main_left);
   lv_obj_set_size(warning_panel, lv_pct(100), LV_SIZE_CONTENT);
-  lv_obj_set_flex_flow(warning_panel, LV_FLEX_FLOW_COLUMN);
-  lv_obj_set_flex_align(warning_panel, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+  ui_set_flex_layout(warning_panel, LV_FLEX_FLOW_COLUMN,
+                     LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
   lv_obj_set_style_pad_row(warning_panel, 5, 0);
-  lv_obj_set_style_pad_all(warning_panel, 10, 0);
-  lv_obj_set_style_bg_color(warning_panel, lv_color_hex(WG_COLOR), 0);
-  lv_obj_set_style_border_width(warning_panel, 2, 0);
-  lv_obj_set_style_border_color(warning_panel, lv_color_hex(KO_COLOR), 0);
-  lv_obj_set_style_radius(warning_panel, ROUND_FRANE_RADUIS_SMALL, 0);
+  ui_set_panel_style(warning_panel, lv_color_hex(WG_COLOR), LV_OPA_COVER,
+                     2, lv_color_hex(KO_COLOR), ROUND_FRANE_RADUIS_SMALL, 10);
 
   // Buffer optimise de 48 bytes
   char warning_text[48];
-  
+
 #ifdef DEBUG_MODE
   snprintf(warning_text, sizeof(warning_text), "%s DEBUG MODE ACTIVE", LV_SYMBOL_WARNING);
-  lv_obj_t *label_debug = ui_create_label(warning_panel, warning_text, 
+  lv_obj_t *label_debug = ui_create_label(warning_panel, warning_text,
                                           INFO_FONT_S, lv_color_hex(0x000000));
 #endif
 
 #ifdef TEST_MODE
   snprintf(warning_text, sizeof(warning_text), "%s TEST MODE ACTIVE", LV_SYMBOL_WARNING);
-  lv_obj_t *label_test = ui_create_label(warning_panel, warning_text, 
+  lv_obj_t *label_test = ui_create_label(warning_panel, warning_text,
                                          INFO_FONT_S, lv_color_hex(0x000000));
 #endif
 
 #ifdef FLIGHT_TEST_MODE
   snprintf(warning_text, sizeof(warning_text), "%s FLIGHT TEST MODE ACTIVE", LV_SYMBOL_WARNING);
-  lv_obj_t *label_flight = ui_create_label(warning_panel, warning_text, 
+  lv_obj_t *label_flight = ui_create_label(warning_panel, warning_text,
                                            INFO_FONT_S, lv_color_hex(0x000000));
 #endif
 #endif
 
   // Right Col Content - Panneau pilote
-  lv_obj_t *pilot_title = ui_create_label(main_right, txt->pilot, 
+  lv_obj_t *pilot_title = ui_create_label(main_right, txt->pilot,
                                           INFO_FONT_BIG, lv_color_hex(TITLE_COLOR));
   ui_create_separator(main_right);
 
   // Nom
   lv_obj_t *name_row = ui_create_inline_container(main_right);
-  lv_obj_t *label_name_title = ui_create_label(name_row, txt->pilot_name, 
+  lv_obj_t *label_name_title = ui_create_label(name_row, txt->pilot_name,
                                                INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   lv_obj_set_width(label_name_title, PRE_LINE_HEADER_W);
-  lv_obj_t *label_name_sep = ui_create_label(name_row, ":", 
+  lv_obj_t *label_name_sep = ui_create_label(name_row, ":",
                                              INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   const char *name_str = psram_str_get(params.pilot_name);
-  lv_obj_t *label_name_value = ui_create_label(name_row, 
-    (name_str && strlen(name_str) > 0) ? name_str : "---", 
-    INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
+  lv_obj_t *label_name_value = ui_create_label(name_row,
+                                               (name_str && strlen(name_str) > 0) ? name_str : "---",
+                                               INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Prenom
   lv_obj_t *firstname_row = ui_create_inline_container(main_right);
-  lv_obj_t *label_firstname_title = ui_create_label(firstname_row, txt->pilot_firstname, 
+  lv_obj_t *label_firstname_title = ui_create_label(firstname_row, txt->pilot_firstname,
                                                     INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   lv_obj_set_width(label_firstname_title, PRE_LINE_HEADER_W);
-  lv_obj_t *label_firstname_sep = ui_create_label(firstname_row, ":", 
+  lv_obj_t *label_firstname_sep = ui_create_label(firstname_row, ":",
                                                   INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   const char *firstname_str = psram_str_get(params.pilot_firstname);
-  lv_obj_t *label_firstname_value = ui_create_label(firstname_row, 
-    (firstname_str && strlen(firstname_str) > 0) ? firstname_str : "---", 
-    INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
+  lv_obj_t *label_firstname_value = ui_create_label(firstname_row,
+                                                    (firstname_str && strlen(firstname_str) > 0) ? firstname_str : "---",
+                                                    INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Telephone
   lv_obj_t *phone_row = ui_create_inline_container(main_right);
-  lv_obj_t *label_phone_title = ui_create_label(phone_row, txt->pilot_phone, 
+  lv_obj_t *label_phone_title = ui_create_label(phone_row, txt->pilot_phone,
                                                 INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   lv_obj_set_width(label_phone_title, PRE_LINE_HEADER_W);
-  lv_obj_t *label_phone_sep = ui_create_label(phone_row, ":", 
+  lv_obj_t *label_phone_sep = ui_create_label(phone_row, ":",
                                               INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   const char *phone_str = psram_str_get(params.pilot_phone);
-  lv_obj_t *label_phone_value = ui_create_label(phone_row, 
-    (phone_str && strlen(phone_str) > 0) ? phone_str : "---", 
-    INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
+  lv_obj_t *label_phone_value = ui_create_label(phone_row,
+                                                (phone_str && strlen(phone_str) > 0) ? phone_str : "---",
+                                                INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Voile
   lv_obj_t *wing_row = ui_create_inline_container(main_right);
-  lv_obj_t *label_wing_title = ui_create_label(wing_row, txt->pilot_wing, 
+  lv_obj_t *label_wing_title = ui_create_label(wing_row, txt->pilot_wing,
                                                INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   lv_obj_set_width(label_wing_title, PRE_LINE_HEADER_W);
-  lv_obj_t *label_wing_sep = ui_create_label(wing_row, ":", 
+  lv_obj_t *label_wing_sep = ui_create_label(wing_row, ":",
                                              INFO_FONT_S, lv_color_hex(INFO_LABEL_COLOR));
   const char *wing_str = psram_str_get(params.pilot_wing);
-  lv_obj_t *label_wing_value = ui_create_label(wing_row, 
-    (wing_str && strlen(wing_str) > 0) ? wing_str : "---", 
-    INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
+  lv_obj_t *label_wing_value = ui_create_label(wing_row,
+                                               (wing_str && strlen(wing_str) > 0) ? wing_str : "---",
+                                               INFO_FONT_S, lv_color_hex(INFO_DATAS_COLOR));
 
   // Boutons
-  btn_start = ui_create_button(btn_container, txt->start, LV_SYMBOL_PLAY, 
-                                lv_color_hex(START_BTN_COLOR), 
-                                PRE_BTN_W, PRE_BTN_H, INFO_FONT_BIG, INFO_FONT_BIG, 
-                                btn_start_cb, NULL, (lv_align_t)0, NULL, NULL);
+  btn_start = ui_create_button(btn_container, txt->start, LV_SYMBOL_PLAY,
+                               lv_color_hex(START_BTN_COLOR),
+                               PRE_BTN_W, PRE_BTN_H, INFO_FONT_BIG, INFO_FONT_BIG,
+                               btn_start_cb, NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_settings = ui_create_button(btn_container, txt->settings, LV_SYMBOL_SETTINGS, 
-                                            lv_color_hex(SETUP_BTN_COLOR), 
-                                            PRE_BTN_W, PRE_BTN_H, INFO_FONT_BIG, INFO_FONT_BIG, 
+  lv_obj_t *btn_settings = ui_create_button(btn_container, txt->settings, LV_SYMBOL_SETTINGS,
+                                            lv_color_hex(SETUP_BTN_COLOR),
+                                            PRE_BTN_W, PRE_BTN_H, INFO_FONT_BIG, INFO_FONT_BIG,
                                             btn_settings_cb, NULL, (lv_align_t)0, NULL, NULL);
 
-  lv_obj_t *btn_file_transfer = ui_create_button(btn_container, txt->file_transfer, LV_SYMBOL_USB, 
-                                                 lv_color_hex(FILES_BTN_COLOR), 
-                                                 PRE_BTN_W, PRE_BTN_H, INFO_FONT_BIG, INFO_FONT_BIG, 
+  lv_obj_t *btn_file_transfer = ui_create_button(btn_container, txt->file_transfer, LV_SYMBOL_USB,
+                                                 lv_color_hex(FILES_BTN_COLOR),
+                                                 PRE_BTN_W, PRE_BTN_H, INFO_FONT_BIG, INFO_FONT_BIG,
                                                  btn_file_transfer_cb, NULL, (lv_align_t)0, NULL, NULL);
 
   // OPTIMISE: Mise a jour initiale des labels via fonction factorisee

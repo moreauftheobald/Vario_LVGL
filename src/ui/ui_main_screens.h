@@ -112,18 +112,18 @@ static void update_zoom_buttons_state(void) {
 
 // Callbacks pour boutons zoom
 static void btn_zoom_in_cb(lv_event_t *e) {
-  if(current_map_zoom < MAP_ZOOM_MAX + 1) {  // +1 pour super zoom
+  if (current_map_zoom < MAP_ZOOM_MAX + 1) {  // +1 pour super zoom
     current_map_zoom++;
-    
+
     // Supprimer ancien canvas
-    if(map_canvas) {
+    if (map_canvas) {
       lv_obj_del(map_canvas);
       map_canvas = NULL;
     }
-    
+
     // Recreer carte avec nouveau zoom
 #ifdef FLIGHT_TEST_MODE
-    map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON, 
+    map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON,
                                  current_map_zoom, 527, 527);
 #else
     double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
@@ -131,16 +131,16 @@ static void btn_zoom_in_cb(lv_event_t *e) {
     map_canvas = create_map_view(map_container, display_lat, display_lon,
                                  current_map_zoom, 527, 527);
 #endif
-    if(map_canvas) {
+    if (map_canvas) {
       lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
     }
-    
+
     // Remonter les boutons au premier plan
-    if(btn_zoom_in) lv_obj_move_foreground(btn_zoom_in);
-    if(btn_zoom_out) lv_obj_move_foreground(btn_zoom_out);
-    
+    if (btn_zoom_in) lv_obj_move_foreground(btn_zoom_in);
+    if (btn_zoom_out) lv_obj_move_foreground(btn_zoom_out);
+
     // Recreer le marqueur position
-    if(position_marker) {
+    if (position_marker) {
       lv_obj_del(position_marker);
     }
     position_marker = lv_label_create(map_container);
@@ -150,10 +150,10 @@ static void btn_zoom_in_cb(lv_event_t *e) {
     lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
     lv_obj_center(position_marker);
     lv_obj_move_foreground(position_marker);
-    
+
     // Mettre a jour l'etat des boutons
     update_zoom_buttons_state();
-    
+
 #ifdef DEBUG_MODE
     Serial.printf("Zoom IN: %d\n", current_map_zoom);
 #endif
@@ -161,18 +161,18 @@ static void btn_zoom_in_cb(lv_event_t *e) {
 }
 
 static void btn_zoom_out_cb(lv_event_t *e) {
-  if(current_map_zoom > MAP_ZOOM_MIN) {
+  if (current_map_zoom > MAP_ZOOM_MIN) {
     current_map_zoom--;
-    
+
     // Supprimer ancien canvas
-    if(map_canvas) {
+    if (map_canvas) {
       lv_obj_del(map_canvas);
       map_canvas = NULL;
     }
-    
+
     // Recreer carte avec nouveau zoom
 #ifdef FLIGHT_TEST_MODE
-    map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON, 
+    map_canvas = create_map_view(map_container, TEST_LAT, TEST_LON,
                                  current_map_zoom, 527, 527);
 #else
     double display_lat = g_sensor_data.gps.valid ? g_sensor_data.gps.latitude : TEST_LAT;
@@ -180,16 +180,16 @@ static void btn_zoom_out_cb(lv_event_t *e) {
     map_canvas = create_map_view(map_container, display_lat, display_lon,
                                  current_map_zoom, 527, 527);
 #endif
-    if(map_canvas) {
+    if (map_canvas) {
       lv_obj_align(map_canvas, LV_ALIGN_CENTER, 0, 0);
     }
-    
+
     // Remonter les boutons au premier plan
-    if(btn_zoom_in) lv_obj_move_foreground(btn_zoom_in);
-    if(btn_zoom_out) lv_obj_move_foreground(btn_zoom_out);
-    
+    if (btn_zoom_in) lv_obj_move_foreground(btn_zoom_in);
+    if (btn_zoom_out) lv_obj_move_foreground(btn_zoom_out);
+
     // Recreer le marqueur position
-    if(position_marker) {
+    if (position_marker) {
       lv_obj_del(position_marker);
     }
     position_marker = lv_label_create(map_container);
@@ -199,10 +199,10 @@ static void btn_zoom_out_cb(lv_event_t *e) {
     lv_obj_set_style_bg_opa(position_marker, LV_OPA_TRANSP, 0);
     lv_obj_center(position_marker);
     lv_obj_move_foreground(position_marker);
-    
+
     // Mettre a jour l'etat des boutons
     update_zoom_buttons_state();
-    
+
 #ifdef DEBUG_MODE
     Serial.printf("Zoom OUT: %d\n", current_map_zoom);
 #endif
@@ -224,17 +224,9 @@ void ui_screen_left_init(void) {
   // Barre de statut
   ui_create_status_bar(current_screen);
 
-  lv_obj_t *frame = lv_obj_create(current_screen);
-  lv_obj_set_size(frame, LCD_H_RES, LCD_V_RES - 60);
+  lv_obj_t *frame = ui_create_standard_panel(current_screen, LCD_H_RES, LCD_V_RES - 60);
   lv_obj_align(frame, LV_ALIGN_TOP_MID, 0, 60);
-  lv_obj_set_style_bg_color(frame, lv_color_hex(0x000000), 0);
-  lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, 0);
-  lv_obj_set_style_border_width(frame, 3, 0);
-  lv_obj_set_style_border_color(frame, lv_color_hex(0xFFFFFF), 0);
-  lv_obj_set_style_radius(frame, ROUND_FRANE_RADUIS_SMALL, 0);
-  lv_obj_set_style_pad_all(frame, 20, 0);
-  lv_obj_clear_flag(frame, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_clear_flag(frame, LV_OBJ_FLAG_CLICKABLE);
+  ui_clear_standard_flags(frame);
 
   // Texte identifiant
   lv_obj_t *label = lv_label_create(frame);
@@ -266,7 +258,7 @@ void ui_screen_center_init(void) {
   }
 
   lv_obj_set_style_bg_color(current_screen, lv_color_hex(0x000000), 0);
-  lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
+   lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
 
   // Barre de statut
   ui_create_status_bar(current_screen);
@@ -399,8 +391,6 @@ void ui_screen_right_init(void) {
   }
 
   lv_obj_set_style_bg_color(current_screen, lv_color_hex(0x000000), 0);
-  //lv_obj_set_style_bg_grad_color(current_screen, lv_color_hex(0x1a1f3a), 0);
-  //lv_obj_set_style_bg_grad_dir(current_screen, LV_GRAD_DIR_VER, 0);
   lv_obj_clear_flag(current_screen, LV_OBJ_FLAG_SCROLLABLE);
 
   // Barre de statut

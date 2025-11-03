@@ -72,12 +72,6 @@ void kalman_apply_altitude_offset(float offset_m) {
   // Appliquer l'offset sur l'altitude uniquement
   kf.x[0] += offset_m;
   
-  // La vitesse verticale (vario) reste inchangee
-  // L'acceleration reste inchangee
-  
-  // Pas besoin de modifier la covariance car il n'y a pas de discontinuite
-  // dans la dynamique du systeme
-  
 #ifdef DEBUG_MODE
   Serial.printf("[KALMAN] Altitude after offset: %.1f m\n", kf.x[0]);
 #endif
