@@ -294,10 +294,9 @@ static void metar_task(void* parameter) {
   Serial.println("[QNH] Task started");
 #endif
 
-  const TickType_t fetch_interval = pdMS_TO_TICKS(3600000);
+  const TickType_t fetch_interval = pdMS_TO_TICKS(QNH_UPDATE_INTERVAL_MS);
   const TickType_t qnh_timeout = pdMS_TO_TICKS(30000);
-  const float distance_threshold = 30.0;
-
+  
   TickType_t last_fetch = 0;
   TickType_t start_time = xTaskGetTickCount();
   bool timeout_applied = false;
@@ -324,7 +323,7 @@ static void metar_task(void* parameter) {
       if ((xTaskGetTickCount() - last_fetch) > fetch_interval) {
         auto_update_needed = true;
 #ifdef DEBUG_MODE
-        Serial.println("[QNH] Auto-update: 1 hour elapsed");
+        Serial.printf("[QNH] Auto-update: %.2f hour elapsed",(QNH_UPDATE_INTERVAL_MS/3600000));
 #endif
       }
 
@@ -335,7 +334,7 @@ static void metar_task(void* parameter) {
           last_qnh_lat, last_qnh_lon,
           g_sensor_data.gps.latitude, g_sensor_data.gps.longitude);
 
-        if (distance >= distance_threshold) {
+        if (distance >= QNH_UPDATE_DISTANCE_KM) {
           auto_update_needed = true;
 #ifdef DEBUG_MODE
           Serial.printf("[QNH] Auto-update: %.1f km traveled\n", distance);

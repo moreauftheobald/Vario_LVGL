@@ -378,8 +378,8 @@ static void kalman_task(void* parameter) {
         hauteur_sol = kf.x[0] - terrain_alt;
       }
       
-      Serial.printf("[KALMAN] Alt:%.1fm Vario:%.2fm/s Accel:%.2fm/s2 TerrainAlt:%.1fm HauteurSol:%.1fm (TEST_MODE)\n", 
-                    kf.x[0], kf.x[1], kf.x[2], terrain_alt, hauteur_sol);
+      /*Serial.printf("[KALMAN] Alt:%.1fm Vario:%.2fm/s Accel:%.2fm/s2 TerrainAlt:%.1fm HauteurSol:%.1fm (TEST_MODE)\n", 
+                    kf.x[0], kf.x[1], kf.x[2], terrain_alt, hauteur_sol);*/
 #else
       // Mode réel: coordonnées GPS, altitude Kalman
       if (g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
@@ -393,8 +393,8 @@ static void kalman_task(void* parameter) {
         }
       }
       
-      Serial.printf("[KALMAN] Alt:%.1fm Vario:%.2fm/s Accel:%.2fm/s2 TerrainAlt:%.1fm HauteurSol:%.1fm\n", 
-                    kf.x[0], kf.x[1], kf.x[2], terrain_alt, hauteur_sol);
+      /*Serial.printf("[KALMAN] Alt:%.1fm Vario:%.2fm/s Accel:%.2fm/s2 TerrainAlt:%.1fm HauteurSol:%.1fm\n", 
+                    kf.x[0], kf.x[1], kf.x[2], terrain_alt, hauteur_sol);*/
 #endif
       
       last_debug = now;

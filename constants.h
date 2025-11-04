@@ -197,17 +197,20 @@ TILES CONSTANTS
 //#define TEST_LON 06.099846
 
 // Position test: 62 rue de verdun 57700 HAYANGE
-#define TEST_LAT 49.327626
-#define TEST_LON 06.057100
+//#define TEST_LAT 49.327626
+//#define TEST_LON 06.057100
 
 // Position test: Bureau Livange
-//#define TEST_LAT 49.53165
-//#define TEST_LON 06.12221
+#define TEST_LAT 49.53165
+#define TEST_LON 06.12221
 
 // Position test: Bureau Yutz
 //#define TEST_LAT 49.36315
 //#define TEST_LON 06.20037
 
+// Position test: Salle Milles Club Volmerange Alti référence 311.97m
+//#define TEST_LAT 49.439392
+//#define TEST_LON 06.081489
 
 // Nom du serveur de cartes (peut être paramétrable plus tard)
 #define OSM_SERVER_NAME "osm"
@@ -234,7 +237,7 @@ METAR CONSTANTS
 #define METAR_STOP_BIT BIT1
 
 // Configuration
-#define QNH_UPDATE_INTERVAL_MS (3600000)  // 1 heure par défaut
+#define QNH_UPDATE_INTERVAL_MS (10 * 60 * 1000)  // 1 heure par défaut
 #define QNH_UPDATE_DISTANCE_KM (30)  
 
 //Methode Update QNH

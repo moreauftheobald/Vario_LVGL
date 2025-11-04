@@ -140,11 +140,11 @@ static void update_sensor_status_labels(void) {
   float qnh = metar_get_qnh();
   metar_data_t metar;
   if (metar_get_data(&metar) && metar.valid) {
-    snprintf(buf, sizeof(buf), "QNH: %.1f hPa (%s)", qnh, metar.station);
+    snprintf(buf, sizeof(buf), "%s QNH: %.1f hPa (%s)", LV_SYMBOL_DOWN, qnh, metar.station);
     lv_label_set_text(label_qnh_status, buf);
     lv_obj_set_style_text_color(label_qnh_status, lv_color_hex(UI_COLOR_SUCCESS), 0);
   } else {
-    snprintf(buf, sizeof(buf), "QNH: %.1f hPa (Standard)", qnh);
+    snprintf(buf, sizeof(buf), "%s QNH: %.1f hPa (Standard)", LV_SYMBOL_DOWN, qnh);
     lv_label_set_text(label_qnh_status, buf);
     lv_obj_set_style_text_color(label_qnh_status, lv_color_hex(UI_COLOR_WARNING), 0);
   }
