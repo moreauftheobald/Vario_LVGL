@@ -99,6 +99,8 @@ sensor_raw_data_t g_sensor_data = {
   .qnh_metar = 1013.25f  // Valeur standard par défaut
 };
 
+extern SemaphoreHandle_t sd_mutex;
+
 void force_full_refresh(void) {
   lv_obj_invalidate(lv_screen_active());
   lv_refr_now(NULL);

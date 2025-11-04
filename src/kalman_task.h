@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "constants.h"
 #include "globals.h"
+#include "terrain_elevation.h" 
 
 // Structure des donnees filtrees
 typedef struct {
@@ -366,7 +367,36 @@ static void kalman_task(void* parameter) {
 #ifdef DEBUG_MODE
     static uint32_t last_debug = 0;
     if (now - last_debug >= 1000) {
-      Serial.printf("[KALMAN] Alt:%.1fm Vario:%.2fm/s Accel:%.2fm/s2\n", kf.x[0], kf.x[1], kf.x[2]);
+      float terrain_alt = NAN;
+      float hauteur_sol = NAN;
+      
+#ifdef FLIGHT_TEST_MODE
+      // Mode test: coordonnées fixes
+      terrain_alt = terrain.getElevation(TEST_LAT, TEST_LON);
+      
+      if (!isnan(terrain_alt)) {
+        hauteur_sol = kf.x[0] - terrain_alt;
+      }
+      
+      Serial.printf("[KALMAN] Alt:%.1fm Vario:%.2fm/s Accel:%.2fm/s2 TerrainAlt:%.1fm HauteurSol:%.1fm (TEST_MODE)\n", 
+                    kf.x[0], kf.x[1], kf.x[2], terrain_alt, hauteur_sol);
+#else
+      // Mode réel: coordonnées GPS, altitude Kalman
+      if (g_sensor_data.gps.valid && g_sensor_data.gps.fix) {
+        terrain_alt = terrain.getElevation(
+          g_sensor_data.gps.latitude, 
+          g_sensor_data.gps.longitude
+        );
+        
+        if (!isnan(terrain_alt)) {
+          hauteur_sol = kf.x[0] - terrain_alt;  // Altitude Kalman - Terrain
+        }
+      }
+      
+      Serial.printf("[KALMAN] Alt:%.1fm Vario:%.2fm/s Accel:%.2fm/s2 TerrainAlt:%.1fm HauteurSol:%.1fm\n", 
+                    kf.x[0], kf.x[1], kf.x[2], terrain_alt, hauteur_sol);
+#endif
+      
       last_debug = now;
     }
 #endif

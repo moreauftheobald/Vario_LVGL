@@ -197,16 +197,16 @@ TILES CONSTANTS
 //#define TEST_LON 06.099846
 
 // Position test: 62 rue de verdun 57700 HAYANGE
-//#define TEST_LAT 49.327626
-//#define TEST_LON 06.057100
+#define TEST_LAT 49.327626
+#define TEST_LON 06.057100
 
 // Position test: Bureau Livange
 //#define TEST_LAT 49.53165
 //#define TEST_LON 06.12221
 
 // Position test: Bureau Yutz
-#define TEST_LAT 49.36315
-#define TEST_LON 06.20037
+//#define TEST_LAT 49.36315
+//#define TEST_LON 06.20037
 
 
 // Nom du serveur de cartes (peut être paramétrable plus tard)
@@ -216,6 +216,15 @@ TILES CONSTANTS
 #define MAP_ZOOM_MAX 15
 
 #define TILE_CACHE_SIZE 10
+
+//HGT constants
+#define HGT_SRTM3_SIZE 1201
+#define HGT_SRTM1_SIZE 3601
+#define HGT_NO_DATA -32768
+
+#define CACHE_RADIUS_M 3000.0f    // 3 km recommandé (ou 5000.0f pour 5 km)
+#define CACHE_REFRESH_RATIO 0.5f  // Recharge à 50% du rayon
+#define CACHE_MAX_SIZE 350 
 
 /*=========================================================================
 METAR CONSTANTS

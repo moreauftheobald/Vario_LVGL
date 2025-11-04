@@ -25,8 +25,10 @@ SET_LOOP_TASK_STACK_SIZE(4 * 1024);
 #include "src/kalman_task.h"
 
 bool mainscreen_active = false;
+SemaphoreHandle_t sd_mutex = NULL;
 
 void setup() {
+  sd_mutex = xSemaphoreCreateMutex();
   Serial.begin(115200);
 #ifdef DEBUG_MODE
   Serial.setDebugOutput(true);
@@ -38,10 +40,10 @@ void setup() {
   // 1. Bus I2C + IO Extender
   DEV_I2C_Init();
   delay(50);
-  
+
   IO_EXTENSION_Init();
   delay(100);  // Augmente de 10->100ms
-  
+
   IO_EXTENSION_Output(IO_EXTENSION_IO_4, 1);
   delay(50);
 
@@ -68,6 +70,12 @@ void setup() {
 
   // 3. Capteurs I2C (BMP390, BNO080, GPS)
   sensors_i2c_start();
+
+  if (!terrain.begin()) {
+#ifdef DEBUG_MODE
+    Serial.println("[TERRAIN] Init failed - no memory");
+#endif
+  }
 
   // 4. Kalman
   kalman_start();
