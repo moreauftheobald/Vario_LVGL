@@ -6,6 +6,7 @@
 #include "UI_helper.h"
 #include "graphical.h"
 #include "globals.h"
+#include "ui_flight_display.h"
 
 // Indice ecran courant (0=gauche, 1=centre, 2=droite)
 static uint8_t current_screen_index = 1;
@@ -270,14 +271,27 @@ void ui_screen_center_init(void) {
   lv_obj_set_style_border_color(col_left, lv_color_hex(UI_COLOR_BORDER_PRIMARY), 0);
   lv_obj_set_style_radius(col_left, UI_RADIUS_SMALL, 0);
   lv_obj_set_style_pad_all(col_left, 10, 0);
+  lv_obj_set_flex_flow(col_left, LV_FLEX_FLOW_COLUMN);
+  lv_obj_set_flex_align(col_left, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+  lv_obj_set_style_pad_row(col_left, 10, 0);
   lv_obj_clear_flag(col_left, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(col_left, LV_OBJ_FLAG_CLICKABLE);
 
-  lv_obj_t *label_left = lv_label_create(col_left);
-  lv_label_set_text(label_left, "Gauche");
-  lv_obj_set_style_text_font(label_left, UI_FONT_NORMAL, 0);
-  lv_obj_set_style_text_color(label_left, lv_color_hex(UI_COLOR_PRIMARY), 0);
-  lv_obj_center(label_left);
+  ui_create_altitude_zone(col_left);
+  ui_create_vario_zone(col_left);
+  // Creer timer pour mise a jour
+  static lv_timer_t *flight_update_timer = NULL;
+  if (flight_update_timer) {
+    lv_timer_del(flight_update_timer);
+  }
+  flight_update_timer = lv_timer_create([](lv_timer_t *t) {
+    ui_update_altitude_display();
+    ui_update_vario_display();
+  },
+                                        500, NULL);  // Mise a jour toutes les 500ms
+#ifdef DEBUG_MODE
+  Serial.println("[UI] Flight data update timer created");
+#endif
 
 
   // Colonne centrale (carte)

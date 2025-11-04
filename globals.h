@@ -99,6 +99,23 @@ sensor_raw_data_t g_sensor_data = {
   .qnh_metar = 1013.25f  // Valeur standard par défaut
 };
 
+// Structure des donnees de vol
+typedef struct {
+  float altitude_qne;      // m - Altitude baro 1013.25
+  float altitude_qnh;      // m - Altitude QNH
+  float altitude_qfe;      // m (on garde pour calculs internes)
+  float altitude_gps;      // m - Altitude GPS
+  float altitude_agl;      // m - Hauteur sol (QNH - terrain)
+  float vario_raw;         // m/s arrondi 0.1
+  float vario_integrated;  // m/s moyen sur periode
+  float speed_gps;         // km/h
+  bool valid;
+  uint32_t timestamp;
+} flight_data_t;
+
+flight_data_t g_flight_data = {0};
+SemaphoreHandle_t flight_data_mutex = NULL;
+
 extern SemaphoreHandle_t sd_mutex;
 
 void force_full_refresh(void) {

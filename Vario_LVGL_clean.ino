@@ -23,6 +23,7 @@ SET_LOOP_TASK_STACK_SIZE(4 * 1024);
 #include "src/ui/ui_settings_ice.h"
 #include "src/test_logger_task.h"
 #include "src/kalman_task.h"
+#include "src/flight_data.h"
 
 bool mainscreen_active = false;
 SemaphoreHandle_t sd_mutex = NULL;
@@ -104,6 +105,8 @@ void setup() {
   Serial.println("Test logger task started");
 #endif
 #endif
+
+  flight_data_task_start();
 
   // 7. Afficher splash (3s) -> puis ui_prestart_show()
   ui_splash_show();

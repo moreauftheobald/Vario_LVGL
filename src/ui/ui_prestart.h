@@ -227,8 +227,8 @@ static void btn_start_cb(lv_event_t *e) {
     sensor_status_timer = NULL;
   }
 
-  metar_stop();
-  wifi_task_stop();
+  //metar_stop();
+  //wifi_task_stop();
   ui_main_screens_show();
 }
 
