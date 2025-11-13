@@ -47,7 +47,7 @@ I2C GPIO AND CONSTANTS
 I2C PERIPHERALS CONSTANTS
 /*=========================================================================*/
 //Task
-#define SENSORS_TASK_STACK_SIZE (2560)
+#define SENSORS_TASK_STACK_SIZE (4096)
 #define SENSORS_TASK_PRIORITY (5)
 
 //BNO080
@@ -197,8 +197,8 @@ TILES CONSTANTS
 //#define TEST_LON 06.099846
 
 // Position test: 62 rue de verdun 57700 HAYANGE alti reference 201 m
-//#define TEST_LAT 49.327626
-//#define TEST_LON 06.057100
+#define TEST_LAT 49.327626
+#define TEST_LON 06.057100
 
 // Position test: Bureau Livange alti reference 270 m
 //#define TEST_LAT 49.53165
@@ -209,8 +209,8 @@ TILES CONSTANTS
 //#define TEST_LON 06.20037
 
 // Position test: Salle Milles Club Volmerange Alti référence 312 m
-#define TEST_LAT 49.439392
-#define TEST_LON 06.081489
+//#define TEST_LAT 49.439392
+//#define TEST_LON 06.081489
 
 // Nom du serveur de cartes (peut être paramétrable plus tard)
 #define OSM_SERVER_NAME "osm"
